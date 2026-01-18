@@ -8,3 +8,5 @@ logs/
 secrets.js
 cdn/
 .parcel-cache/*
+.claude/
+nul

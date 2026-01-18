@@ -69,6 +69,20 @@ function SidebarCategoryGeneral({ stateChange, fileFormatHeader, header, unsafeO
          <div className="sidebar-view-general-row-value">{header.worldId}</div>
          <span style={{flexBasis:"25%"}}>World GUID</span>
          <div style={{flexBasis:"75%"}}className="sidebar-view-general-row-value">{header.guidString}</div>
+         {
+            version >= 179 &&
+            <>
+               <span>Generator Version</span>
+               <div className="sidebar-view-general-row-value">{header.worldGeneratorVersion}</div>
+            </>
+         }
+         {
+            version >= 141 &&
+            <>
+               <span>Creation Time</span>
+               <div className="sidebar-view-general-row-value">{header.creationTime ? new Date(header.creationTime).toLocaleString() : "N/A"}</div>
+            </>
+         }
          <span>Seed</span>
          <div className="sidebar-view-general-row-value">{header.seedText}</div>
          <span>Revision</span>
@@ -126,23 +140,71 @@ function SidebarCategoryGeneral({ stateChange, fileFormatHeader, header, unsafeO
          <OptionbarInputCheckbox value={header.spawnMeteor} onChange={(value) => {setHeaderKey("spawnMeteor", value)}} />
          <span>Invasion</span>
          <OptionbarInputSelect value={header.invasionType} options={[["None", 0], ["Goblin invasion", 1], ["Frost legion", 2], ["Pirate invasion", 3], ["Martian madness", 4]]} onChange={(value) => {setHeaderKey("invasionType", value)}}/>
-         <span>Invasion size</span>
-         <div className="sidebar-view-general-row-spanner">
-            <OptionbarInputSlider value={header.invasionSizeStart} onChange={(value) => {setHeaderKey("invasionSizeStart", value)}} min={0} max={10400} input inputWidth="7ch"/>
-            = 100%
-         </div>
-         <span>Invasion progress</span>
-         <div className="sidebar-view-general-row-spanner">
-            0%
-            <OptionbarInputSlider value={header.invasionSize} onChange={(value) => {setHeaderKey("invasionSize", value)}} min={0} max={header.invasionSizeStart}/>
-            100%
-         </div>
-         <span>Slime rain time</span>
-         <OptionbarInputSlider value={header.slimeRainTime} onChange={(value) => {setHeaderKey("slimeRainTime", value)}} min={-604800} max={54000} input inputWidth="9ch"/>
-         <span>Cultists cooldown</span>
-         <OptionbarInputSlider value={header.tempCultistDelay} onChange={(value) => {setHeaderKey("tempCultistDelay", value)}} min={0} max={86400} input inputWidth="7ch"/>
+         <span>Invasion X</span>
+         <OptionbarInputSlider value={header.invasionX} onChange={(value) => {setHeaderKey("invasionX", value)}} min={0} max={header.maxTilesX} input inputWidth="6ch"/>
+         <span>Invasion Delay</span>
+         <OptionbarInputSlider value={header.invasionDelay} onChange={(value) => {setHeaderKey("invasionDelay", value)}} min={0} max={2147483647} input inputWidth="10ch"/>
          {
-            version >= 225 &&
+            version >= 178 &&
+            <>
+               <span>Old One's Army T1 downed</span>
+               <OptionbarInputCheckbox value={header.DD2Event_DownedInvasionT1} onChange={(value) => {setHeaderKey("DD2Event_DownedInvasionT1", value)}} />
+               <span>Old One's Army T2 downed</span>
+               <OptionbarInputCheckbox value={header.DD2Event_DownedInvasionT2} onChange={(value) => {setHeaderKey("DD2Event_DownedInvasionT2", value)}} />
+               <span>Old One's Army T3 downed</span>
+               <OptionbarInputCheckbox value={header.DD2Event_DownedInvasionT3} onChange={(value) => {setHeaderKey("DD2Event_DownedInvasionT3", value)}} />
+            </>
+         }
+         {
+            version >= 257 &&
+            <>
+               <span>Party of Doom active</span>
+               <OptionbarInputCheckbox value={header.partyOfDoom} onChange={(value) => {setHeaderKey("partyOfDoom", value)}} />
+            </>
+         }
+         {
+            version >= 107 &&
+            <>
+               <span>Invasion size</span>
+               <div className="sidebar-view-general-row-spanner">
+                  <OptionbarInputSlider value={header.invasionSizeStart} onChange={(value) => {setHeaderKey("invasionSizeStart", value)}} min={0} max={10400} input inputWidth="7ch"/>
+                  = 100%
+               </div>
+               <span>Invasion progress</span>
+               <div className="sidebar-view-general-row-spanner">
+                  0%
+                  <OptionbarInputSlider value={header.invasionSize} onChange={(value) => {setHeaderKey("invasionSize", value)}} min={0} max={header.invasionSizeStart}/>
+                  100%
+               </div>
+            </>
+         }
+         {
+            version >= 118 &&
+            <>
+               <span>Slime rain time</span>
+               <OptionbarInputSlider value={header.slimeRainTime} onChange={(value) => {setHeaderKey("slimeRainTime", value)}} min={-604800} max={54000} input inputWidth="9ch"/>
+            </>
+         }
+         {
+            version >= 108 &&
+            <>
+               <span>Cultists cooldown</span>
+               <OptionbarInputSlider value={header.tempCultistDelay} onChange={(value) => {setHeaderKey("tempCultistDelay", value)}} min={0} max={86400} input inputWidth="7ch"/>
+            </>
+         }
+         {
+            version >= 170 &&
+            <>
+               <span>Party manual</span>
+               <OptionbarInputCheckbox value={header.tempPartyManual} onChange={(value) => {setHeaderKey("tempPartyManual", value)}} />
+               <span>Party genuine</span>
+               <OptionbarInputCheckbox value={header.tempPartyGenuine} onChange={(value) => {setHeaderKey("tempPartyGenuine", value)}} />
+               <span>Party cooldown</span>
+               <OptionbarInputSlider value={header.tempPartyCooldown} onChange={(value) => {setHeaderKey("tempPartyCooldown", value)}} min={0} max={2147483647} input inputWidth="10ch"/>
+            </>
+         }
+         {
+            version >= 207 &&
             <>
                <span>Lantern night cooldown</span>
                <OptionbarInputSlider value={header.lanternNightCooldown} onChange={(value) => {setHeaderKey("lanternNightCooldown", value)}} min={0} max={11} input inputWidth="7ch"/>
@@ -152,6 +214,11 @@ function SidebarCategoryGeneral({ stateChange, fileFormatHeader, header, unsafeO
                <OptionbarInputCheckbox value={header.lanternNightManual} onChange={(value) => {setHeaderKey("lanternNightManual", value)}} />
                <span>Next night will be latern night</span>
                <OptionbarInputCheckbox value={header.lanternNightNextNightIsGenuine} onChange={(value) => {setHeaderKey("lanternNightNextNightIsGenuine", value)}} />
+            </>
+         }
+         {
+            version >= 212 &&
+            <>
                <span>Force Halloween invasion</span>
                <OptionbarInputCheckbox value={header.forceHalloweenForToday} onChange={(value) => {setHeaderKey("forceHalloweenForToday", value)}} />
                <span>Force Christmas invasion</span>
@@ -207,6 +274,41 @@ function SidebarCategoryGeneral({ stateChange, fileFormatHeader, header, unsafeO
                      <>
                         <span>Celebration world (seed)</span>
                         <OptionbarInputCheckbox value={header.getTenthAnniversaryWorld} onChange={(value) => {setHeaderKey("getTenthAnniversaryWorld", value)}} />
+                     </>
+                  }
+                  {
+                     version >= 239 &&
+                     <>
+                        <span>Don't Starve world (seed)</span>
+                        <OptionbarInputCheckbox value={header.dontStarveWorld} onChange={(value) => {setHeaderKey("dontStarveWorld", value)}} />
+                     </>
+                  }
+                  {
+                     version >= 241 &&
+                     <>
+                        <span>Not the Bees world (seed)</span>
+                        <OptionbarInputCheckbox value={header.notTheBeesWorld} onChange={(value) => {setHeaderKey("notTheBeesWorld", value)}} />
+                     </>
+                  }
+                  {
+                     version >= 249 &&
+                     <>
+                        <span>Remix world (seed)</span>
+                        <OptionbarInputCheckbox value={header.remixWorld} onChange={(value) => {setHeaderKey("remixWorld", value)}} />
+                     </>
+                  }
+                  {
+                     version >= 266 &&
+                     <>
+                        <span>No Traps world (seed)</span>
+                        <OptionbarInputCheckbox value={header.noTrapsWorld} onChange={(value) => {setHeaderKey("noTrapsWorld", value)}} />
+                     </>
+                  }
+                  {
+                     version >= 267 &&
+                     <>
+                        <span>Zenith world (seed)</span>
+                        <OptionbarInputCheckbox value={header.zenithWorld} onChange={(value) => {setHeaderKey("zenithWorld", value)}} />
                      </>
                   }
                </>
@@ -297,10 +399,33 @@ function SidebarCategoryGeneral({ stateChange, fileFormatHeader, header, unsafeO
          <span>Sundial cooldown</span>
          <OptionbarInputSlider value={header.sundialCooldown} onChange={(value) => {setHeaderKey("sundialCooldown", value)}} min={0} max={128} input inputWidth="5ch"/>
          {
+            version >= 264 &&
+            <>
+               <span>Fast forward time to dusk</span>
+               <OptionbarInputCheckbox value={header.fastForwardTimeToDusk} onChange={(value) => {setHeaderKey("fastForwardTimeToDusk", value)}} />
+               <span>Moondial cooldown</span>
+               <OptionbarInputSlider value={header.moondialCooldown} onChange={(value) => {setHeaderKey("moondialCooldown", value)}} min={0} max={128} input inputWidth="5ch"/>
+            </>
+         }
+         {
             version >= 225 &&
             <>
                <span>Combat book used</span>
                <OptionbarInputCheckbox value={header.combatBookWasUsed} onChange={(value) => {setHeaderKey("combatBookWasUsed", value)}} />
+            </>
+         }
+         {
+            version >= 259 &&
+            <>
+               <span>Combat book vol. 2 used</span>
+               <OptionbarInputCheckbox value={header.combatBookVolumeTwoWasUsed} onChange={(value) => {setHeaderKey("combatBookVolumeTwoWasUsed", value)}} />
+            </>
+         }
+         {
+            version >= 260 &&
+            <>
+               <span>Peddler's satchel used</span>
+               <OptionbarInputCheckbox value={header.peddlersSatchelWasUsed} onChange={(value) => {setHeaderKey("peddlersSatchelWasUsed", value)}} />
             </>
          }
 
@@ -481,6 +606,56 @@ function SidebarCategoryGeneral({ stateChange, fileFormatHeader, header, unsafeO
             </>
          }
 
+         {
+            version >= 250 &&
+            <>
+               <div className="sidebar-view-general-row-divider"><span>NPC Unlocks</span></div>
+               
+               <span>Slime Blue spawn</span>
+               <OptionbarInputCheckbox value={header.unlockedSlimeBlueSpawn} onChange={(value) => {setHeaderKey("unlockedSlimeBlueSpawn", value)}} />
+            </>
+         }
+         {
+            version >= 251 &&
+            <>
+               <span>Slime Green spawn</span>
+               <OptionbarInputCheckbox value={header.unlockedSlimeGreenSpawn} onChange={(value) => {setHeaderKey("unlockedSlimeGreenSpawn", value)}} />
+               <span>Slime Old spawn</span>
+               <OptionbarInputCheckbox value={header.unlockedSlimeOldSpawn} onChange={(value) => {setHeaderKey("unlockedSlimeOldSpawn", value)}} />
+               <span>Slime Purple spawn</span>
+               <OptionbarInputCheckbox value={header.unlockedSlimePurpleSpawn} onChange={(value) => {setHeaderKey("unlockedSlimePurpleSpawn", value)}} />
+               <span>Slime Rainbow spawn</span>
+               <OptionbarInputCheckbox value={header.unlockedSlimeRainbowSpawn} onChange={(value) => {setHeaderKey("unlockedSlimeRainbowSpawn", value)}} />
+               <span>Slime Red spawn</span>
+               <OptionbarInputCheckbox value={header.unlockedSlimeRedSpawn} onChange={(value) => {setHeaderKey("unlockedSlimeRedSpawn", value)}} />
+               <span>Slime Yellow spawn</span>
+               <OptionbarInputCheckbox value={header.unlockedSlimeYellowSpawn} onChange={(value) => {setHeaderKey("unlockedSlimeYellowSpawn", value)}} />
+               <span>Slime Copper spawn</span>
+               <OptionbarInputCheckbox value={header.unlockedSlimeCopperSpawn} onChange={(value) => {setHeaderKey("unlockedSlimeCopperSpawn", value)}} />
+               <span>Merchant spawn</span>
+               <OptionbarInputCheckbox value={header.unlockedMerchantSpawn} onChange={(value) => {setHeaderKey("unlockedMerchantSpawn", value)}} />
+               <span>Demolition spawn</span>
+               <OptionbarInputCheckbox value={header.unlockedDemolitionistSpawn} onChange={(value) => {setHeaderKey("unlockedDemolitionistSpawn", value)}} />
+               <span>Party Girl spawn</span>
+               <OptionbarInputCheckbox value={header.unlockedPartyGirlSpawn} onChange={(value) => {setHeaderKey("unlockedPartyGirlSpawn", value)}} />
+               <span>Dye Trader spawn</span>
+               <OptionbarInputCheckbox value={header.unlockedDyeTraderSpawn} onChange={(value) => {setHeaderKey("unlockedDyeTraderSpawn", value)}} />
+               <span>Truffle spawn</span>
+               <OptionbarInputCheckbox value={header.unlockedTruffleSpawn} onChange={(value) => {setHeaderKey("unlockedTruffleSpawn", value)}} />
+               <span>Arms Dealer spawn</span>
+               <OptionbarInputCheckbox value={header.unlockedArmsDealerSpawn} onChange={(value) => {setHeaderKey("unlockedArmsDealerSpawn", value)}} />
+               <span>Nurse spawn</span>
+               <OptionbarInputCheckbox value={header.unlockedNurseSpawn} onChange={(value) => {setHeaderKey("unlockedNurseSpawn", value)}} />
+            </>
+         }
+         {
+            version >= 261 &&
+            <>
+               <span>Princess spawn</span>
+               <OptionbarInputCheckbox value={header.unlockedPrincessSpawn} onChange={(value) => {setHeaderKey("unlockedPrincessSpawn", value)}} />
+            </>
+         }
+
          <div className="sidebar-view-general-row-divider"><span>NPCs saved</span></div>
 
          <span>Goblin</span>
@@ -522,6 +697,13 @@ function SidebarCategoryGeneral({ stateChange, fileFormatHeader, header, unsafeO
             <>
                <span>Queen Slime</span>
                <OptionbarInputCheckbox value={header.downedQueenSlime} onChange={(value) => {setHeaderKey("downedQueenSlime", value)}} />
+            </>
+         }
+         {
+            version >= 240 &&
+            <>
+               <span>Deerclops</span>
+               <OptionbarInputCheckbox value={header.downedDeerclops} onChange={(value) => {setHeaderKey("downedDeerclops", value)}} />
             </>
          }
          <span>Any mechanical boss</span>
@@ -572,7 +754,21 @@ function SidebarCategoryGeneral({ stateChange, fileFormatHeader, header, unsafeO
          <OptionbarInputCheckbox value={header.downedTowerNebula} onChange={(value) => {setHeaderKey("downedTowerNebula", value)}} />
          <span>Stardust Pillar</span>
          <OptionbarInputCheckbox value={header.downedTowerStardust} onChange={(value) => {setHeaderKey("downedTowerStardust", value)}} />
-
+         {
+            version >= 140 &&
+            <>
+               <span>Solar Pillar active</span>
+               <OptionbarInputCheckbox value={header.TowerActiveSolar} onChange={(value) => {setHeaderKey("TowerActiveSolar", value)}} />
+               <span>Vortex Pillar active</span>
+               <OptionbarInputCheckbox value={header.TowerActiveVortex} onChange={(value) => {setHeaderKey("TowerActiveVortex", value)}} />
+               <span>Nebula Pillar active</span>
+               <OptionbarInputCheckbox value={header.TowerActiveNebula} onChange={(value) => {setHeaderKey("TowerActiveNebula", value)}} />
+               <span>Stardust Pillar active</span>
+               <OptionbarInputCheckbox value={header.TowerActiveStardust} onChange={(value) => {setHeaderKey("TowerActiveStardust", value)}} />
+               <span>Lunar apocalypse</span>
+               <OptionbarInputCheckbox value={header.LunarApocalypseIsUp} onChange={(value) => {setHeaderKey("LunarApocalypseIsUp", value)}} />
+            </>
+         }
          <div className="sidebar-view-general-row-divider"><span>Invasions downed</span></div>
 
          <span>Goblin army</span>
