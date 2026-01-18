@@ -1,7 +1,15 @@
 {
-    "appVersion": "4.0.0",
-    "ingameSupportedVersion": "1.4.4",
+    "appVersion": "4.0.1",
+    "ingameSupportedVersion": "1.4.4.9",
     "changelog": {
+        "4.0.1": {
+            "date": "Jan 18, 2026",
+            "changes": [
+                "Added support for Terraria 1.4.4.9",
+                "Added 40+ new world properties to General tab (seed types, tower states, NPC unlocks, etc.)",
+                "Added proper version checks for all properties based on world file version"
+            ]
+        },
         "4.0.0": {
             "date": "Oct 29, 2024",
             "changes": [
