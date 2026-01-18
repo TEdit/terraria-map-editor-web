@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from "react";
-import api from "/utils/api/api.js";
+import api from "../../../../utils/api/api.js";
 import { connect } from "react-redux";
-import { stateChange } from "/state/state.js";
+import { stateChange } from "../../../../state/state.js";
 
-import Button from "/components/modal/account/button.jsx";
+import Button from "../button.jsx";
 
-import verifyWorldFileFormat from "/canvas/extensions/verifyWorldFileFormat.js";
+import verifyWorldFileFormat from "../../../../canvas/extensions/verifyWorldFileFormat.js";
 
 function ModalAccountViewMap({ close, stateChange }) {
    const [maps, setMaps] = useState([]);

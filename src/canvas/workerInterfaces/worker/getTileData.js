@@ -1,4 +1,4 @@
-import Worker from "/canvas/worker.js";
+import Worker from "../../worker.js";
 
 export default function({ x, y }) {
     postMessage({

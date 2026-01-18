@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { connect } from "react-redux";
-import { stateChange } from "/state/state.js";
+import { stateChange } from "../../../state/state.js";
 
-import OptionbarInput from "/components/inputs/input.jsx";
-import OptionbarInputSlider from "/components/inputs/input-slider.jsx";
-import OptionbarInputSelect from "/components/inputs/input-select.jsx";
-import OptionbarInputCheckbox from "/components/inputs/input-checkbox.jsx";
+import OptionbarInput from "../../inputs/input.jsx";
+import OptionbarInputSlider from "../../inputs/input-slider.jsx";
+import OptionbarInputSelect from "../../inputs/input-select.jsx";
+import OptionbarInputCheckbox from "../../inputs/input-checkbox.jsx";
 
-import { ToolTileInfo } from "/components/icon.jsx";
-import "/components/styles/sidebar/views/tileInfo.css";
+import { ToolTileInfo } from "../../icon.jsx";
+import "../../styles/sidebar/views/tileInfo.css";
 
 const TileInfoNoTool = () => (
    <div className="sidebar-view-tileInfo-text">

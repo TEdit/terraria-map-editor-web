@@ -1,9 +1,9 @@
 import React, { useEffect } from "react";
 import { connect } from "react-redux";
 
-import StatusbarLoading from "/components/statusbar/loading.jsx";
+import StatusbarLoading from "./statusbar/loading.jsx";
 
-import "/components/styles/statusbar.css";
+import "./styles/statusbar.css";
 
 function StatusBar({ percent, description, error, loading }) {
    return (

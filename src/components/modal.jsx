@@ -1,18 +1,18 @@
 import React, { useState, useEffect } from "react";
 import { connect } from "react-redux";
-import { store } from "/state/store.js";
-import { stateChange } from "/state/state.js";
+import { store } from "../state/store.js";
+import { stateChange } from "../state/state.js";
 
-import { CrossIcon } from "/components/icon.jsx";
-import "/components/styles/modal.css";
+import { CrossIcon } from "./icon.jsx";
+import "./styles/modal.css";
 
-import ModalSignin from "/components/modal/signin.jsx";
-import ModalSignup from "/components/modal/signup.jsx";
-import ModalAccount from "/components/modal/account.jsx";
-import SavingDisclaimer from "/components/modal/savingDisclaimer.jsx";
-import ReplaceBlock from "/components/modal/replaceBlock.jsx";
-import ModalConfirmation from "/components/modal/confirmation.jsx";
-import ModalChangelog from "/components/modal/changelog.jsx";
+import ModalSignin from "./modal/signin.jsx";
+import ModalSignup from "./modal/signup.jsx";
+import ModalAccount from "./modal/account.jsx";
+import SavingDisclaimer from "./modal/savingDisclaimer.jsx";
+import ReplaceBlock from "./modal/replaceBlock.jsx";
+import ModalConfirmation from "./modal/confirmation.jsx";
+import ModalChangelog from "./modal/changelog.jsx";
 
 const config = {
    signin: {

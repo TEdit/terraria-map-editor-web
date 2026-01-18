@@ -1,8 +1,8 @@
-import Main from "/canvas/main.js";
+import Main from "../main.js";
 
-import { onMoveDrag, onMoveDragTouch } from "/canvas/tools/move.js";
-import { onPencilDrag } from "/canvas/tools/pencil.js";
-import { onEraserDrag } from "/canvas/tools/eraser.js";
+import { onMoveDrag, onMoveDragTouch } from "../tools/move.js";
+import { onPencilDrag } from "../tools/pencil.js";
+import { onEraserDrag } from "../tools/eraser.js";
 
 export default function(e) {
     [Main.mousePosImageX, Main.mousePosImageY, Main.mousePosElementX, Main.mousePosElementY] = Main.extensions.getMousePosImage(e, true);

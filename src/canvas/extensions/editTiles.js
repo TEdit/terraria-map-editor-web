@@ -1,6 +1,6 @@
-import Main from "/canvas/main.js";
+import Main from "../main.js";
 
-import LAYERS from "/utils/dbs/LAYERS.js";
+import LAYERS from "../../utils/dbs/LAYERS.js";
 
 export default function(LAYER, editType, editArgs, newId) {
     if (!Main.state.canvas.running)

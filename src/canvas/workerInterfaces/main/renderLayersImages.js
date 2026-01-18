@@ -1,6 +1,6 @@
-import Main from "/canvas/main.js";
+import Main from "../../main.js";
 
-import WorkerError from "/canvas/workerInterfaces/errors/WorkerError.js";
+import WorkerError from "../errors/WorkerError.js";
 
 export default function({ onRenderingStart, onRenderingProgress, onRenderingDone, onDone }) {
     return new Promise((resolve, reject) => {

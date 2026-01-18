@@ -1,9 +1,9 @@
-import Main from "/canvas/main.js";
+import Main from "../main.js";
 
-import LAYERS from "/utils/dbs/LAYERS.js";
+import LAYERS from "../../utils/dbs/LAYERS.js";
 
-import store from "/state/store.js";
-import { stateChange } from "/state/state.js";
+import store from "../../state/store.js";
+import { stateChange } from "../../state/state.js";
 
 const onEraserClick = async (e) => {
     if (Main.listeners.dragging) {

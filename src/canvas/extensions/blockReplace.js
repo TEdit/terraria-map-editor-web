@@ -1,9 +1,9 @@
-import Main from "/canvas/main.js";
+import Main from "../main.js";
 
-import store from "/state/store.js";
-import { stateChange } from "/state/state.js";
+import store from "../../state/store.js";
+import { stateChange } from "../../state/state.js";
 
-import colors from "/utils/dbs/colors.js";
+import colors from "../../utils/dbs/colors.js";
 
 export default async function(from, to) {
     if (!Main.state.canvas.running)

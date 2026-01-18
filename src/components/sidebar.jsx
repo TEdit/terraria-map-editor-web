@@ -1,15 +1,15 @@
 import React, { useEffect, useState } from "react";
 import { connect } from "react-redux";
-import { stateChange } from "/state/state.js";
+import { stateChange } from "../state/state.js";
 
-import { CrossIcon } from "/components/icon.jsx";
+import { CrossIcon } from "./icon.jsx";
 
-import AppbarButton from "/components/appbar/button.jsx";
-import SidebarViewGeneral from "/components/sidebar/views/general.jsx";
-import SidebarViewLayers from "/components/sidebar/views/layers.jsx";
-import SidebarViewTileInfo from "/components/sidebar/views/tileInfo.jsx";
-import SidebarViewNPCs from "/components/sidebar/views/NPCs.jsx";
-import "/components/styles/sidebar.css";
+import AppbarButton from "./appbar/button.jsx";
+import SidebarViewGeneral from "./sidebar/views/general.jsx";
+import SidebarViewLayers from "./sidebar/views/layers.jsx";
+import SidebarViewTileInfo from "./sidebar/views/tileInfo.jsx";
+import SidebarViewNPCs from "./sidebar/views/NPCs.jsx";
+import "./styles/sidebar.css";
 
 const config = [
    {

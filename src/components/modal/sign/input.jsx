@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 
-import { ErrorOutlineIcon } from "/components/icon.jsx";
-import "/components/styles/modal/sign/input.css";
+import { ErrorOutlineIcon } from "../../icon.jsx";
+import "../../styles/modal/sign/input.css";
 
 function ModalSignInput({ label, value, onChange, password, error, onBlur }) {
    const _onChange = e => {

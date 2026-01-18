@@ -1,25 +1,25 @@
-import "/utils/polyfills/polyfill-requestAnimationFrame.js";
+import "../utils/polyfills/polyfill-requestAnimationFrame.js";
 
-import store from "/state/store.js";
-import { stateChange } from "/state/state.js";
+import store from "../state/store.js";
+import { stateChange } from "../state/state.js";
 
-import LAYERS from "/utils/dbs/LAYERS.js";
-import sprite, { NPCsSprites, WorldPointsSprites } from "/utils/dbs/sprites.js";
+import LAYERS from "../utils/dbs/LAYERS.js";
+import sprite, { NPCsSprites, WorldPointsSprites } from "../utils/dbs/sprites.js";
 
-import extensions from "/canvas/extensions/index.js";
-import workerInterfaces from "/canvas/workerInterfaces/main/index.js";
+import extensions from "./extensions/index.js";
+import workerInterfaces from "./workerInterfaces/main/index.js";
 
-import listenerWrapper from "/canvas/listeners/listenerWrapper.js";
-import onCanvasClick from "/canvas/listeners/click.js";
-import onCanvasMouseMove from "/canvas/listeners/mousemove.js";
-import onCanvasTouchMove from "/canvas/listeners/touchmove.js";
-import onCanvasWheel from "/canvas/listeners/wheel.js";
-import onCanvasTouchStart from "/canvas/listeners/touchstart.js";
-import onCanvasTouchEnd from "/canvas/listeners/touchend.js";
-import onCanvasMouseDown from "/canvas/listeners/mousedown.js";
-import onCanvasMouseUp from "/canvas/listeners/mouseup.js";
-import onCanvasMouseOver from "/canvas/listeners/mouseover.js";
-import onCanvasMouseLeave from "/canvas/listeners/mouseleave.js";
+import listenerWrapper from "./listeners/listenerWrapper.js";
+import onCanvasClick from "./listeners/click.js";
+import onCanvasMouseMove from "./listeners/mousemove.js";
+import onCanvasTouchMove from "./listeners/touchmove.js";
+import onCanvasWheel from "./listeners/wheel.js";
+import onCanvasTouchStart from "./listeners/touchstart.js";
+import onCanvasTouchEnd from "./listeners/touchend.js";
+import onCanvasMouseDown from "./listeners/mousedown.js";
+import onCanvasMouseUp from "./listeners/mouseup.js";
+import onCanvasMouseOver from "./listeners/mouseover.js";
+import onCanvasMouseLeave from "./listeners/mouseleave.js";
 
 let Main = new function() {
     this.state;
@@ -45,7 +45,7 @@ let Main = new function() {
     this.resetWorker = () => {
         if (this.worker)
             this.worker.terminate();
-        this.worker = new Worker("./worker.js");
+        this.worker = new Worker(new URL("./worker.js", import.meta.url), { type: "module" });
     }
 
     this.init = (canvasEl) => {
@@ -184,6 +184,11 @@ let Main = new function() {
                     0, 0,
                     this.canvas.width, this.canvas.height);
         });
+
+        // Check if sprite image is loaded before drawing
+        if (!sprite.complete || sprite.naturalWidth === 0) {
+            return;
+        }
 
         if (this.state.layersVisibility.WorldPoints) {
             temp1 = WorldPointsSprites.dungeon[2] * ( 2 + this.zoomLevel * 0.2 );

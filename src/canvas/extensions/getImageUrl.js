@@ -1,5 +1,5 @@
-import Main from "/canvas/main.js";
-import LAYERS from "/utils/dbs/LAYERS.js";
+import Main from "../main.js";
+import LAYERS from "../../utils/dbs/LAYERS.js";
 
 export default function() {
     if (!Main.state.canvas.running)

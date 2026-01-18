@@ -1,6 +1,6 @@
 //css
 import "normalize.css";
-import "/main.css";
+import "./main.css";
 
 //polyfills
 /*
@@ -26,18 +26,18 @@ if (!String.prototype.replaceAll) {
 
 //react
 import React from "react";
-import { render } from "react-dom";
+import { createRoot } from "react-dom/client";
 
 import { Provider } from "react-redux";
-import store from "/state/store.js";
+import store from "./state/store.js";
 
-import Controller from "/components/__controller.jsx";
-import Editor from "/pages/Editor.jsx";
+import Controller from "./components/__controller.jsx";
+import Editor from "./pages/Editor.jsx";
 
-render(
+const root = createRoot(document.querySelector("#app"));
+root.render(
     <Provider store={store}>
         <Controller/>
         <Editor/>
-    </Provider>,
-    document.querySelector("#app")
+    </Provider>
 );

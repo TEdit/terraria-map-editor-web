@@ -1,18 +1,18 @@
 import React, { useEffect, useState } from "react";
 import { connect } from "react-redux";
-import { stateChange } from "/state/state.js";
-import localSettings from "/utils/localSettings.js";
+import { stateChange } from "../state/state.js";
+import localSettings from "../utils/localSettings.js";
 
-import LAYERS from "/utils/dbs/LAYERS.js";
+import LAYERS from "../utils/dbs/LAYERS.js";
 
-import OptionbarOptionLayer from "/components/optionbar/layer.jsx";
-import OptionbarOptionSize from "/components/optionbar/size.jsx";
-import OptionbarOptionId from "/components/optionbar/id.jsx";
-import OptionbarOptionWorldPoint from "/components/optionbar/worldPoint.jsx";
+import OptionbarOptionLayer from "./optionbar/layer.jsx";
+import OptionbarOptionSize from "./optionbar/size.jsx";
+import OptionbarOptionId from "./optionbar/id.jsx";
+import OptionbarOptionWorldPoint from "./optionbar/worldPoint.jsx";
 
-import "/components/styles/optionbar.css";
+import "./styles/optionbar.css";
 
-import toolsConfig from "/app/tools.js";
+import toolsConfig from "../app/tools.js";
 
 function Optionbar({ stateChange, show, running, selectedTool, optionbarState }) {
    const ToolIcon = toolsConfig[selectedTool].icon;

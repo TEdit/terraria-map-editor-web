@@ -1,6 +1,6 @@
 import React from "react";
 
-import "/components/styles/input.css";
+import "../styles/input.css";
 
 function InputSlider({
       label,

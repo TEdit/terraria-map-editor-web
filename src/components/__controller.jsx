@@ -4,10 +4,10 @@
 
 import React, { useEffect } from "react";
 import { connect } from "react-redux";
-import auth from "/utils/api/auth.js";
-import { stateChange } from "/state/state.js";
+import auth from "../utils/api/auth.js";
+import { stateChange } from "../state/state.js";
 
-import Main from "/canvas/main.js";
+import Main from "../canvas/main.js";
 
 function Controller(props) {
    //page load

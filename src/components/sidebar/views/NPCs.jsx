@@ -1,15 +1,15 @@
 import React, { useState, useEffect } from "react";
 import { connect } from "react-redux";
-import { stateChange } from "/state/state.js";
+import { stateChange } from "../../../state/state.js";
 
-import NPCs from "/utils/dbs/NPCs.js";
-import sprite, { spriteUrl, NPCsSprites } from "/utils/dbs/sprites.js";
-import { FindIcon } from "/components/icon.jsx";
-import OptionbarInputSelect from "/components/inputs/input-select.jsx";
-import OptionbarInputButton from "/components/inputs/input-button.jsx";
-import OptionbarInput from "/components/inputs/input.jsx";
+import NPCs from "../../../utils/dbs/NPCs.js";
+import sprite, { spriteUrl, NPCsSprites } from "../../../utils/dbs/sprites.js";
+import { FindIcon } from "../../icon.jsx";
+import OptionbarInputSelect from "../../inputs/input-select.jsx";
+import OptionbarInputButton from "../../inputs/input-button.jsx";
+import OptionbarInput from "../../inputs/input.jsx";
 import { CSSTransition } from "react-transition-group";
-import "/components/styles/sidebar/views/NPCs.css";
+import "../../styles/sidebar/views/NPCs.css";
 
 function SidebarNPCs({ stateChange, stateNPCs, headerSpawnPoint }) {
    let addOptions = { ...NPCs };

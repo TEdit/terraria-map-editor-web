@@ -1,4 +1,4 @@
-import Main from "/canvas/main.js";
+import Main from "../main.js";
 
 export default function(e) {
     if (Main.state.toolbar.tool == "worldPoint") {

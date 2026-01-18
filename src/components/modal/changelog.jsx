@@ -1,8 +1,8 @@
 import React from "react";
 
-import { appVersion, ingameSupportedVersion, changelog } from "/changelog.json";
+import { appVersion, ingameSupportedVersion, changelog } from "../../changelog.json";
 
-import "/components/styles/modal/changelog.css";
+import "../styles/modal/changelog.css";
 
 function ModalChangelog({ close }) {
 

@@ -1,8 +1,8 @@
 import React from "react";
 import { connect } from "react-redux";
-import { stateChange } from "/state/state.js";
+import { stateChange } from "../state/state.js";
 
-import "/components/styles/";
+import "./styles";
 
 function Template() {
    return "test";

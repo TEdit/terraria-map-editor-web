@@ -1,12 +1,12 @@
-import loadMap from "/canvas/extensions/loadMap.js";
-import closeMap from "/canvas/extensions/closeMap.js";
-import { getMousePosElement, getMousePosImage } from "/canvas/extensions/getMousePos.js";
-import getImageUrl from "/canvas/extensions/getImageUrl.js";
-import saveWorldFile from "/canvas/extensions/saveWorldFile.js";
-import { getTileColor } from "/canvas/extensions/getTileInfo.js";
-import blockSwap from "/canvas/extensions/blockSwap.js";
-import blockReplace from "/canvas/extensions/blockReplace.js";
-import zoom from "/canvas/extensions/zoom.js";
+import loadMap from "./loadMap.js";
+import closeMap from "./closeMap.js";
+import { getMousePosElement, getMousePosImage } from "./getMousePos.js";
+import getImageUrl from "./getImageUrl.js";
+import saveWorldFile from "./saveWorldFile.js";
+import { getTileColor } from "./getTileInfo.js";
+import blockSwap from "./blockSwap.js";
+import blockReplace from "./blockReplace.js";
+import zoom from "./zoom.js";
 
 export default {
     loadMap,

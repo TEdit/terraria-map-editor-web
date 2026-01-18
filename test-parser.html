@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Terraria World Parser Test</title>
+    <style>
+        body {
+            font-family: monospace;
+            padding: 20px;
+            background: #1e1e1e;
+            color: #d4d4d4;
+        }
+        .test-result {
+            margin: 10px 0;
+            padding: 10px;
+            border-left: 4px solid #4ec9b0;
+        }
+        .test-result.passed {
+            border-left-color: #4ec9b0;
+        }
+        .test-result.failed {
+            border-left-color: #f48771;
+        }
+        .error {
+            color: #f48771;
+            margin: 5px 0;
+        }
+        h1 { color: #4ec9b0; }
+        h2 { color: #dcdcaa; }
+        button {
+            padding: 10px 20px;
+            background: #0e639c;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-family: monospace;
+            font-size: 14px;
+        }
+        button:hover {
+            background: #1177bb;
+        }
+        #results {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Terraria World Parser Test Suite</h1>
+    <p>Select world file(s) to test parsing (version 194+)</p>
+    <input type="file" id="fileInput" multiple accept=".wld">
+    <button onclick="runTests()">Run Tests</button>
+
+    <div id="results"></div>
+
+    <script type="module">
+        import TerrariaWorldParser from './terraria-world-file-js/src/browser/terraria-world-parser.js';
+
+        window.runTests = async function() {
+            const fileInput = document.getElementById('fileInput');
+            const resultsDiv = document.getElementById('results');
+
+            if (!fileInput.files || fileInput.files.length === 0) {
+                alert('Please select at least one world file');
+                return;
+            }
+
+            resultsDiv.innerHTML = '<h2>Testing...</h2>';
+
+            let passed = 0;
+            let failed = 0;
+            let html = '';
+
+            for (const file of fileInput.files) {
+                const result = await testWorldFile(file);
+                if (result.passed) {
+                    passed++;
+                } else {
+                    failed++;
+                }
+                html += result.html;
+            }
+
+            html = `<h2>Results: ${passed} passed, ${failed} failed</h2>` + html;
+            resultsDiv.innerHTML = html;
+        };
+
+        async function testWorldFile(file) {
+            const resultDiv = document.createElement('div');
+            resultDiv.className = 'test-result';
+
+            let html = `<h3>Testing ${file.name}...</h3>`;
+            let passed = true;
+
+            try {
+                const parser = new TerrariaWorldParser();
+                await parser.loadFile(file);
+
+                const data = parser.parse({
+                    sections: ['fileFormatHeader', 'header', 'tiles']
+                });
+
+                html += `<div>✓ File loaded successfully</div>`;
+                html += `<div>✓ Version: ${data.fileFormatHeader.version}</div>`;
+                html += `<div>✓ Map: ${data.header.maxTilesX}x${data.header.maxTilesY}</div>`;
+                html += `<div>✓ Map name: ${data.header.mapName}</div>`;
+
+                // Count tiles
+                let tileCount = 0;
+                for (let x = 0; x < data.tiles.length; x++) {
+                    tileCount += data.tiles[x].length;
+                }
+                html += `<div>✓ Tiles: ${tileCount.toLocaleString()} tiles loaded</div>`;
+
+                // Check for v269+ features
+                if (data.fileFormatHeader.version >= 269) {
+                    if (data.header.unlockedSlimeBlueSpawn !== undefined) {
+                        html += `<div>✓ v269+ header fields present</div>`;
+                    } else {
+                        html += `<div class="error">⚠ Warning: v269+ header fields missing</div>`;
+                    }
+                }
+
+                html += `<div style="color: #4ec9b0; margin-top: 5px;">✅ PASSED</div>`;
+                resultDiv.className += ' passed';
+
+            } catch (error) {
+                html += `<div class="error">✗ Error: ${error.message}</div>`;
+                html += `<div class="error" style="font-size: 0.9em;">${error.stack}</div>`;
+                html += `<div style="color: #f48771; margin-top: 5px;">❌ FAILED</div>`;
+                resultDiv.className += ' failed';
+                passed = false;
+            }
+
+            return { passed, html };
+        }
+    </script>
+</body>
+</html>

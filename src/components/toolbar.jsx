@@ -1,11 +1,11 @@
 import React, { useEffect } from "react";
 import { connect } from "react-redux";
-import { stateChange } from "/state/state.js";
+import { stateChange } from "../state/state.js";
 
-import Tool from "/components/toolbar/tool.jsx";
-import "/components/styles/toolbar.css";
+import Tool from "./toolbar/tool.jsx";
+import "./styles/toolbar.css";
 
-import toolsConfig from "/app/tools.js";
+import toolsConfig from "../app/tools.js";
 
 function Toolbar({ show, selectedTool, stateChange }) {
    const onToolClick = (toolName) => {

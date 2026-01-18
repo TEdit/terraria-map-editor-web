@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { connect } from "react-redux";
-import menu from "/app/menu.js";
-import { stateChange, stateToggle } from "/state/state.js";
+import menu from "../app/menu.js";
+import { stateChange, stateToggle } from "../state/state.js";
 
 import { CSSTransition } from "react-transition-group";
-import InputLink from "/components/inputs/input-link.jsx";
-import { LogoIcon, AccountBoxIcon, GithubIcon, DiscordIcon } from "/components/icon.jsx";
-import "/components/styles/menu.css";
+import InputLink from "./inputs/input-link.jsx";
+import { LogoIcon, AccountBoxIcon, GithubIcon, DiscordIcon } from "./icon.jsx";
+import "./styles/menu.css";
 
 /*
  * TODO: shortcuts

@@ -1,8 +1,8 @@
 import React, { useState } from "react";
-import localSettings from "/utils/localSettings.js";
+import localSettings from "../../utils/localSettings.js";
 
-import InputCheckbox from "/components/inputs/input-checkbox.jsx";
-import ModalAccountButton from "/components/modal/account/button.jsx";
+import InputCheckbox from "../inputs/input-checkbox.jsx";
+import ModalAccountButton from "./account/button.jsx";
 
 function ModalSavingDisclaimer({ close }) {
    const [checked, setChecked] = useState(localSettings.get("savingDisclaimerChecked", false));

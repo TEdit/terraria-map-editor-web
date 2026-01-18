@@ -1,11 +1,11 @@
-import Worker from "/canvas/worker.js";
+import Worker from "../../worker.js";
 
-import "/utils/polyfills/polyfill-imageData.js";
-import colors, { getTileVariantIndex } from "/utils/dbs/colors.js";
-import LAYERS from "/utils/dbs/LAYERS.js";
-import paints from "/utils/dbs/paints.js";
+import "../../../utils/polyfills/polyfill-imageData.js";
+import colors, { getTileVariantIndex } from "../../../utils/dbs/colors.js";
+import LAYERS from "../../../utils/dbs/LAYERS.js";
+import paints from "../../../utils/dbs/paints.js";
 
-import { map } from "/utils/number.js";
+import { map } from "../../../utils/number.js";
 
 export default async function() {
     if (!Worker.worldObject) {

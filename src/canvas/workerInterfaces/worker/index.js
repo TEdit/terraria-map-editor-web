@@ -1,11 +1,11 @@
-import parseWorldFile from "/canvas/workerInterfaces/worker/parseWorldFile.js";
-import renderLayersImages from "/canvas/workerInterfaces/worker/renderLayersImages.js";
-import saveWorldFile from "/canvas/workerInterfaces/worker/saveWorldFile.js";
-import verifyWorldFileFormat from "/canvas/workerInterfaces/worker/verifyWorldFileFormat.js";
-import editTiles from "/canvas/workerInterfaces/worker/editTiles.js";
-import getTileData from "/canvas/workerInterfaces/worker/getTileData.js";
-import blockSwap from "/canvas/workerInterfaces/worker/blockSwap.js";
-import blockReplace from "/canvas/workerInterfaces/worker/blockReplace.js";
+import parseWorldFile from "./parseWorldFile.js";
+import renderLayersImages from "./renderLayersImages.js";
+import saveWorldFile from "./saveWorldFile.js";
+import verifyWorldFileFormat from "./verifyWorldFileFormat.js";
+import editTiles from "./editTiles.js";
+import getTileData from "./getTileData.js";
+import blockSwap from "./blockSwap.js";
+import blockReplace from "./blockReplace.js";
 
 export default {
     parseWorldFile,
