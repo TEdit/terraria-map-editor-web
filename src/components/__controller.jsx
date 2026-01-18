@@ -4,7 +4,6 @@
 
 import React, { useEffect } from "react";
 import { connect } from "react-redux";
-import auth from "../utils/api/auth.js";
 import { stateChange } from "../state/state.js";
 
 import Main from "../canvas/main.js";
@@ -12,17 +11,10 @@ import Main from "../canvas/main.js";
 function Controller(props) {
    //page load
    useEffect(() => {
-      async function loadSession() {
-         const getUser = await auth.get("/user");
-         if (getUser.id)
-            props.stateChange("user", getUser);
-      }
-
       function setHtmlFontSize() {
          document.getElementsByTagName("html")[0].style.fontSize = props.htmlFontSize + "%";
       }
 
-      loadSession();
       setHtmlFontSize();
    }, []);
 

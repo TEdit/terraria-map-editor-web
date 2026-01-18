@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { connect } from "react-redux";
 import { stateChange } from "../../state/state.js";
-import auth from "../../utils/api/auth.js";
 
 import ModalSignInput from "./sign/input.jsx";
 import ModalSignButtonInlineText from "./sign/button-inline-text.jsx";

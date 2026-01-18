@@ -15,7 +15,6 @@ function Canvas({ worldFile, running }) {
    return (
       <div className="canvas-container">
          <div className={"canvas-container-inner" + (running ? "" : " hidden")}>
-            <div className="canvas-container-label">{worldFile && worldFile.name.replace(".wld", "")}</div>
             <canvas ref={canvasEl}></canvas>
          </div>
          {
