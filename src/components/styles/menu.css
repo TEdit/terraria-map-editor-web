@@ -17,6 +17,16 @@
     -moz-user-select: none;
 }
 
+.menu-logo {
+    width: 28px;
+    height: 28px;
+    margin-right: 0.5rem;
+    background-image: url('../../images/favicon/apple-touch-icon.png');
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
 @media (max-width: 960px)
 {
     .menu-container {
@@ -72,6 +82,10 @@
         border: 0 solid #383838;
         border-bottom-width: 1px;
         margin-bottom: 24px;
+        background-image: url('../../images/favicon/apple-touch-icon.png');
+        background-size: contain;
+        background-repeat: no-repeat;
+        background-position: center;
     }
 
     @media screen and (orientation:landscape) {

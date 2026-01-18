@@ -41,3 +41,16 @@ root.render(
         <Editor/>
     </Provider>
 );
+
+// Register Service Worker for PWA offline support
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register(new URL('./service-worker.js', import.meta.url).href)
+            .then(registration => {
+                console.log('Service Worker registered successfully:', registration);
+            })
+            .catch(error => {
+                console.warn('Service Worker registration failed:', error);
+            });
+    });
+}

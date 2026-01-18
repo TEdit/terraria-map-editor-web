@@ -12,7 +12,7 @@ import "./styles/menu.css";
  * TODO: shortcuts
  */
 
-function Menu({ stateChange, stateToggle, view, running, user, unsafe, unsafeOnlyTiles, ignoreBounds, drawer, mobile}) {
+function Menu({ stateChange, stateToggle, view, running, user, unsafe, unsafeOnlyTiles, ignoreBounds, drawer, mobile, worldFile}) {
    const DIVIDER = { type: "divider" };
    const config = {
       File: {
@@ -216,6 +216,11 @@ function Menu({ stateChange, stateToggle, view, running, user, unsafe, unsafeOnl
                )
             }
 
+            {worldFile && <InputLink
+               className="menu-link"
+               label={worldFile.name}
+            />}
+
             <div className="flex-filler"></div>
 
             <InputLink
@@ -382,7 +387,8 @@ export default connect(state => {
          unsafeOnlyTiles: state.canvas.unsafeOnlyTiles,
          ignoreBounds: state.canvas.ignoreBounds,
          drawer: state.appbar.drawer,
-         mobile: state.mobile
+         mobile: state.mobile,
+         worldFile: state.canvas.worldFile
       };
    },
    { stateChange, stateToggle }
