@@ -11,6 +11,8 @@ Terraria world file editor in browser
 
 \- supports maps from 1.3.5.3 to 1.4.4.9
 
+See [changelog](src/changelog.json) for latest updates and version history.
+
 Feel free to contribute 🌳
 
 ## Preview
