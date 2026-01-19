@@ -20,15 +20,6 @@ function Menu({ stateChange, stateToggle, view, running, user, unsafe, unsafeOnl
             type: "link",
             onClick: menu.onNewFile,
          },
-         "Open example map": {
-            type: "menu",
-            items: {
-               "Normal world": () => { menu.onExampleMap("normal") },
-               "Drunk world (seed)": () => { menu.onExampleMap("drunk") },
-               "Bees world (seed)": () => { menu.onExampleMap("bees") },
-               "For the worthy world (seed)": () => { menu.onExampleMap("good") }
-            }
-         },
          "Save map image": {
             type: "button",
             enabled: running,
