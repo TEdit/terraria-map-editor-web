@@ -1,9 +1,8 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { connect } from "react-redux";
 import menu from "../app/menu.js";
 import { stateChange, stateToggle } from "../state/state.js";
 
-import { CSSTransition } from "react-transition-group";
 import InputLink from "./inputs/input-link.jsx";
 import { LogoIcon, AccountBoxIcon, GithubIcon, DiscordIcon } from "./icon.jsx";
 import "./styles/menu.css";
@@ -249,31 +248,51 @@ function Menu({ stateChange, stateToggle, view, running, user, unsafe, unsafeOnl
 }
 
 function Dropdown({ show, items, offset, onClose, onBlur, nested, mobile }) {
-   if (mobile)
+   const contentRef = useRef(null);
+   const [isAnimating, setIsAnimating] = useState(false);
+   const [shouldRender, setShouldRender] = useState(show);
+
+   useEffect(() => {
+      if (mobile) {
+         if (show) {
+            setShouldRender(true);
+            setIsAnimating(true);
+         } else {
+            setIsAnimating(false);
+            const timer = setTimeout(() => setShouldRender(false), 300);
+            return () => clearTimeout(timer);
+         }
+      }
+   }, [show, mobile]);
+
+   useEffect(() => {
+      if (mobile && contentRef.current) {
+         if (isAnimating) {
+            contentRef.current.style.maxHeight = contentRef.current.scrollHeight + "px";
+         } else {
+            contentRef.current.style.maxHeight = "0px";
+         }
+      }
+   }, [isAnimating, mobile]);
+
+   if (mobile) {
+      if (!shouldRender) return null;
+
       return (
-         <CSSTransition
-            in={show}
-            appear={true}
-            timeout={300}
-            onEnter={el => el.style.maxHeight = "0px"}
-            onEntering={el => el.style.maxHeight = el.scrollHeight + "px"}
-            onEntered={el => el.style.maxHeight = ""}
-            onExit={el => el.style.maxHeight = el.scrollHeight + "px"}
-            onExiting={el => el.style.maxHeight = "0px"}
-            unmountOnExit
+         <div
+            ref={contentRef}
+            className={`menu-dropdown ${nested ? "--nested" : ""} ${isAnimating ? "--open" : ""}`}
+            tabIndex="-1"
+            style={{ maxHeight: isAnimating ? undefined : "0px" }}
          >
-            <div
-               className={`menu-dropdown ${nested ? "--nested" : ""}`}
-               tabIndex="-1"
-            >
-            {
-               Object.entries(items).map(([label, options], i) =>
-                  <DropdownItem label={label} options={options} onClose={onClose} onBlur={onBlur} mobile={mobile} key={i}/>
-               )
-            }
-            </div>
-         </CSSTransition>
-      )
+         {
+            Object.entries(items).map(([label, options], i) =>
+               <DropdownItem label={label} options={options} onClose={onClose} onBlur={onBlur} mobile={mobile} key={i}/>
+            )
+         }
+         </div>
+      );
+   }
 
    if (show)
       return (
@@ -341,15 +360,24 @@ function DropdownItem({ label, options, onClose, onBlur, mobile }) {
    if (options.type == "menu") {
       const [open, setOpen] = useState(false);
 
+      const handleSubmenuToggle = (e) => {
+         if (options.enabled !== false) {
+            if (mobile) {
+               e.stopPropagation();
+            }
+            setOpen(!open);
+         }
+      };
+
       return (
          <>
             <div
                className={`menu-dropdown-item --menu ${open ? "--active" : ""} ${options.enabled === false ? "--disabled" : ""}`}
                onMouseOver={() => options.enabled !== false && !mobile && setOpen(true)}
-               onMouseDown={() => options.enabled !== false && setOpen(!open)}
+               onMouseDown={handleSubmenuToggle}
                onMouseLeave={() => !mobile && setOpen(false)}
                tabIndex="0"
-               onKeyPress={e => (e.key == "Enter" || e.key == " ") && options.enabled !== false && setOpen(!open)}
+               onKeyPress={e => (e.key == "Enter" || e.key == " ") && handleSubmenuToggle(e)}
                onBlur={onBlur}
             >
                {label}

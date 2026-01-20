@@ -364,15 +364,17 @@
         border: none;
         background-color: var(--color-7);
         padding: 0;
+        overflow: hidden;
+        transition: max-height 0.3s ease;
+        max-height: 0px;
+    }
+
+    .menu-dropdown.--open {
+        max-height: none;
     }
 
     .menu-dropdown.--nested {
         margin-left: 12px;
-    }
-
-    .menu-dropdown.enter-active, .menu-dropdown.exit-active {
-        overflow: hidden;
-        transition: max-height 0.3s ease;
     }
 
     .menu-dropdown-item {
