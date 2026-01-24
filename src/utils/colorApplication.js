@@ -81,6 +81,13 @@ export function applyColorToTiles(tilesArray, layer, id, maxTilesX, maxTilesY, t
         }
     }
 
+    // Check if we should render base tile/wall colors
+    // Skip if the corresponding edit flag is disabled
+    const shouldRenderBaseColor = !tileEditOptions ||
+        (isTilesLayer && tileEditOptions.editBlockId) ||
+        (isWallsLayer && tileEditOptions.editWallId) ||
+        (!isTilesLayer && !isWallsLayer); // Always render for other layers
+
     // Helper function to apply base color with brightness or special paint
     const applyColor = (baseColor) => {
         // Check if special paint (Shadow=29 or Negative=30)
@@ -92,43 +99,46 @@ export function applyColorToTiles(tilesArray, layer, id, maxTilesX, maxTilesY, t
         return applyBrightness(baseColor, brightness);
     };
 
-    // Handle special tile types with multi-color patterns
-    if (id == 160) {
-        // Rainbow brick (ID 160) - 3-color variation based on Y coordinate
-        let temp, color;
-        tilesArray.forEach(([x, y]) => {
-            temp = y % 3;
-            color = applyColor(selectedColor[temp]);
-            offset = (maxTilesX * y + x) * 4;
-            Main.layersImages[layer].data[offset] = color.r;
-            Main.layersImages[layer].data[offset + 1] = color.g;
-            Main.layersImages[layer].data[offset + 2] = color.b;
-            Main.layersImages[layer].data[offset + 3] = color.a;
-        });
-    }
-    else if (id == 51) {
-        // Checkerboard pattern (ID 51) - 2-color variation based on X+Y
-        let temp, color;
-        tilesArray.forEach(([x, y]) => {
-            temp = (x + y) % 2;
-            color = applyColor(selectedColor[temp]);
-            offset = (maxTilesX * y + x) * 4;
-            Main.layersImages[layer].data[offset] = color.r;
-            Main.layersImages[layer].data[offset + 1] = color.g;
-            Main.layersImages[layer].data[offset + 2] = color.b;
-            Main.layersImages[layer].data[offset + 3] = color.a;
-        });
-    }
-    else {
-        // Normal tiles - single color for all tiles
-        const color = applyColor(selectedColor);
-        tilesArray.forEach(([x, y]) => {
-            offset = (maxTilesX * y + x) * 4;
-            Main.layersImages[layer].data[offset] = color.r;
-            Main.layersImages[layer].data[offset + 1] = color.g;
-            Main.layersImages[layer].data[offset + 2] = color.b;
-            Main.layersImages[layer].data[offset + 3] = color.a;
-        });
+    // Only render base tile/wall colors if the edit flag is enabled
+    if (shouldRenderBaseColor) {
+        // Handle special tile types with multi-color patterns
+        if (id == 160) {
+            // Rainbow brick (ID 160) - 3-color variation based on Y coordinate
+            let temp, color;
+            tilesArray.forEach(([x, y]) => {
+                temp = y % 3;
+                color = applyColor(selectedColor[temp]);
+                offset = (maxTilesX * y + x) * 4;
+                Main.layersImages[layer].data[offset] = color.r;
+                Main.layersImages[layer].data[offset + 1] = color.g;
+                Main.layersImages[layer].data[offset + 2] = color.b;
+                Main.layersImages[layer].data[offset + 3] = color.a;
+            });
+        }
+        else if (id == 51) {
+            // Checkerboard pattern (ID 51) - 2-color variation based on X+Y
+            let temp, color;
+            tilesArray.forEach(([x, y]) => {
+                temp = (x + y) % 2;
+                color = applyColor(selectedColor[temp]);
+                offset = (maxTilesX * y + x) * 4;
+                Main.layersImages[layer].data[offset] = color.r;
+                Main.layersImages[layer].data[offset + 1] = color.g;
+                Main.layersImages[layer].data[offset + 2] = color.b;
+                Main.layersImages[layer].data[offset + 3] = color.a;
+            });
+        }
+        else {
+            // Normal tiles - single color for all tiles
+            const color = applyColor(selectedColor);
+            tilesArray.forEach(([x, y]) => {
+                offset = (maxTilesX * y + x) * 4;
+                Main.layersImages[layer].data[offset] = color.r;
+                Main.layersImages[layer].data[offset + 1] = color.g;
+                Main.layersImages[layer].data[offset + 2] = color.b;
+                Main.layersImages[layer].data[offset + 3] = color.a;
+            });
+        }
     }
 
     // If normal paint is enabled (not special paints 29/30), also render to paint layer

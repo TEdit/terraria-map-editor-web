@@ -216,7 +216,14 @@ export default function({ LAYER, editType, editArgs, newId, radius, tileEditOpti
             for (let y = editArgs[0][1]; y <= editArgs[1][1]; y++) {
                 // Use new tileEditOptions if provided, otherwise fall back to legacy layer-based editing
                 if (tileEditOptions) {
-                    applyTileEditOptions(x, y, tileEditOptions);
+                    // Merge newId into appropriate property based on layer
+                    const optionsWithId = { ...tileEditOptions };
+                    if (LAYER === LAYERS.TILES) {
+                        optionsWithId.blockId = newId;
+                    } else if (LAYER === LAYERS.WALLS) {
+                        optionsWithId.wallId = newId;
+                    }
+                    applyTileEditOptions(x, y, optionsWithId);
                 } else {
                     changeTile(LAYER, x, y, newId);
                 }
@@ -334,7 +341,14 @@ export default function({ LAYER, editType, editArgs, newId, radius, tileEditOpti
 
             // Use new tileEditOptions if provided, otherwise fall back to legacy layer-based editing
             if (tileEditOptions) {
-                applyTileEditOptions(x, y, tileEditOptions);
+                // Merge newId into appropriate property based on layer
+                const optionsWithId = { ...tileEditOptions };
+                if (LAYER === LAYERS.TILES) {
+                    optionsWithId.blockId = newId;
+                } else if (LAYER === LAYERS.WALLS) {
+                    optionsWithId.wallId = newId;
+                }
+                applyTileEditOptions(x, y, optionsWithId);
             } else {
                 changeTile(LAYER, x, y, newId);
             }
