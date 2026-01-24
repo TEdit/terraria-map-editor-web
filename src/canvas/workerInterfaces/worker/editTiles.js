@@ -3,6 +3,133 @@ import Worker from "../../worker.js";
 import colors, { getTileVariantIndex } from "../../../utils/dbs/colors.js";
 import LAYERS from "../../../utils/dbs/LAYERS.js";
 
+/**
+ * Apply tile edit options to a specific tile
+ * @param {number} x - Tile X coordinate
+ * @param {number} y - Tile Y coordinate
+ * @param {Object} options - TileEditOptions object with property values and edit flags
+ */
+function applyTileEditOptions(x, y, options) {
+    // Create a copy to avoid RLE issues
+    Worker.worldObject.tiles[x][y] = { ...Worker.worldObject.tiles[x][y] };
+    const tile = Worker.worldObject.tiles[x][y];
+
+    // Apply block/tile ID
+    if (options.editBlockId && options.blockId !== undefined) {
+        if (options.blockId === "delete" || options.blockId === null) {
+            delete tile.blockId;
+            delete tile.frameX;
+            delete tile.frameY;
+            delete tile.slope;
+            delete tile.blockColor;
+            delete tile.actuator;
+            delete tile.actuated;
+            delete tile.invisibleBlock;
+            delete tile.fullBrightBlock;
+        } else {
+            tile.blockId = parseInt(options.blockId);
+            delete tile.frameX;  // Reset frame for new tile type
+            delete tile.frameY;
+        }
+    }
+
+    // Apply block paint color
+    if (options.editBlockColor) {
+        if (options.blockColor === null || options.blockColor === "delete") {
+            delete tile.blockColor;
+        } else {
+            tile.blockColor = parseInt(options.blockColor);
+        }
+    }
+
+    // Apply slope (only if tile exists)
+    if (options.editSlope && tile.blockId !== undefined) {
+        if (options.slope === null || options.slope === "delete" || options.slope === undefined) {
+            delete tile.slope;
+        } else {
+            tile.slope = options.slope;  // "half", "TR", "TL", "BR", "BL"
+        }
+    }
+
+    // Apply block coatings (only if tile exists)
+    if (tile.blockId !== undefined) {
+        if (options.editInvisibleBlock) {
+            if (options.invisibleBlock) {
+                tile.invisibleBlock = true;
+            } else {
+                delete tile.invisibleBlock;
+            }
+        }
+
+        if (options.editFullBrightBlock) {
+            if (options.fullBrightBlock) {
+                tile.fullBrightBlock = true;
+            } else {
+                delete tile.fullBrightBlock;
+            }
+        }
+    }
+
+    // Apply wall ID
+    if (options.editWallId && options.wallId !== undefined) {
+        if (options.wallId === "delete" || options.wallId === null) {
+            delete tile.wallId;
+            delete tile.wallColor;
+            delete tile.invisibleWall;
+            delete tile.fullBrightWall;
+        } else {
+            tile.wallId = parseInt(options.wallId);
+        }
+    }
+
+    // Apply wall paint color
+    if (options.editWallColor) {
+        if (options.wallColor === null || options.wallColor === "delete") {
+            delete tile.wallColor;
+        } else {
+            tile.wallColor = parseInt(options.wallColor);
+        }
+    }
+
+    // Apply wall coatings (only if wall exists)
+    if (tile.wallId !== undefined) {
+        if (options.editInvisibleWall) {
+            if (options.invisibleWall) {
+                tile.invisibleWall = true;
+            } else {
+                delete tile.invisibleWall;
+            }
+        }
+
+        if (options.editFullBrightWall) {
+            if (options.fullBrightWall) {
+                tile.fullBrightWall = true;
+            } else {
+                delete tile.fullBrightWall;
+            }
+        }
+    }
+
+    // Apply actuator properties (only if tile exists)
+    if (tile.blockId !== undefined && tile.blockId > 0) {
+        if (options.editActuator) {
+            if (options.actuator) {
+                tile.actuator = true;
+            } else {
+                delete tile.actuator;
+            }
+        }
+
+        if (options.editActuated) {
+            if (options.actuated) {
+                tile.actuated = true;
+            } else {
+                delete tile.actuated;
+            }
+        }
+    }
+}
+
 function changeTile(LAYER, x, y, newId) {
     //original 2d tiles array is full of references because of RLE, dont wanna change them too!
     Worker.worldObject.tiles[x][y] = { ...Worker.worldObject.tiles[x][y] };
@@ -83,11 +210,17 @@ function changeTile(LAYER, x, y, newId) {
     }
 }
 
-export default function({ LAYER, editType, editArgs, newId, radius }) {
+export default function({ LAYER, editType, editArgs, newId, radius, tileEditOptions }) {
     if (editType == "rectangle") {
         for (let x = editArgs[0][0]; x <= editArgs[1][0]; x++)
-            for (let y = editArgs[0][1]; y <= editArgs[1][1]; y++)
-                changeTile(LAYER, x, y, newId);
+            for (let y = editArgs[0][1]; y <= editArgs[1][1]; y++) {
+                // Use new tileEditOptions if provided, otherwise fall back to legacy layer-based editing
+                if (tileEditOptions) {
+                    applyTileEditOptions(x, y, tileEditOptions);
+                } else {
+                    changeTile(LAYER, x, y, newId);
+                }
+            }
 
         postMessage({
             action: "RETURN_EDIT_TILES"
@@ -198,7 +331,14 @@ export default function({ LAYER, editType, editArgs, newId, radius }) {
             if (!isTileSame(originTile, currentTile, LAYER)) continue;
 
             visited.add(key);
-            changeTile(LAYER, x, y, newId);
+
+            // Use new tileEditOptions if provided, otherwise fall back to legacy layer-based editing
+            if (tileEditOptions) {
+                applyTileEditOptions(x, y, tileEditOptions);
+            } else {
+                changeTile(LAYER, x, y, newId);
+            }
+
             tilesArray.push([x, y]);
 
             // 4-way neighbors

@@ -54,11 +54,34 @@ async function applyEraserOperation(tilesArray, layer) {
 
         // Notify worker of changes
         if (tilesArray.length > 0) {
+            // Build eraser options to clear coatings as well
+            const eraserOptions = {
+                editBlockId: layer === LAYERS.TILES || layer === 100,
+                blockId: "delete",
+
+                editWallId: layer === LAYERS.WALLS || layer === 100,
+                wallId: "delete",
+
+                // Also clear coatings when erasing tiles
+                editInvisibleBlock: layer === LAYERS.TILES || layer === 100,
+                invisibleBlock: false,
+                editFullBrightBlock: layer === LAYERS.TILES || layer === 100,
+                fullBrightBlock: false,
+
+                // Also clear coatings when erasing walls
+                editInvisibleWall: layer === LAYERS.WALLS || layer === 100,
+                invisibleWall: false,
+                editFullBrightWall: layer === LAYERS.WALLS || layer === 100,
+                fullBrightWall: false
+            };
+
             await Main.workerInterfaces.editTiles(
                 layer,
                 "rectangle",
                 [tilesArray[0], tilesArray[tilesArray.length - 1]],
-                "delete"
+                "delete",
+                undefined,  // radius (not used for eraser)
+                eraserOptions
             );
         }
     } catch (error) {

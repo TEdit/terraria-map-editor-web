@@ -1,4 +1,4 @@
-import { ToolMoveIcon, ToolTileInfo, ToolSelectIcon, ToolPencilIcon, ToolBucketIcon, ToolEraserIcon, ToolPointIcon } from "../components/icon.jsx";
+import { ToolMoveIcon, ToolTileInfo, ToolSelectIcon, ToolPencilIcon, ToolBucketIcon, ToolPickerIcon, ToolEraserIcon, ToolPointIcon } from "../components/icon.jsx";
 
 export default {
     move: {
@@ -18,6 +18,11 @@ export default {
         title: "Paint bucket tool",
         icon: ToolBucketIcon,
         stroke: true
+    },
+    picker: {
+        title: "Picker / Eyedropper tool (sample tile/wall/liquid)",
+        icon: ToolPickerIcon,
+        stroke: false
     },
     select: {
         title: "Rectangle select tool",

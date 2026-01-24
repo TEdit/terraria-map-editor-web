@@ -63,7 +63,9 @@ const onBrushClick = async (e) => {
         layer,
         "rectangle",
         [tilesArray[0], tilesArray[tilesArray.length - 1]],
-        Main.state.optionbar.id
+        Main.state.optionbar.id,
+        undefined,  // radius (not used for brush)
+        Main.state.optionbar.tileEditOptions  // Pass tile editing options
     );
 
     store.dispatch(stateChange(["status", "loading"], false));
@@ -109,7 +111,9 @@ const onBrushDrag = async (e) => {
         layer,
         "rectangle",
         [tilesArray[0], tilesArray[tilesArray.length - 1]],
-        Main.state.optionbar.id
+        Main.state.optionbar.id,
+        undefined,  // radius (not used for brush)
+        Main.state.optionbar.tileEditOptions  // Pass tile editing options
     );
 
     // Update start position for next drag

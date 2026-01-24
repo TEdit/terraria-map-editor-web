@@ -38,7 +38,8 @@ const onBucketClick = async (e) => {
             "floodfill",
             [Main.mousePosImageX, Main.mousePosImageY],
             id,
-            radius  // Pass radius to worker (undefined = infinite fill)
+            radius,  // Pass radius to worker (undefined = infinite fill)
+            Main.state.optionbar.tileEditOptions  // Pass tile editing options
         );
 
         // If flood fill returned tiles, apply colors to canvas and render

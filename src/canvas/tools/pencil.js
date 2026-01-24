@@ -38,7 +38,9 @@ async function applyPencilOperation(tilesArray, layer) {
                 layer,
                 "rectangle",
                 [tilesArray[0], tilesArray[tilesArray.length - 1]],
-                Main.state.optionbar.id
+                Main.state.optionbar.id,
+                undefined,  // radius (not used for pencil)
+                Main.state.optionbar.tileEditOptions  // Pass tile editing options
             );
         }
     } catch (error) {

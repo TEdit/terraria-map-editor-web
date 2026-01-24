@@ -2,7 +2,7 @@ import Main from "../../main.js";
 
 import WorkerError from "../errors/WorkerError.js";
 
-export default function(LAYER, editType, editArgs, newId, radius) {
+export default function(LAYER, editType, editArgs, newId, radius, tileEditOptions) {
     return new Promise((resolve, reject) => {
         Main.worker.onmessage = ({ data }) => {
             switch(data.action) {
@@ -24,7 +24,8 @@ export default function(LAYER, editType, editArgs, newId, radius) {
             editType,
             editArgs,
             newId,
-            radius  // Optional: undefined = infinite fill
+            radius,  // Optional: undefined = infinite fill
+            tileEditOptions  // Optional: property-based editing options
         });
     });
 }

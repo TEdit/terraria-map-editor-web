@@ -44,7 +44,40 @@ let defaultState = {
         locked: true,
         worldPoint: "Spawn point",
         brushShape: "square",
-        radius: 500  // Default radius for bucket fill (500 tiles)
+        radius: 500,  // Default radius for bucket fill (500 tiles)
+
+        // Tile editing options - defines which properties to apply during tile editing
+        tileEditOptions: {
+            // Block/Tile properties
+            editBlockId: true,  // Default: edit the tile ID
+            editBlockColor: false,
+            blockColor: 0,
+            editSlope: false,
+            slope: undefined,
+
+            // Block coatings (v269+ / 1.4.4+)
+            editInvisibleBlock: false,
+            invisibleBlock: false,
+            editFullBrightBlock: false,
+            fullBrightBlock: false,
+
+            // Wall properties
+            editWallId: false,
+            editWallColor: false,
+            wallColor: 0,
+
+            // Wall coatings (v269+ / 1.4.4+)
+            editInvisibleWall: false,
+            invisibleWall: false,
+            editFullBrightWall: false,
+            fullBrightWall: false,
+
+            // Actuator properties (only valid when blockId > 0)
+            editActuator: false,
+            actuator: false,
+            editActuated: false,
+            actuated: false
+        }
     }),
     selection: {
         active: false,

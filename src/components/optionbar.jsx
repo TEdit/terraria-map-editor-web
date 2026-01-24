@@ -7,9 +7,8 @@ import LAYERS from "../utils/dbs/LAYERS.js";
 
 import OptionbarOptionLayer from "./optionbar/layer.jsx";
 import OptionbarOptionSize from "./optionbar/size.jsx";
-import OptionbarOptionId from "./optionbar/id.jsx";
 import OptionbarOptionWorldPoint from "./optionbar/worldPoint.jsx";
-import OptionbarOptionRadius from "./optionbar/radius.jsx";
+import OptionbarOptionTileEditOptions from "./optionbar/tileEditOptions.jsx";
 
 import "./styles/optionbar.css";
 
@@ -35,27 +34,23 @@ function Optionbar({ stateChange, show, running, selectedTool, optionbarState })
                running && (selectedTool == "pencil" || selectedTool == "eraser" || selectedTool == "bucket") &&
                <>
                   <OptionbarOptionLayer state={optionbarState} setState={setState} addEraserOptions={selectedTool == "eraser" ? true : false}/>
-                  {
-                     selectedTool != "bucket" &&
-                     <>
-                        <div className="optionbar-divider"></div>
-                        <OptionbarOptionSize state={optionbarState} setState={setState}/>
-                     </>
-                  }
-                  {
-                     selectedTool == "bucket" &&
-                     <>
-                        <div className="optionbar-divider"></div>
-                        <OptionbarOptionRadius state={optionbarState} setState={setState}/>
-                     </>
-                  }
+                  <div className="optionbar-divider"></div>
                   {
                      selectedTool != "eraser" &&
-                     <>
-                        <div className="optionbar-divider"></div>
-                        <OptionbarOptionId state={optionbarState} setState={setState}/>
-                     </>
+                     <OptionbarOptionTileEditOptions state={optionbarState} setState={setState} tool={selectedTool}/>
                   }
+                  {
+                     selectedTool == "eraser" &&
+                     <OptionbarOptionSize state={optionbarState} setState={setState}/>
+                  }
+               </>
+            }
+            {
+               running && selectedTool == "picker" &&
+               <>
+                  <OptionbarOptionLayer state={optionbarState} setState={setState}/>
+                  <div className="optionbar-divider"></div>
+                  <OptionbarOptionTileEditOptions state={optionbarState} setState={setState} tool={selectedTool}/>
                </>
             }
             {
@@ -81,6 +76,7 @@ export default connect(
             locked: state.optionbar.locked,
             worldPoint: state.optionbar.worldPoint,
             radius: state.optionbar.radius,
+            tileEditOptions: state.optionbar.tileEditOptions,
          }
       };
    },
