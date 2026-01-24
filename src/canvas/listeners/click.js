@@ -8,6 +8,9 @@ import { onBucketClick } from "../tools/bucket.js";
 import { onEraserClick } from "../tools/eraser.js";
 
 export default function(e) {
+    // Update mouse position from the click event
+    [Main.mousePosImageX, Main.mousePosImageY, Main.mousePosElementX, Main.mousePosElementY] = Main.extensions.getMousePosImage(e, true);
+
     store.dispatch(stateFire(["canvas", "events", "click"]));
 
     if (Main.state.toolbar.tool == "pencil")

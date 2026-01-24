@@ -2,116 +2,82 @@ import Main from "../main.js";
 
 import LAYERS from "../../utils/dbs/LAYERS.js";
 
-import store from "../../state/store.js";
-import { stateChange } from "../../state/state.js";
+import { onDrawingToolClick, onDrawingToolDrag, onDrawingToolUp } from "./drawingToolsHelpers.js";
+
+/**
+ * Erase tiles by clearing all layer data (RGBA = 0)
+ */
+async function applyEraserOperation(tilesArray, layer) {
+    try {
+        // Validate inputs
+        if (!tilesArray || !Array.isArray(tilesArray) || tilesArray.length === 0) {
+            return;
+        }
+
+        if (!Main.state?.canvas?.worldObject?.header) {
+            console.warn("Canvas data missing");
+            return;
+        }
+
+        if (!Main.layersImages?.[layer]?.data) {
+            console.warn("Layer image data missing");
+            return;
+        }
+
+        const maxTilesX = Main.state.canvas.worldObject.header.maxTilesX;
+        let offset;
+        let allLayers = [LAYERS.TILES, LAYERS.WALLS, LAYERS.WIRES, LAYERS.LIQUIDS];
+
+        if (layer == 100) {
+            // 100 = erase all layers
+            tilesArray.forEach(([x, y]) => {
+                allLayers.forEach(LAYER => {
+                    offset = (maxTilesX * y + x) * 4;
+                    Main.layersImages[LAYER].data[offset] = 0;
+                    Main.layersImages[LAYER].data[offset+1] = 0;
+                    Main.layersImages[LAYER].data[offset+2] = 0;
+                    Main.layersImages[LAYER].data[offset+3] = 0;
+                });
+            });
+            Main.updateLayers();
+        } else {
+            // Erase specific layer
+            tilesArray.forEach(([x, y]) => {
+                offset = (maxTilesX * y + x) * 4;
+                Main.layersImages[layer].data[offset] = 0;
+                Main.layersImages[layer].data[offset+1] = 0;
+                Main.layersImages[layer].data[offset+2] = 0;
+                Main.layersImages[layer].data[offset+3] = 0;
+            });
+            Main.updateLayers(layer);
+        }
+
+        // Notify worker of changes
+        if (tilesArray.length > 0) {
+            await Main.workerInterfaces.editTiles(
+                layer,
+                "rectangle",
+                [tilesArray[0], tilesArray[tilesArray.length - 1]],
+                "delete"
+            );
+        }
+    } catch (error) {
+        console.error("Error in eraser operation:", error);
+    }
+}
 
 const onEraserClick = async (e) => {
-    if (Main.listeners.dragging) {
-        Main.listeners.dragging = false;
-        return;
-    }
-
-    store.dispatch(stateChange(["status", "loading"], true));
-
-    let tilesArray = [];
-
-    let sizeHalfX = Main.state.optionbar.size[0] / 2,
-        sizeHalfY = Main.state.optionbar.size[1] / 2;
-
-    for (let x = Main.mousePosImageX - Math.floor(sizeHalfX); x < Main.mousePosImageX + Math.ceil(sizeHalfX); x++)
-        for (let y = Main.mousePosImageY - Math.floor(sizeHalfY); y < Main.mousePosImageY + Math.ceil(sizeHalfY); y++)
-            if (x >= 0 && y >= 0 && x < Main.state.canvas.worldObject.header.maxTilesX && y < Main.state.canvas.worldObject.header.maxTilesY)
-                tilesArray.push([x,y]);
-
-    let offset, allLayers = [LAYERS.TILES, LAYERS.WALLS, LAYERS.WIRES, LAYERS.LIQUIDS];
-    if (Main.state.optionbar.layer == 100) { // 100 = all
-        tilesArray.forEach(([x, y]) => {
-            allLayers.forEach(LAYER => {
-                offset = (Main.state.canvas.worldObject.header.maxTilesX * y + x) * 4;
-                Main.layersImages[LAYER].data[offset] = 0;
-                Main.layersImages[LAYER].data[offset+1] = 0;
-                Main.layersImages[LAYER].data[offset+2] = 0;
-                Main.layersImages[LAYER].data[offset+3] = 0;
-            });
-        });
-        Main.updateLayers();
-    } else {
-        tilesArray.forEach(([x, y]) => {
-            offset = (Main.state.canvas.worldObject.header.maxTilesX * y + x) * 4;
-            Main.layersImages[Main.state.optionbar.layer].data[offset] = 0;
-            Main.layersImages[Main.state.optionbar.layer].data[offset+1] = 0;
-            Main.layersImages[Main.state.optionbar.layer].data[offset+2] = 0;
-            Main.layersImages[Main.state.optionbar.layer].data[offset+3] = 0;
-        });
-        Main.updateLayers(Main.state.optionbar.layer);
-    }
-
-    await Main.workerInterfaces.editTiles(
-        Main.state.optionbar.layer,
-        "rectangle",
-        [tilesArray[0], tilesArray[tilesArray.length - 1]],
-        "delete"
-    );
-
-    store.dispatch(stateChange(["status", "loading"], false));
+    await onDrawingToolClick(applyEraserOperation);
 }
 
 const onEraserDrag = async (e) => {
-    if (!Main.listeners.dragging)
-        Main.listeners.dragging = true;
-
-    if (Main.mousePosImageX == Main.listeners.prevMousePosImageX && Main.mousePosImageY == Main.listeners.prevMousePosImageY)
-        return;
-
-    store.dispatch(stateChange(["status", "loading"], true));
-
-    Main.listeners.prevMousePosImageX = Main.mousePosImageX;
-    Main.listeners.prevMousePosImageY = Main.mousePosImageY;
-
-    let tilesArray = [];
-
-    let sizeHalfX = Main.state.optionbar.size[0] / 2,
-        sizeHalfY = Main.state.optionbar.size[1] / 2;
-
-    for (let x = Main.mousePosImageX - Math.floor(sizeHalfX); x < Main.mousePosImageX + Math.ceil(sizeHalfX); x++)
-        for (let y = Main.mousePosImageY - Math.floor(sizeHalfY); y < Main.mousePosImageY + Math.ceil(sizeHalfY); y++)
-            if (x >= 0 && y >= 0 && x < Main.state.canvas.worldObject.header.maxTilesX && y < Main.state.canvas.worldObject.header.maxTilesY)
-                tilesArray.push([x,y]);
-
-    let offset, allLayers = [LAYERS.TILES, LAYERS.WALLS, LAYERS.WIRES, LAYERS.LIQUIDS];
-    if (Main.state.optionbar.layer == 100) { // 100 = all
-        tilesArray.forEach(([x, y]) => {
-            allLayers.forEach(LAYER => {
-                offset = (Main.state.canvas.worldObject.header.maxTilesX * y + x) * 4;
-                Main.layersImages[LAYER].data[offset] = 0;
-                Main.layersImages[LAYER].data[offset+1] = 0;
-                Main.layersImages[LAYER].data[offset+2] = 0;
-                Main.layersImages[LAYER].data[offset+3] = 0;
-            });
-        });
-        Main.updateLayers();
-    } else {
-        tilesArray.forEach(([x, y]) => {
-            offset = (Main.state.canvas.worldObject.header.maxTilesX * y + x) * 4;
-            Main.layersImages[Main.state.optionbar.layer].data[offset] = 0;
-            Main.layersImages[Main.state.optionbar.layer].data[offset+1] = 0;
-            Main.layersImages[Main.state.optionbar.layer].data[offset+2] = 0;
-            Main.layersImages[Main.state.optionbar.layer].data[offset+3] = 0;
-        });
-        Main.updateLayers(Main.state.optionbar.layer);
-    }
-
-    await Main.workerInterfaces.editTiles(
-        Main.state.optionbar.layer,
-        "rectangle",
-        [tilesArray[0], tilesArray[tilesArray.length - 1]],
-        "delete"
-    );
-
-    store.dispatch(stateChange(["status", "loading"], false));
+    await onDrawingToolDrag(applyEraserOperation);
 }
+
+const onEraserUp = onDrawingToolUp;
 
 export {
     onEraserClick,
-    onEraserDrag
+    onEraserDrag,
+    onEraserUp
 }

@@ -42,8 +42,17 @@ let defaultState = {
         id: null,
         ordered: false,
         locked: true,
-        worldPoint: "Spawn point"
+        worldPoint: "Spawn point",
+        brushShape: "square",
+        radius: 500  // Default radius for bucket fill (500 tiles)
     }),
+    selection: {
+        active: false,
+        x1: 0,
+        y1: 0,
+        x2: 0,
+        y2: 0
+    },
     layersVisibility: {
         NPCs: true,
         WorldPoints: true

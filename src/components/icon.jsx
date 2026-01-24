@@ -67,6 +67,12 @@ const EyeIcon = ({ size=24 }) => (
    </svg>
 );
 
+const ToolBrushIcon = ({ size=24 }) => (
+   <svg version="1.2" baseProfile="tiny" xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24">
+      <path d="M20.7,2.3l1,1c0.2,0.2,0.2,0.5,0,0.7l-8.5,8.5c-0.2,0.2-0.5,0.2-0.7,0l-1-1c-0.2-0.2-0.2-0.5,0-0.7l8.5-8.5C20.2,2.1,20.5,2.1,20.7,2.3z M5,14c-0.6,0-1,0.4-1,1v6c0,0.6,0.4,1,1,1h14c0.6,0,1-0.4,1-1v-6c0-0.6-0.4-1-1-1h-8.5c-0.2,0-0.4,0.1-0.5,0.3l-4.2,4.2c-0.1,0.1-0.3,0.2-0.5,0.2H5z M6,16h4l3.5-3.5H6V16z"/>
+   </svg>
+);
+
 const ToolEraserIcon = ({ size=24 }) => (
    <svg version="1.2" baseProfile="tiny" xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24">
       <path d="M13.8,18.4l-7-7L17,1.3l7,7L13.8,18.4z M7.9,12.4l-1.1-1.1L0,18.2l1.1,1.1L7.9,12.4z M23.9,22.7v-1.5H4.5v1.5H23.9zM13.8,18.4l-1.1-1.1l-5.4,5.4h2.1L13.8,18.4z M2.1,18.2l-1.1,1.1l3.5,3.5h2.1L2.1,18.2z"/>

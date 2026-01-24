@@ -9,6 +9,7 @@ import OptionbarOptionLayer from "./optionbar/layer.jsx";
 import OptionbarOptionSize from "./optionbar/size.jsx";
 import OptionbarOptionId from "./optionbar/id.jsx";
 import OptionbarOptionWorldPoint from "./optionbar/worldPoint.jsx";
+import OptionbarOptionRadius from "./optionbar/radius.jsx";
 
 import "./styles/optionbar.css";
 
@@ -42,6 +43,13 @@ function Optionbar({ stateChange, show, running, selectedTool, optionbarState })
                      </>
                   }
                   {
+                     selectedTool == "bucket" &&
+                     <>
+                        <div className="optionbar-divider"></div>
+                        <OptionbarOptionRadius state={optionbarState} setState={setState}/>
+                     </>
+                  }
+                  {
                      selectedTool != "eraser" &&
                      <>
                         <div className="optionbar-divider"></div>
@@ -72,6 +80,7 @@ export default connect(
             ordered: state.optionbar.ordered,
             locked: state.optionbar.locked,
             worldPoint: state.optionbar.worldPoint,
+            radius: state.optionbar.radius,
          }
       };
    },

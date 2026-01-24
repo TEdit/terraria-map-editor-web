@@ -2,7 +2,7 @@ import Main from "../../main.js";
 
 import WorkerError from "../errors/WorkerError.js";
 
-export default function(LAYER, editType, editArgs, newId) {
+export default function(LAYER, editType, editArgs, newId, radius) {
     return new Promise((resolve, reject) => {
         Main.worker.onmessage = ({ data }) => {
             switch(data.action) {
@@ -23,7 +23,8 @@ export default function(LAYER, editType, editArgs, newId) {
             LAYER,
             editType,
             editArgs,
-            newId
+            newId,
+            radius  // Optional: undefined = infinite fill
         });
     });
 }

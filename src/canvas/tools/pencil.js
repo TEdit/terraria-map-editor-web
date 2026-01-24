@@ -1,143 +1,63 @@
 import Main from "../main.js";
 
-import store from "../../state/store.js";
-import { stateChange } from "../../state/state.js";
+import { onDrawingToolClick, onDrawingToolDrag, onDrawingToolUp } from "./drawingToolsHelpers.js";
+import { applyColorToTiles } from "../../utils/colorApplication.js";
 
-import colors from "../../utils/dbs/colors.js";
+/**
+ * Apply color to tiles array
+ * Handles special cases: rainbow brick (ID 160) and checkerboard (ID 51)
+ */
+async function applyPencilOperation(tilesArray, layer) {
+    try {
+        // Validate inputs
+        if (!tilesArray || !Array.isArray(tilesArray) || tilesArray.length === 0) {
+            return;
+        }
+
+        if (!Main.state?.canvas?.worldObject?.header) {
+            console.warn("Canvas data missing");
+            return;
+        }
+
+        if (!Main.layersImages?.[layer]?.data) {
+            console.warn("Layer image data missing");
+            return;
+        }
+
+        const maxTilesX = Main.state.canvas.worldObject.header.maxTilesX;
+        const maxTilesY = Main.state.canvas.worldObject.header.maxTilesY;
+
+        // Use shared color application utility
+        applyColorToTiles(tilesArray, layer, Main.state.optionbar.id, maxTilesX, maxTilesY);
+
+        Main.updateLayers(layer);
+
+        // Notify worker of changes
+        if (tilesArray.length > 0) {
+            await Main.workerInterfaces.editTiles(
+                layer,
+                "rectangle",
+                [tilesArray[0], tilesArray[tilesArray.length - 1]],
+                Main.state.optionbar.id
+            );
+        }
+    } catch (error) {
+        console.error("Error in pencil operation:", error);
+    }
+}
 
 const onPencilClick = async (e) => {
-    if (Main.listeners.dragging) {
-        Main.listeners.dragging = false;
-        return;
-    }
-
-    store.dispatch(stateChange(["status", "loading"], true));
-
-    let tilesArray = [];
-
-    let sizeHalfX = Main.state.optionbar.size[0] / 2,
-        sizeHalfY = Main.state.optionbar.size[1] / 2;
-
-    for (let x = Main.mousePosImageX - Math.floor(sizeHalfX); x < Main.mousePosImageX + Math.ceil(sizeHalfX); x++)
-        for (let y = Main.mousePosImageY - Math.floor(sizeHalfY); y < Main.mousePosImageY + Math.ceil(sizeHalfY); y++)
-            if (x >= 0 && y >= 0 && x < Main.state.canvas.worldObject.header.maxTilesX && y < Main.state.canvas.worldObject.header.maxTilesY)
-                tilesArray.push([x,y]);
-
-    let offset, selectedColor = colors[Main.state.optionbar.layer][Main.state.optionbar.id] ?? {r:0,g:0,b:0,a:0};
-
-    if (Main.state.optionbar.id == 160) {
-        let temp;
-        tilesArray.forEach(([x, y]) => {
-            temp = y % 3;
-            offset = (Main.state.canvas.worldObject.header.maxTilesX * y + x) * 4;
-            Main.layersImages[Main.state.optionbar.layer].data[offset] = selectedColor[temp].r;
-            Main.layersImages[Main.state.optionbar.layer].data[offset+1] = selectedColor[temp].g;
-            Main.layersImages[Main.state.optionbar.layer].data[offset+2] = selectedColor[temp].b;
-            Main.layersImages[Main.state.optionbar.layer].data[offset+3] = selectedColor[temp].a;
-        });
-    }
-    else if (Main.state.optionbar.id == 51) {
-        let temp;
-        tilesArray.forEach(([x, y]) => {
-            temp = (x + y) % 2;
-            offset = (Main.state.canvas.worldObject.header.maxTilesX * y + x) * 4;
-            Main.layersImages[Main.state.optionbar.layer].data[offset] = selectedColor[temp].r;
-            Main.layersImages[Main.state.optionbar.layer].data[offset+1] = selectedColor[temp].g;
-            Main.layersImages[Main.state.optionbar.layer].data[offset+2] = selectedColor[temp].b;
-            Main.layersImages[Main.state.optionbar.layer].data[offset+3] = selectedColor[temp].a;
-        });
-    }
-    else {
-        tilesArray.forEach(([x, y]) => {
-            offset = (Main.state.canvas.worldObject.header.maxTilesX * y + x) * 4;
-            Main.layersImages[Main.state.optionbar.layer].data[offset] = selectedColor.r;
-            Main.layersImages[Main.state.optionbar.layer].data[offset+1] = selectedColor.g;
-            Main.layersImages[Main.state.optionbar.layer].data[offset+2] = selectedColor.b;
-            Main.layersImages[Main.state.optionbar.layer].data[offset+3] = selectedColor.a;
-        });
-    }
-
-    Main.updateLayers(Main.state.optionbar.layer);
-
-    await Main.workerInterfaces.editTiles(
-        Main.state.optionbar.layer,
-        "rectangle",
-        [tilesArray[0], tilesArray[tilesArray.length - 1]],
-        Main.state.optionbar.id
-    );
-
-    store.dispatch(stateChange(["status", "loading"], false));
+    await onDrawingToolClick(applyPencilOperation);
 }
 
 const onPencilDrag = async (e) => {
-    if (!Main.listeners.dragging)
-        Main.listeners.dragging = true;
-
-    if (Main.mousePosImageX == Main.listeners.prevMousePosImageX && Main.mousePosImageY == Main.listeners.prevMousePosImageY)
-        return;
-
-    store.dispatch(stateChange(["status", "loading"], true));
-
-    Main.listeners.prevMousePosImageX = Main.mousePosImageX;
-    Main.listeners.prevMousePosImageY = Main.mousePosImageY;
-
-    let tilesArray = [];
-
-    let sizeHalfX = Main.state.optionbar.size[0] / 2,
-        sizeHalfY = Main.state.optionbar.size[1] / 2;
-
-    for (let x = Main.mousePosImageX - Math.floor(sizeHalfX); x < Main.mousePosImageX + Math.ceil(sizeHalfX); x++)
-        for (let y = Main.mousePosImageY - Math.floor(sizeHalfY); y < Main.mousePosImageY + Math.ceil(sizeHalfY); y++)
-            if (x >= 0 && y >= 0 && x < Main.state.canvas.worldObject.header.maxTilesX && y < Main.state.canvas.worldObject.header.maxTilesY)
-                tilesArray.push([x,y]);
-
-    let offset, selectedColor = colors[Main.state.optionbar.layer][Main.state.optionbar.id] ?? {r:0,g:0,b:0,a:0};
-
-    if (Main.state.optionbar.id == 160) {
-        let temp;
-        tilesArray.forEach(([x, y]) => {
-            temp = y % 3;
-            offset = (Main.state.canvas.worldObject.header.maxTilesX * y + x) * 4;
-            Main.layersImages[Main.state.optionbar.layer].data[offset] = selectedColor[temp].r;
-            Main.layersImages[Main.state.optionbar.layer].data[offset+1] = selectedColor[temp].g;
-            Main.layersImages[Main.state.optionbar.layer].data[offset+2] = selectedColor[temp].b;
-            Main.layersImages[Main.state.optionbar.layer].data[offset+3] = selectedColor[temp].a;
-        });
-    }
-    else if (Main.state.optionbar.id == 51) {
-        let temp;
-        tilesArray.forEach(([x, y]) => {
-            temp = (x + y) % 2;
-            offset = (Main.state.canvas.worldObject.header.maxTilesX * y + x) * 4;
-            Main.layersImages[Main.state.optionbar.layer].data[offset] = selectedColor[temp].r;
-            Main.layersImages[Main.state.optionbar.layer].data[offset+1] = selectedColor[temp].g;
-            Main.layersImages[Main.state.optionbar.layer].data[offset+2] = selectedColor[temp].b;
-            Main.layersImages[Main.state.optionbar.layer].data[offset+3] = selectedColor[temp].a;
-        });
-    }
-    else {
-        tilesArray.forEach(([x, y]) => {
-            offset = (Main.state.canvas.worldObject.header.maxTilesX * y + x) * 4;
-            Main.layersImages[Main.state.optionbar.layer].data[offset] = selectedColor.r;
-            Main.layersImages[Main.state.optionbar.layer].data[offset+1] = selectedColor.g;
-            Main.layersImages[Main.state.optionbar.layer].data[offset+2] = selectedColor.b;
-            Main.layersImages[Main.state.optionbar.layer].data[offset+3] = selectedColor.a;
-        });
-    }
-
-    Main.updateLayers(Main.state.optionbar.layer);
-
-    await Main.workerInterfaces.editTiles(
-        Main.state.optionbar.layer,
-        "rectangle",
-        [tilesArray[0], tilesArray[tilesArray.length - 1]],
-        Main.state.optionbar.id
-    );
-
-    store.dispatch(stateChange(["status", "loading"], false));
+    await onDrawingToolDrag(applyPencilOperation);
 }
+
+const onPencilUp = onDrawingToolUp;
 
 export {
     onPencilClick,
-    onPencilDrag
+    onPencilDrag,
+    onPencilUp
 }

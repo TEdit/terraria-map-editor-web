@@ -20,14 +20,21 @@
     "@parcel/packager-raw-url": "^2.16.3",
     "@parcel/reporter-dev-server": "^2.13.3",
     "@parcel/transformer-webmanifest": "^2.16.3",
+    "@vitest/ui": "^4.0.18",
     "core-js": "^3.40.0",
-    "parcel": "^2.13.3"
+    "jsdom": "^27.4.0",
+    "parcel": "^2.13.3",
+    "vitest": "^4.0.18"
   },
   "scripts": {
     "start": "parcel serve --port 3000",
     "serve": "npx parcel serve --port 3000",
     "build": "parcel build",
-    "build-gh": "parcel build --public-url /terraria-map-editor-web/"
+    "build-gh": "parcel build --public-url /terraria-map-editor-web/",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:ui": "vitest --ui",
+    "test:coverage": "vitest run --coverage"
   },
   "repository": {
     "type": "git",
