@@ -114,7 +114,15 @@ const onPickerClick = async () => {
 
     console.log("Picked comprehensive tile data:", {
         blockId: tile.blockId,
+        blockPaintId: tile.blockPaintId,
         wallId: tile.wallId,
+        wallPaintId: tile.wallPaintId,
+        liquidType: tile.liquidType,
+        slope: tile.slope,
+        invisibleBlock: tile.invisibleBlock,
+        fullBrightBlock: tile.fullBrightBlock,
+        actuator: tile.actuator,
+        actuated: tile.actuated,
         sampledId,
         tile
     });

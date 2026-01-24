@@ -1,11 +1,13 @@
 import React from "react";
 
 import LAYERS from "../../utils/dbs/LAYERS.js";
-import PAINTS from "../../utils/dbs/PAINTS.js";
+import PAINTS from "../../utils/dbs/paints.js";
+import colors from "../../utils/dbs/colors.js";
 import editableTiles from "../../utils/dbs/editable-tiles.js";
 import editableWalls from "../../utils/dbs/editable-walls.js";
 import InputCheckbox from "../inputs/input-checkbox.jsx";
 import InputSelect from "../inputs/input-select.jsx";
+import InputSelectWithColor from "../inputs/input-select-with-color.jsx";
 import InputSlider from "../inputs/input-slider.jsx";
 
 const SLOPE_OPTIONS = [
@@ -17,11 +19,20 @@ const SLOPE_OPTIONS = [
     ["Bottom Left", "BL"]
 ];
 
-const PAINT_OPTIONS = PAINTS.map(paint => [paint.name, paint.id]);
+// Paints with colors
+const PAINT_OPTIONS = PAINTS.map(paint => [paint.name, paint.id, paint.color]);
 
-// Prepare tile and wall options
-const tiles = Object.entries(editableTiles).map(([id, name]) => [name, parseInt(id)]);
-const walls = Object.entries(editableWalls).map(([id, name]) => [name, parseInt(id)]);
+// Prepare tile and wall options with colors
+const tiles = Object.entries(editableTiles).map(([id, name]) => [
+    name,
+    parseInt(id),
+    colors[LAYERS.TILES][parseInt(id)]
+]);
+const walls = Object.entries(editableWalls).map(([id, name]) => [
+    name,
+    parseInt(id),
+    colors[LAYERS.WALLS][parseInt(id)]
+]);
 const tilesOrdered = [...tiles].sort((a, b) => a[0].localeCompare(b[0]));
 const wallsOrdered = [...walls].sort((a, b) => a[0].localeCompare(b[0]));
 
@@ -195,11 +206,12 @@ function OptionbarOptionTileEditOptions({ state, setState, tool }) {
                                     value={options.editBlockId}
                                     onChange={(checked) => updateOption('editBlockId', checked)}
                                 />
-                                <InputSelect
+                                <InputSelectWithColor
                                     options={state.ordered ? tilesOrdered : tiles}
                                     value={state.id + ""}
                                     onChange={(value) => setState({ ...state, id: parseInt(value) })}
                                     disabled={!options.editBlockId}
+                                    width="150px"
                                 />
                             </div>
                             <div className="tile-edit-inline-row">
@@ -233,11 +245,12 @@ function OptionbarOptionTileEditOptions({ state, setState, tool }) {
                                     value={options.editBlockColor}
                                     onChange={(checked) => updateOption('editBlockColor', checked)}
                                 />
-                                <InputSelect
+                                <InputSelectWithColor
                                     options={PAINT_OPTIONS}
                                     value={options.blockColor}
                                     onChange={(value) => updateOption('blockColor', parseInt(value))}
                                     disabled={!options.editBlockColor}
+                                    width="100px"
                                 />
                             </div>
 
@@ -272,11 +285,12 @@ function OptionbarOptionTileEditOptions({ state, setState, tool }) {
                                     value={options.editWallId}
                                     onChange={(checked) => updateOption('editWallId', checked)}
                                 />
-                                <InputSelect
+                                <InputSelectWithColor
                                     options={state.ordered ? wallsOrdered : walls}
                                     value={state.id}
                                     onChange={(value) => setState({ ...state, id: parseInt(value) })}
                                     disabled={!options.editWallId}
+                                    width="150px"
                                 />
                             </div>
                             <div className="tile-edit-inline-row">
@@ -310,11 +324,12 @@ function OptionbarOptionTileEditOptions({ state, setState, tool }) {
                                     value={options.editWallColor}
                                     onChange={(checked) => updateOption('editWallColor', checked)}
                                 />
-                                <InputSelect
+                                <InputSelectWithColor
                                     options={PAINT_OPTIONS}
                                     value={options.wallColor}
                                     onChange={(value) => updateOption('wallColor', parseInt(value))}
                                     disabled={!options.editWallColor}
+                                    width="100px"
                                 />
                             </div>
                         </div>

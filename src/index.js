@@ -43,9 +43,12 @@ root.render(
 );
 
 // Register Service Worker for PWA offline support
+// Use Parcel 2 url: syntax to properly bundle the service worker as a separate file
+import swUrl from 'url:./service-worker.js';
+
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-        navigator.serviceWorker.register(new URL('./service-worker.js', import.meta.url).href)
+        navigator.serviceWorker.register(swUrl)
             .then(registration => {
                 console.log('Service Worker registered successfully:', registration);
             })

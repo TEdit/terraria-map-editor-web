@@ -33,8 +33,8 @@ function applyTileEditOptions(x, y, options) {
         }
     }
 
-    // Apply block paint color
-    if (options.editBlockColor) {
+    // Apply block paint color (only if tile exists)
+    if (options.editBlockColor && tile.blockId !== undefined) {
         if (options.blockColor === null || options.blockColor === "delete") {
             delete tile.blockColor;
         } else {
@@ -82,8 +82,8 @@ function applyTileEditOptions(x, y, options) {
         }
     }
 
-    // Apply wall paint color
-    if (options.editWallColor) {
+    // Apply wall paint color (only if wall exists)
+    if (options.editWallColor && tile.wallId !== undefined && tile.wallId !== 0) {
         if (options.wallColor === null || options.wallColor === "delete") {
             delete tile.wallColor;
         } else {

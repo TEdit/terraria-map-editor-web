@@ -26,8 +26,14 @@ self.addEventListener('install', event => {
 
 // Fetch event - serve from cache, fallback to network
 self.addEventListener('fetch', event => {
-  // Only cache GET requests
+  // Only cache GET requests from http/https (exclude chrome-extension, etc.)
   if (event.request.method !== 'GET') {
+    return;
+  }
+
+  // Only handle http/https requests
+  const url = new URL(event.request.url);
+  if (!url.protocol.startsWith('http')) {
     return;
   }
 
@@ -38,7 +44,7 @@ self.addEventListener('fetch', event => {
         if (response) {
           return response;
         }
-        
+
         return fetch(event.request).then(response => {
           // Don't cache non-successful responses
           if (!response || response.status !== 200 || response.type === 'error') {

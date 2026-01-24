@@ -20,6 +20,7 @@
     "@parcel/packager-raw-url": "^2.16.3",
     "@parcel/reporter-dev-server": "^2.13.3",
     "@parcel/transformer-webmanifest": "^2.16.3",
+    "@playwright/test": "^1.48.0",
     "@vitest/ui": "^4.0.18",
     "core-js": "^3.40.0",
     "jsdom": "^27.4.0",
@@ -34,7 +35,11 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:ui": "vitest --ui",
-    "test:coverage": "vitest run --coverage"
+    "test:coverage": "vitest run --coverage",
+    "test:e2e": "playwright test",
+    "test:e2e:headed": "playwright test --headed",
+    "test:e2e:debug": "playwright test --debug",
+    "test:e2e:ui": "playwright test --ui"
   },
   "repository": {
     "type": "git",

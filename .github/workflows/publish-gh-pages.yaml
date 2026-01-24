@@ -39,6 +39,20 @@ jobs:
     - name: Build for custom domain
       run: npm run build
 
+    - name: Install Playwright Browsers
+      run: npx playwright install --with-deps chromium
+
+    - name: Run E2E tests
+      run: npm run test:e2e
+
+    - name: Upload test results on failure
+      if: failure()
+      uses: actions/upload-artifact@v4
+      with:
+        name: playwright-report
+        path: playwright-report/
+        retention-days: 7
+
     - name: Add CNAME file
       run: echo "www.terraria-map-editor.com" > dist/CNAME
 

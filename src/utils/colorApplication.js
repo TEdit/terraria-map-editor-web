@@ -142,6 +142,7 @@ export function applyColorToTiles(tilesArray, layer, id, maxTilesX, maxTilesY, t
     }
 
     // If normal paint is enabled (not special paints 29/30), also render to paint layer
+    // Only render paint if there's actually a tile/wall at that position (prevents floating paint on empty tiles)
     if (paintId !== null && paintId !== 0 && paintId !== 31 && paintId !== 29 && paintId !== 30) {
         const paintLayer = isTilesLayer ? LAYERS.TILEPAINT : isWallsLayer ? LAYERS.WALLPAINT : null;
 
@@ -149,12 +150,28 @@ export function applyColorToTiles(tilesArray, layer, id, maxTilesX, maxTilesY, t
             const paintColor = colors[paintLayer][paintId];
 
             if (paintColor) {
+                const worldTiles = Main.state?.canvas?.worldObject?.tiles;
+
                 tilesArray.forEach(([x, y]) => {
-                    offset = (maxTilesX * y + x) * 4;
-                    Main.layersImages[paintLayer].data[offset] = paintColor.r;
-                    Main.layersImages[paintLayer].data[offset + 1] = paintColor.g;
-                    Main.layersImages[paintLayer].data[offset + 2] = paintColor.b;
-                    Main.layersImages[paintLayer].data[offset + 3] = paintColor.a;
+                    // Check if there's actually a visible tile/wall at this position
+                    let hasTileOrWall = false;
+                    if (worldTiles && worldTiles[x] && worldTiles[x][y]) {
+                        const tile = worldTiles[x][y];
+                        hasTileOrWall = isTilesLayer
+                            ? tile.blockId !== undefined  // Tile exists if it has a blockId
+                            : isWallsLayer
+                                ? tile.wallId !== undefined && tile.wallId !== 0  // Wall exists if wallId > 0
+                                : true; // For other layers, always render
+                    }
+
+                    // Only render paint if there's a base tile/wall to paint on
+                    if (hasTileOrWall || shouldRenderBaseColor) {
+                        offset = (maxTilesX * y + x) * 4;
+                        Main.layersImages[paintLayer].data[offset] = paintColor.r;
+                        Main.layersImages[paintLayer].data[offset + 1] = paintColor.g;
+                        Main.layersImages[paintLayer].data[offset + 2] = paintColor.b;
+                        Main.layersImages[paintLayer].data[offset + 3] = paintColor.a;
+                    }
                 });
             }
         }
