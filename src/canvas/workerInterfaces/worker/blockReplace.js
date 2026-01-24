@@ -2,7 +2,8 @@ import Worker from "../../worker.js";
 
 import LAYERS from "../../../utils/dbs/LAYERS.js";
 
-export default async function({ from, to, onProgress }) {
+export default async function(data, messageId) {
+    const { from, to } = data;
     let replacedBlocks = [];
     let newProperties = {};
     let fromWire = from.layer == LAYERS.WIRES ? "wire" + from.id.charAt(0).toUpperCase() + from.id.slice(1) : null;
@@ -33,6 +34,7 @@ export default async function({ from, to, onProgress }) {
             swapPercent++;
             postMessage({
                 action: "RETURN_PROGRESS",
+                messageId,
                 percent: swapPercent
             });
         }
@@ -83,6 +85,7 @@ export default async function({ from, to, onProgress }) {
 
     postMessage({
         action: "RETURN_DONE",
+        messageId,
         replacedBlocks
     });
 }

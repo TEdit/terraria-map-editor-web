@@ -1,38 +1,97 @@
 /**
- * Shared utility for applying colors to tiles array for canvas rendering
- * Used by pencil, brush, and bucket fill tools
+ * Unified rendering pipeline for tile editing tools
  *
- * Handles special tile types:
- * - Rainbow brick (ID 160): 3-color pattern based on Y coordinate
- * - Checkerboard (ID 51): 2-color pattern based on X+Y
- * - Normal tiles: Single color
- * - Paint: Applies paint blending when editBlockColor/editWallColor is enabled
+ * Architecture (Phase 2 - Data First, Memory Efficient, Optimistic Rendering):
+ * 1. Tool renders IMMEDIATELY with expected values (optimistic)
+ * 2. Tool sends to worker in batched request
+ * 3. Worker confirms changes and returns actual tile data
+ * 4. Tool re-renders from worker data to verify (usually matches optimistic)
+ *
+ * This ensures:
+ * - INSTANT visual feedback (no lag from batching/worker)
+ * - Data consistency (worker is source of truth)
+ * - Memory efficiency (tiles stay in worker)
+ * - Smooth 60fps drawing (batched worker calls)
+ *
+ * Used by: pencil, brush, eraser, and bucket fill tools
+ *
+ * Rendering handled by shared tileRenderer.js:
+ * - getTileColor(): Base tile/wall/liquid rendering
+ * - getPaintColor(): Paint layer rendering with blending
+ * - Special tiles: Rainbow brick (ID 160), Checkerboard (ID 51)
  */
 
 import Main from "../canvas/main.js";
-import colors from "./dbs/colors.js";
 import LAYERS from "./dbs/LAYERS.js";
-import { getCoatingBrightness, applyBrightness, applySpecialPaint } from "./colors/paintColorBlending.js";
+import { getTileColor, getPaintColor } from "./rendering/tileRenderer.js";
 
 /**
- * Apply colors to tiles array for canvas rendering
- * Mutates Main.layersImages[layer].data directly
+ * Build optimistic tile object from operation parameters
+ * Used for instant rendering before worker confirms
+ */
+function buildOptimisticTile(layer, newId, tileEditOptions) {
+    const tile = {};
+
+    if (newId === "delete") {
+        // Eraser - empty tile
+        return tile;
+    }
+
+    // Apply the new ID based on layer
+    switch (layer) {
+        case LAYERS.TILES:
+            tile.blockId = parseInt(newId);
+            break;
+        case LAYERS.WALLS:
+            tile.wallId = parseInt(newId);
+            break;
+        case LAYERS.LIQUIDS:
+            tile.liquidType = newId;
+            tile.liquidAmount = 255;
+            break;
+        case LAYERS.WIRES:
+            tile["wire" + newId.charAt(0).toUpperCase() + newId.slice(1)] = true;
+            break;
+    }
+
+    // Apply paint if specified in options
+    if (tileEditOptions) {
+        if (tileEditOptions.editBlockColor && tileEditOptions.blockColor) {
+            tile.blockColor = parseInt(tileEditOptions.blockColor);
+        }
+        if (tileEditOptions.editWallColor && tileEditOptions.wallColor) {
+            tile.wallColor = parseInt(tileEditOptions.wallColor);
+        }
+        if (tileEditOptions.editSlope && tileEditOptions.slope) {
+            tile.slope = tileEditOptions.slope;
+        }
+        // Add other tileEditOptions properties as needed
+    }
+
+    return tile;
+}
+
+/**
+ * Render tiles from tile data
  *
- * @param {Array<[number, number]>} tilesArray - Array of [x, y] coordinates
+ * This is the unified pipeline function used by all editing tools.
+ * Tiles are kept in worker to save memory - tools pass tile data from worker response.
+ *
+ * @param {Array<[number, number]>} tilesArray - Array of [x, y] coordinates to render
  * @param {number} layer - LAYERS enum value
- * @param {number|string} id - Tile/wall/liquid ID
  * @param {number} maxTilesX - World width in tiles
  * @param {number} maxTilesY - World height in tiles
- * @param {object} tileEditOptions - Tile editing options (includes paint settings)
+ * @param {Object} [tilesData] - Optional map of {x,y} -> tile object from worker.
+ *                                If not provided, reads from Main.state.canvas.worldObject.tiles (full render only)
  */
-export function applyColorToTiles(tilesArray, layer, id, maxTilesX, maxTilesY, tileEditOptions = null) {
+export function renderFromWorldData(tilesArray, layer, maxTilesX, maxTilesY, tilesData = null) {
     // Validation checks
     if (!tilesArray || !Array.isArray(tilesArray) || tilesArray.length === 0) {
         return;
     }
 
     if (!Main.layersImages?.[layer]?.data) {
-        console.warn("Layer image data missing for color application");
+        console.warn("Layer image data missing for rendering");
         return;
     }
 
@@ -45,135 +104,114 @@ export function applyColorToTiles(tilesArray, layer, id, maxTilesX, maxTilesY, t
         return;
     }
 
-    // Get color data for this tile/wall/liquid ID
-    let offset;
-    const selectedColor = colors[layer][id] ?? {r: 0, g: 0, b: 0, a: 0};
+    // Build lookup function for tiles
+    const getTile = tilesData
+        ? (x, y) => tilesData[`${x},${y}`] || {}
+        : (x, y) => Main.state?.canvas?.worldObject?.tiles?.[x]?.[y] || {};
 
-    // Determine if we should apply paint based on layer and tileEditOptions
-    const isTilesLayer = layer === LAYERS.TILES;
-    const isWallsLayer = layer === LAYERS.WALLS;
+    // Render base layer from tile data
+    tilesArray.forEach(([x, y]) => {
+        const tile = getTile(x, y);
 
-    let paintId = null;
-    let brightness = 211; // Default brightness
+        const color = getTileColor(tile, layer, undefined, x, y, null);
 
-    // Get paint settings and brightness from tile edit options
-    if (tileEditOptions) {
-        if (isTilesLayer) {
-            // Calculate coating brightness for tiles
-            brightness = getCoatingBrightness(
-                tileEditOptions.editInvisibleBlock && tileEditOptions.invisibleBlock,
-                tileEditOptions.editFullBrightBlock && tileEditOptions.fullBrightBlock
-            );
-            // Get paint ID if paint is enabled
-            if (tileEditOptions.editBlockColor) {
-                paintId = tileEditOptions.blockColor;
+        const offset = (maxTilesX * y + x) * 4;
+        Main.layersImages[layer].data[offset] = color.r;
+        Main.layersImages[layer].data[offset + 1] = color.g;
+        Main.layersImages[layer].data[offset + 2] = color.b;
+        Main.layersImages[layer].data[offset + 3] = color.a;
+    });
+
+    // Render paint layer if applicable
+    const isTiles = layer === LAYERS.TILES;
+    const isWalls = layer === LAYERS.WALLS;
+    const paintLayer = isTiles ? LAYERS.TILEPAINT : isWalls ? LAYERS.WALLPAINT : null;
+
+    if (paintLayer && Main.layersImages?.[paintLayer]?.data) {
+        tilesArray.forEach(([x, y]) => {
+            const tile = getTile(x, y);
+            const paintId = isTiles ? tile.blockColor : isWalls ? tile.wallColor : null;
+
+            // Only render normal paint (not special paints 0, 29, 30, 31)
+            if (paintId && paintId !== 0 && paintId !== 31 && paintId !== 29 && paintId !== 30) {
+                const color = getPaintColor(tile, paintLayer, paintId, x, y, null);
+
+                if (color) {
+                    const offset = (maxTilesX * y + x) * 4;
+                    Main.layersImages[paintLayer].data[offset] = color.r;
+                    Main.layersImages[paintLayer].data[offset + 1] = color.g;
+                    Main.layersImages[paintLayer].data[offset + 2] = color.b;
+                    Main.layersImages[paintLayer].data[offset + 3] = color.a;
+                }
             }
-        } else if (isWallsLayer) {
-            // Calculate coating brightness for walls
-            brightness = getCoatingBrightness(
-                tileEditOptions.editInvisibleWall && tileEditOptions.invisibleWall,
-                tileEditOptions.editFullBrightWall && tileEditOptions.fullBrightWall
-            );
-            // Get paint ID if paint is enabled
-            if (tileEditOptions.editWallColor) {
-                paintId = tileEditOptions.wallColor;
-            }
-        }
+        });
+    }
+}
+
+/**
+ * Optimistic rendering - renders immediately before worker confirms
+ * Provides instant visual feedback with no lag
+ *
+ * @param {Array<[number, number]>} tilesArray - Array of [x, y] coordinates to render
+ * @param {number} layer - LAYERS enum value
+ * @param {number|string} newId - The ID being painted (or "delete" for eraser)
+ * @param {number} maxTilesX - World width in tiles
+ * @param {number} maxTilesY - World height in tiles
+ * @param {Object} [tileEditOptions] - Tile editing options (paint, slope, etc.)
+ */
+export function renderOptimistic(tilesArray, layer, newId, maxTilesX, maxTilesY, tileEditOptions = null) {
+    if (!tilesArray || !Array.isArray(tilesArray) || tilesArray.length === 0) {
+        return;
     }
 
-    // Check if we should render base tile/wall colors
-    // Skip if the corresponding edit flag is disabled
-    const shouldRenderBaseColor = !tileEditOptions ||
-        (isTilesLayer && tileEditOptions.editBlockId) ||
-        (isWallsLayer && tileEditOptions.editWallId) ||
-        (!isTilesLayer && !isWallsLayer); // Always render for other layers
-
-    // Helper function to apply base color with brightness or special paint
-    const applyColor = (baseColor) => {
-        // Check if special paint (Shadow=29 or Negative=30)
-        if (paintId === 29 || paintId === 30) {
-            // Special paints modify the base color
-            return applySpecialPaint(baseColor, paintId, brightness, isWallsLayer);
-        }
-        // For normal paints or no paint, just apply brightness to base color
-        return applyBrightness(baseColor, brightness);
-    };
-
-    // Only render base tile/wall colors if the edit flag is enabled
-    if (shouldRenderBaseColor) {
-        // Handle special tile types with multi-color patterns
-        if (id == 160) {
-            // Rainbow brick (ID 160) - 3-color variation based on Y coordinate
-            let temp, color;
-            tilesArray.forEach(([x, y]) => {
-                temp = y % 3;
-                color = applyColor(selectedColor[temp]);
-                offset = (maxTilesX * y + x) * 4;
-                Main.layersImages[layer].data[offset] = color.r;
-                Main.layersImages[layer].data[offset + 1] = color.g;
-                Main.layersImages[layer].data[offset + 2] = color.b;
-                Main.layersImages[layer].data[offset + 3] = color.a;
-            });
-        }
-        else if (id == 51) {
-            // Checkerboard pattern (ID 51) - 2-color variation based on X+Y
-            let temp, color;
-            tilesArray.forEach(([x, y]) => {
-                temp = (x + y) % 2;
-                color = applyColor(selectedColor[temp]);
-                offset = (maxTilesX * y + x) * 4;
-                Main.layersImages[layer].data[offset] = color.r;
-                Main.layersImages[layer].data[offset + 1] = color.g;
-                Main.layersImages[layer].data[offset + 2] = color.b;
-                Main.layersImages[layer].data[offset + 3] = color.a;
-            });
-        }
-        else {
-            // Normal tiles - single color for all tiles
-            const color = applyColor(selectedColor);
-            tilesArray.forEach(([x, y]) => {
-                offset = (maxTilesX * y + x) * 4;
-                Main.layersImages[layer].data[offset] = color.r;
-                Main.layersImages[layer].data[offset + 1] = color.g;
-                Main.layersImages[layer].data[offset + 2] = color.b;
-                Main.layersImages[layer].data[offset + 3] = color.a;
-            });
-        }
+    if (!Main.layersImages?.[layer]?.data) {
+        return;
     }
 
-    // If normal paint is enabled (not special paints 29/30), also render to paint layer
-    // Only render paint if there's actually a tile/wall at that position (prevents floating paint on empty tiles)
-    if (paintId !== null && paintId !== 0 && paintId !== 31 && paintId !== 29 && paintId !== 30) {
-        const paintLayer = isTilesLayer ? LAYERS.TILEPAINT : isWallsLayer ? LAYERS.WALLPAINT : null;
+    // Filter out of bounds
+    tilesArray = tilesArray.filter(([x, y]) =>
+        x >= 0 && y >= 0 && x < maxTilesX && y < maxTilesY
+    );
 
-        if (paintLayer && Main.layersImages?.[paintLayer]?.data) {
-            const paintColor = colors[paintLayer][paintId];
+    if (tilesArray.length === 0) {
+        return;
+    }
 
-            if (paintColor) {
-                const worldTiles = Main.state?.canvas?.worldObject?.tiles;
+    // Build optimistic tile once (same for all tiles in this operation)
+    const optimisticTile = buildOptimisticTile(layer, newId, tileEditOptions);
 
-                tilesArray.forEach(([x, y]) => {
-                    // Check if there's actually a visible tile/wall at this position
-                    let hasTileOrWall = false;
-                    if (worldTiles && worldTiles[x] && worldTiles[x][y]) {
-                        const tile = worldTiles[x][y];
-                        hasTileOrWall = isTilesLayer
-                            ? tile.blockId !== undefined  // Tile exists if it has a blockId
-                            : isWallsLayer
-                                ? tile.wallId !== undefined && tile.wallId !== 0  // Wall exists if wallId > 0
-                                : true; // For other layers, always render
-                    }
+    // Render base layer optimistically
+    tilesArray.forEach(([x, y]) => {
+        const color = getTileColor(optimisticTile, layer, newId, x, y, tileEditOptions);
 
-                    // Only render paint if there's a base tile/wall to paint on
-                    if (hasTileOrWall || shouldRenderBaseColor) {
-                        offset = (maxTilesX * y + x) * 4;
-                        Main.layersImages[paintLayer].data[offset] = paintColor.r;
-                        Main.layersImages[paintLayer].data[offset + 1] = paintColor.g;
-                        Main.layersImages[paintLayer].data[offset + 2] = paintColor.b;
-                        Main.layersImages[paintLayer].data[offset + 3] = paintColor.a;
-                    }
-                });
-            }
+        const offset = (maxTilesX * y + x) * 4;
+        Main.layersImages[layer].data[offset] = color.r;
+        Main.layersImages[layer].data[offset + 1] = color.g;
+        Main.layersImages[layer].data[offset + 2] = color.b;
+        Main.layersImages[layer].data[offset + 3] = color.a;
+    });
+
+    // Render paint layer if applicable
+    const isTiles = layer === LAYERS.TILES;
+    const isWalls = layer === LAYERS.WALLS;
+    const paintLayer = isTiles ? LAYERS.TILEPAINT : isWalls ? LAYERS.WALLPAINT : null;
+
+    if (paintLayer && Main.layersImages?.[paintLayer]?.data && tileEditOptions) {
+        const paintId = isTiles ? tileEditOptions.blockColor : isWalls ? tileEditOptions.wallColor : null;
+        const paintEnabled = isTiles ? tileEditOptions.editBlockColor : isWalls ? tileEditOptions.editWallColor : false;
+
+        if (paintEnabled && paintId && paintId !== 0 && paintId !== 31 && paintId !== 29 && paintId !== 30) {
+            tilesArray.forEach(([x, y]) => {
+                const color = getPaintColor(optimisticTile, paintLayer, paintId, x, y, tileEditOptions);
+
+                if (color) {
+                    const offset = (maxTilesX * y + x) * 4;
+                    Main.layersImages[paintLayer].data[offset] = color.r;
+                    Main.layersImages[paintLayer].data[offset + 1] = color.g;
+                    Main.layersImages[paintLayer].data[offset + 2] = color.b;
+                    Main.layersImages[paintLayer].data[offset + 3] = color.a;
+                }
+            });
         }
     }
 }

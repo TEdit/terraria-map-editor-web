@@ -12,7 +12,7 @@ export default async function() {
         [["status", "loading"], true]
     ]));
 
-    const worldObject = await Main.workerInterfaces.parseWorldFile({
+    const { worldObject } = await Main.workerInterfaces.parseWorldFile({
         worldFile: Main.state.canvas.worldFile,
         unsafe: Main.state.canvas.unsafe,
         unsafeOnlyTiles: Main.state.canvas.unsafeOnlyTiles,
@@ -35,7 +35,7 @@ export default async function() {
     store.dispatch(stateChange(["canvas", "worldObject"], worldObject));
     console.log(worldObject);
 
-    const layersImages = await Main.workerInterfaces.renderLayersImages({
+    const { layersImages } = await Main.workerInterfaces.renderLayersImages({
         onRenderingStart: () => {
             store.dispatch(stateChange(["status", "description"], "Rendering"));
         },

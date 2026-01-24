@@ -1,29 +1,12 @@
-import Main from "../../main.js";
-
-import WorkerError from "../errors/WorkerError.js";
+import WorkerMessaging from "../WorkerMessaging.js";
 
 export default function({ from, to, onProgress }) {
-    return new Promise((resolve, reject) => {
-        Main.worker.onmessage = ({ data }) => {
-            switch(data.action) {
-                case "RETURN_PROGRESS":
-                    onProgress(data.percent);
-                    break;
-                case "RETURN_DONE":
-                    resolve(data.replacedBlocks);
-                    break;
-
-                case "ERROR":
-                    WorkerError("blockReplace", data.e);
-                    resolve(null);
-                    break;
-            }
+    return WorkerMessaging.sendMessage("BLOCK_REPLACE", {
+        from,
+        to
+    }, {
+        callbacks: {
+            onProgress
         }
-
-        Main.worker.postMessage({
-            action: "BLOCK_REPLACE",
-            from,
-            to
-        });
     });
 }

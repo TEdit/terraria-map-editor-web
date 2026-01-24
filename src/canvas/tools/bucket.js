@@ -4,7 +4,8 @@ import LAYERS from "../../utils/dbs/LAYERS.js";
 import store from "../../state/store.js";
 import { stateChange } from "../../state/state.js";
 
-import { applyColorToTiles } from "../../utils/colorApplication.js";
+import { renderFromWorldData } from "../../utils/colorApplication.js";
+import { calculateDirtyRect } from "./drawingToolsHelpers.js";
 
 const onBucketClick = async (e) => {
     // Validate canvas state exists
@@ -43,20 +44,33 @@ const onBucketClick = async (e) => {
             Main.state.optionbar.tileEditOptions  // Pass tile editing options
         );
 
-        // If flood fill returned tiles, apply colors to canvas and render
+        // If flood fill returned tiles, sync data and render
         if (response?.tilesArray && response.tilesArray.length > 0) {
-            // Apply colors to layer image data
-            applyColorToTiles(
+            // PHASE 2 UNIFIED PIPELINE:
+            // 1. Worker already edited data (flood fill completed)
+
+            // 2. Build tiles lookup from worker response (no main thread copy)
+            const tilesData = {};
+            if (response.updatedTiles) {
+                response.updatedTiles.forEach(({ x, y, tile }) => {
+                    tilesData[`${x},${y}`] = tile;
+                });
+            }
+
+            // 3. Render from worker data
+            renderFromWorldData(
                 response.tilesArray,
                 layer,
-                id,
                 maxTilesX,
                 maxTilesY,
-                Main.state.optionbar.tileEditOptions
+                tilesData
             );
 
+            // Calculate dirty rectangle (only copy changed region to canvas)
+            const dirtyRect = calculateDirtyRect(response.tilesArray);
+
             // Trigger canvas render update
-            Main.updateLayers(layer);
+            Main.updateLayers(layer, dirtyRect);
 
             // Update paint layer if normal paint is active
             if (Main.state.optionbar.tileEditOptions) {
@@ -68,7 +82,7 @@ const onBucketClick = async (e) => {
 
                 if (paintEnabled && paintId && paintId !== 0 && paintId !== 31 && paintId !== 29 && paintId !== 30) {
                     const paintLayer = isTiles ? LAYERS.TILEPAINT : LAYERS.WALLPAINT;
-                    Main.updateLayers(paintLayer);
+                    Main.updateLayers(paintLayer, dirtyRect);
                 }
             }
         }

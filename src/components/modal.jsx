@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import { connect } from "react-redux";
-import { store } from "../state/store.js";
 import { stateChange } from "../state/state.js";
 
 import { CrossIcon } from "./icon.jsx";

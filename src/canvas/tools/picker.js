@@ -22,7 +22,7 @@ const onPickerClick = async () => {
     }
 
     // Get the tile data from the worker
-    const tile = await Main.workerInterfaces.getTileData(x, y);
+    const { tileData: tile } = await Main.workerInterfaces.getTileData(x, y);
 
     if (!tile) {
         console.warn("No tile data at position", x, y);

@@ -13,7 +13,7 @@ const arrayShuffle = (array) => {
     return array;
 }
 
-export default async function() {
+export default async function(data, messageId) {
     let swappedTileIds = {},
         swappedWallIds = {};
 
@@ -34,6 +34,7 @@ export default async function() {
             swapPercent++;
             postMessage({
                 action: "RETURN_PROGRESS",
+                messageId,
                 percent: swapPercent
             });
         }
@@ -58,5 +59,6 @@ export default async function() {
 
     postMessage({
         action: "RETURN_DONE",
+        messageId
     });
 }

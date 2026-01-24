@@ -1,6 +1,5 @@
 import Worker from "../../worker.js";
 
-import colors, { getTileVariantIndex } from "../../../utils/dbs/colors.js";
 import LAYERS from "../../../utils/dbs/LAYERS.js";
 
 /**
@@ -210,8 +209,12 @@ function changeTile(LAYER, x, y, newId) {
     }
 }
 
-export default function({ LAYER, editType, editArgs, newId, radius, tileEditOptions }) {
+export default function(data, messageId) {
+    const { LAYER, editType, editArgs, newId, radius, tileEditOptions } = data;
+
     if (editType == "rectangle") {
+        const updatedTiles = [];
+
         for (let x = editArgs[0][0]; x <= editArgs[1][0]; x++)
             for (let y = editArgs[0][1]; y <= editArgs[1][1]; y++) {
                 // Use new tileEditOptions if provided, otherwise fall back to legacy layer-based editing
@@ -227,10 +230,19 @@ export default function({ LAYER, editType, editArgs, newId, radius, tileEditOpti
                 } else {
                     changeTile(LAYER, x, y, newId);
                 }
+
+                // Collect updated tile for main thread synchronization
+                updatedTiles.push({
+                    x,
+                    y,
+                    tile: Worker.worldObject.tiles[x][y]
+                });
             }
 
         postMessage({
-            action: "RETURN_EDIT_TILES"
+            action: "RETURN_EDIT_TILES",
+            messageId,
+            updatedTiles
         });
     }
 
@@ -245,6 +257,7 @@ export default function({ LAYER, editType, editArgs, newId, radius, tileEditOpti
         if (startX < 0 || startY < 0 || startX >= maxX || startY >= maxY) {
             postMessage({
                 action: "RETURN_EDIT_TILES",
+                messageId,
                 tilesArray: []
             });
             return;
@@ -309,7 +322,7 @@ export default function({ LAYER, editType, editArgs, newId, radius, tileEditOpti
         }
 
         if (alreadyFilled) {
-            postMessage({ action: "RETURN_EDIT_TILES" });
+            postMessage({ action: "RETURN_EDIT_TILES", messageId });
             return;
         }
 
@@ -317,6 +330,7 @@ export default function({ LAYER, editType, editArgs, newId, radius, tileEditOpti
         const visited = new Set();
         const queue = [{x: startX, y: startY}];
         const tilesArray = [];
+        const updatedTiles = [];
 
         while (queue.length > 0) {
             const {x, y} = queue.shift();
@@ -355,6 +369,13 @@ export default function({ LAYER, editType, editArgs, newId, radius, tileEditOpti
 
             tilesArray.push([x, y]);
 
+            // Collect updated tile for main thread synchronization
+            updatedTiles.push({
+                x,
+                y,
+                tile: Worker.worldObject.tiles[x][y]
+            });
+
             // 4-way neighbors
             queue.push({x: x+1, y: y});
             queue.push({x: x-1, y: y});
@@ -364,7 +385,44 @@ export default function({ LAYER, editType, editArgs, newId, radius, tileEditOpti
 
         postMessage({
             action: "RETURN_EDIT_TILES",
-            tilesArray
+            messageId,
+            tilesArray,
+            updatedTiles
+        });
+    }
+
+    else if (editType == "tileslist") {
+        // editArgs is an array of [x, y] coordinates
+        const tilesArray = editArgs;
+        const updatedTiles = [];
+
+        tilesArray.forEach(([x, y]) => {
+            // Use new tileEditOptions if provided, otherwise fall back to legacy layer-based editing
+            if (tileEditOptions) {
+                // Merge newId into appropriate property based on layer
+                const optionsWithId = { ...tileEditOptions };
+                if (LAYER === LAYERS.TILES) {
+                    optionsWithId.blockId = newId;
+                } else if (LAYER === LAYERS.WALLS) {
+                    optionsWithId.wallId = newId;
+                }
+                applyTileEditOptions(x, y, optionsWithId);
+            } else {
+                changeTile(LAYER, x, y, newId);
+            }
+
+            // Collect updated tile for main thread synchronization
+            updatedTiles.push({
+                x,
+                y,
+                tile: Worker.worldObject.tiles[x][y]
+            });
+        });
+
+        postMessage({
+            action: "RETURN_EDIT_TILES",
+            messageId,
+            updatedTiles
         });
     }
 }

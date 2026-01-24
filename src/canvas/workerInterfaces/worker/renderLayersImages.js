@@ -1,13 +1,13 @@
 import Worker from "../../worker.js";
 
 import "../../../utils/polyfills/polyfill-imageData.js";
-import colors, { getTileVariantIndex } from "../../../utils/dbs/colors.js";
+import colors from "../../../utils/dbs/colors.js";
 import LAYERS from "../../../utils/dbs/LAYERS.js";
-import { getCoatingBrightness, applyBrightness, applySpecialPaint } from "../../../utils/colors/paintColorBlending.js";
+import { getTileColor, getPaintColor } from "../../../utils/rendering/tileRenderer.js";
 
 import { map } from "../../../utils/number.js";
 
-export default async function() {
+export default async function(data, messageId) {
     if (!Worker.worldObject) {
         throw new Error("worker error: render: no world loaded");
         return;
@@ -42,6 +42,7 @@ export default async function() {
 
     postMessage({
         action: "RETURN_RENDERING_PERCENT_INCOMING",
+        messageId
     });
 
     const drawOnePercent = Worker.worldObject.header.maxTilesY / 100;
@@ -53,6 +54,7 @@ export default async function() {
             drawPercent++;
             postMessage({
                 action: "RETURN_RENDERING_PERCENT",
+                messageId,
                 percent: drawPercent
             });
         }
@@ -63,29 +65,18 @@ export default async function() {
             const tile = Worker.worldObject.tiles[x][y];
 
             if (tile.blockId !== undefined && colors[LAYERS.TILES][tile.blockId]) {
-                // Get base tile color (handling variant tiles)
-                const baseColor = colors[LAYERS.TILES][tile.blockId].r !== undefined
-                    ? colors[LAYERS.TILES][tile.blockId]
-                    : colors[LAYERS.TILES][tile.blockId][getTileVariantIndex(tile.blockId, tile.frameX, tile.frameY, x, y)];
+                // Use shared renderer for tiles
+                const tileColor = getTileColor(tile, LAYERS.TILES, undefined, x, y, null);
+                if (tileColor && tileColor.a > 0) {
+                    setPointColor(LAYERS.TILES, tileColor);
+                }
 
-                // Calculate coating brightness
-                const brightness = getCoatingBrightness(tile.invisibleBlock, tile.fullBrightBlock);
-
-                // Check if special paint (Shadow=29 or Negative=30)
-                if (tile.blockColor === 29 || tile.blockColor === 30) {
-                    // Special paints modify the base color, don't use separate paint layer
-                    const specialColor = applySpecialPaint(baseColor, tile.blockColor, brightness, false);
-                    setPointColor(LAYERS.TILES, specialColor);
-                } else {
-                    // Always render base color with brightness to TILES layer
-                    setPointColor(LAYERS.TILES, applyBrightness(baseColor, brightness));
-
-                    // Render normal paint to separate TILEPAINT layer if present
-                    if (tile.blockColor !== undefined && tile.blockColor !== 0 && tile.blockColor !== 31) {
-                        const paintColor = colors[LAYERS.TILEPAINT][tile.blockColor];
-                        if (paintColor) {
-                            setPointColor(LAYERS.TILEPAINT, paintColor);
-                        }
+                // Render normal paint to separate TILEPAINT layer if present
+                if (tile.blockColor !== undefined && tile.blockColor !== 0 && tile.blockColor !== 31 &&
+                    tile.blockColor !== 29 && tile.blockColor !== 30) {
+                    const paintColor = getPaintColor(tile, LAYERS.TILEPAINT, tile.blockColor, x, y, null);
+                    if (paintColor) {
+                        setPointColor(LAYERS.TILEPAINT, paintColor);
                     }
                 }
             }
@@ -94,26 +85,18 @@ export default async function() {
                 setPointColor(LAYERS.LIQUIDS, colors[LAYERS.LIQUIDS][tile.liquidType]);
 
             if (tile.wallId !== undefined && colors[LAYERS.WALLS][tile.wallId]) {
-                const baseColor = colors[LAYERS.WALLS][tile.wallId];
+                // Use shared renderer for walls
+                const wallColor = getTileColor(tile, LAYERS.WALLS, undefined, x, y, null);
+                if (wallColor && wallColor.a > 0) {
+                    setPointColor(LAYERS.WALLS, wallColor);
+                }
 
-                // Calculate coating brightness
-                const brightness = getCoatingBrightness(tile.invisibleWall, tile.fullBrightWall);
-
-                // Check if special paint (Shadow=29 or Negative=30)
-                if (tile.wallColor === 29 || tile.wallColor === 30) {
-                    // Special paints modify the base color, don't use separate paint layer
-                    const specialColor = applySpecialPaint(baseColor, tile.wallColor, brightness, true);
-                    setPointColor(LAYERS.WALLS, specialColor);
-                } else {
-                    // Always render base color with brightness to WALLS layer
-                    setPointColor(LAYERS.WALLS, applyBrightness(baseColor, brightness));
-
-                    // Render normal paint to separate WALLPAINT layer if present
-                    if (tile.wallColor !== undefined && tile.wallColor !== 0 && tile.wallColor !== 31) {
-                        const paintColor = colors[LAYERS.WALLPAINT][tile.wallColor];
-                        if (paintColor) {
-                            setPointColor(LAYERS.WALLPAINT, paintColor);
-                        }
+                // Render normal paint to separate WALLPAINT layer if present
+                if (tile.wallColor !== undefined && tile.wallColor !== 0 && tile.wallColor !== 31 &&
+                    tile.wallColor !== 29 && tile.wallColor !== 30) {
+                    const paintColor = getPaintColor(tile, LAYERS.WALLPAINT, tile.wallColor, x, y, null);
+                    if (paintColor) {
+                        setPointColor(LAYERS.WALLPAINT, paintColor);
                     }
                 }
             }
@@ -159,10 +142,12 @@ export default async function() {
 
     postMessage({
         action: "RETURN_LAYERS_IMAGES_INCOMING",
+        messageId
     });
 
     postMessage({
         action: "RETURN_LAYERS_IMAGES",
+        messageId,
         layersImages
     });
 }

@@ -2,9 +2,12 @@ import Worker from "../../worker.js";
 
 import terrariaWorldParser from "../../../../terraria-world-file-js/src/browser/terraria-world-parser.js";
 
-export default async function({ worldFile, unsafe, unsafeOnlyTiles, ignoreBounds }) {
+export default async function(data, messageId) {
+    const { worldFile, unsafe, unsafeOnlyTiles, ignoreBounds } = data;
+
     postMessage({
         action: "RETURN_PARSING_PERCENT_INCOMING",
+        messageId
     });
 
     Worker.worldObject = await new terrariaWorldParser().loadFile(worldFile);
@@ -17,6 +20,7 @@ export default async function({ worldFile, unsafe, unsafeOnlyTiles, ignoreBounds
             progressCallback: (percent) => {
                 postMessage({
                     action: "RETURN_PARSING_PERCENT",
+                    messageId,
                     percent: percent
                 });
             }
@@ -48,6 +52,7 @@ export default async function({ worldFile, unsafe, unsafeOnlyTiles, ignoreBounds
             progressCallback: (percent) => {
                 postMessage({
                     action: "RETURN_PARSING_PERCENT",
+                    messageId,
                     percent: percent
                 });
             }
@@ -56,6 +61,7 @@ export default async function({ worldFile, unsafe, unsafeOnlyTiles, ignoreBounds
 
     postMessage({
         action: "RETURN_WORLD_OBJECT",
+        messageId,
         worldObject: {
             ...Worker.worldObject,
             tiles: undefined

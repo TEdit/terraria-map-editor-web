@@ -6,7 +6,8 @@ import { stateChange } from "../../state/state.js";
 
 import { drawLine, fillEllipseCentered, fillRectangleCentered, deduplicateTiles } from "../../utils/geometry/index.js";
 import { isInSelection } from "../../utils/selection.js";
-import { applyColorToTiles } from "../../utils/colorApplication.js";
+import { renderFromWorldData } from "../../utils/colorApplication.js";
+import { calculateDirtyRect } from "./drawingToolsHelpers.js";
 
 /**
  * Get brush tiles based on shape and size
@@ -56,16 +57,31 @@ const onBrushClick = async (e) => {
         isInSelection(x, y, Main.state.selection)
     );
 
-    applyColorToTiles(
-        tilesArray,
+    // PHASE 2 UNIFIED PIPELINE:
+    // 1. Edit world data FIRST (wait for completion)
+    const response = await Main.workerInterfaces.editTiles(
         layer,
+        "tileslist",  // Use tileslist mode for actual tiles
+        tilesArray,   // Pass actual tiles, not rectangle corners
         Main.state.optionbar.id,
-        maxTilesX,
-        maxTilesY,
+        undefined,    // radius (not used for brush)
         Main.state.optionbar.tileEditOptions
     );
 
-    Main.updateLayers(layer);
+    // 2. Build tiles lookup from worker response (no main thread copy)
+    const tilesData = {};
+    if (response.updatedTiles) {
+        response.updatedTiles.forEach(({ x, y, tile }) => {
+            tilesData[`${x},${y}`] = tile;
+        });
+    }
+
+    // 3. Render from worker data
+    renderFromWorldData(tilesArray, layer, maxTilesX, maxTilesY, tilesData);
+
+    // Calculate dirty rectangle (only copy changed region to canvas)
+    const dirtyRect = calculateDirtyRect(tilesArray);
+    Main.updateLayers(layer, dirtyRect);
 
     // Update paint layer if normal paint is active
     if (Main.state.optionbar.tileEditOptions) {
@@ -77,18 +93,9 @@ const onBrushClick = async (e) => {
 
         if (paintEnabled && paintId && paintId !== 0 && paintId !== 31 && paintId !== 29 && paintId !== 30) {
             const paintLayer = isTiles ? LAYERS.TILEPAINT : LAYERS.WALLPAINT;
-            Main.updateLayers(paintLayer);
+            Main.updateLayers(paintLayer, dirtyRect);
         }
     }
-
-    await Main.workerInterfaces.editTiles(
-        layer,
-        "rectangle",
-        [tilesArray[0], tilesArray[tilesArray.length - 1]],
-        Main.state.optionbar.id,
-        undefined,  // radius (not used for brush)
-        Main.state.optionbar.tileEditOptions  // Pass tile editing options
-    );
 
     store.dispatch(stateChange(["status", "loading"], false));
 }
@@ -125,16 +132,31 @@ const onBrushDrag = async (e) => {
         isInSelection(x, y, Main.state.selection)
     );
 
-    applyColorToTiles(
-        tilesArray,
+    // PHASE 2 UNIFIED PIPELINE:
+    // 1. Edit world data FIRST (wait for completion)
+    const response = await Main.workerInterfaces.editTiles(
         layer,
+        "tileslist",  // Use tileslist mode for line-interpolated tiles
+        tilesArray,   // Pass actual line tiles, not rectangle corners
         Main.state.optionbar.id,
-        maxTilesX,
-        maxTilesY,
+        undefined,    // radius (not used for brush)
         Main.state.optionbar.tileEditOptions
     );
 
-    Main.updateLayers(layer);
+    // 2. Build tiles lookup from worker response (no main thread copy)
+    const tilesData = {};
+    if (response.updatedTiles) {
+        response.updatedTiles.forEach(({ x, y, tile }) => {
+            tilesData[`${x},${y}`] = tile;
+        });
+    }
+
+    // 3. Render from worker data
+    renderFromWorldData(tilesArray, layer, maxTilesX, maxTilesY, tilesData);
+
+    // Calculate dirty rectangle (only copy changed region to canvas)
+    const dirtyRect = calculateDirtyRect(tilesArray);
+    Main.updateLayers(layer, dirtyRect);
 
     // Update paint layer if normal paint is active
     if (Main.state.optionbar.tileEditOptions) {
@@ -146,18 +168,9 @@ const onBrushDrag = async (e) => {
 
         if (paintEnabled && paintId && paintId !== 0 && paintId !== 31 && paintId !== 29 && paintId !== 30) {
             const paintLayer = isTiles ? LAYERS.TILEPAINT : LAYERS.WALLPAINT;
-            Main.updateLayers(paintLayer);
+            Main.updateLayers(paintLayer, dirtyRect);
         }
     }
-
-    await Main.workerInterfaces.editTiles(
-        layer,
-        "rectangle",
-        [tilesArray[0], tilesArray[tilesArray.length - 1]],
-        Main.state.optionbar.id,
-        undefined,  // radius (not used for brush)
-        Main.state.optionbar.tileEditOptions  // Pass tile editing options
-    );
 
     // Update start position for next drag
     Main.listeners.brushStartX = Main.mousePosImageX;

@@ -1,7 +1,6 @@
 import React, {  useEffect } from "react";
 import { connect } from "react-redux";
 import { stateChange } from "../../state/state.js";
-import { store } from "../../state/store.js";
 
 import NPCs from "../../utils/dbs/NPCs.js";
 import InputSelect from "../inputs/input-select.jsx";

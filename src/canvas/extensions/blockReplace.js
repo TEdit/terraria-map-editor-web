@@ -15,7 +15,7 @@ export default async function(from, to) {
         [["status", "description"], "Replacing blocks"]
     ]));
 
-    const replacedBlocks = await Main.workerInterfaces.blockReplace({
+    const { replacedBlocks } = await Main.workerInterfaces.blockReplace({
         from,
         to,
 

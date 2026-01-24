@@ -2,7 +2,9 @@ import Worker from "../../worker.js";
 
 import terrariaWorldSaver from "../../../../terraria-world-file-js/src/browser/terraria-world-saver.js";
 
-export default async function({ worldObject }) {
+export default async function(data, messageId) {
+    const { worldObject } = data;
+
     if (!Worker.worldObject) {
         throw new Error("web-worker: save: no world loaded");
         return;
@@ -10,6 +12,7 @@ export default async function({ worldObject }) {
 
     postMessage({
         action: "RETURN_SAVING_PERCENT_INCOMING",
+        messageId
     });
 
     let newWorldFile = new terrariaWorldSaver();
@@ -21,6 +24,7 @@ export default async function({ worldObject }) {
         progressCallback: (percent) => {
             postMessage({
                 action: "RETURN_SAVING_PERCENT",
+                messageId,
                 percent
             });
         }
@@ -28,6 +32,7 @@ export default async function({ worldObject }) {
 
     postMessage({
         action: "RETURN_NEW_WORLD_FILE",
+        messageId,
         newWorldFile
     });
 }
