@@ -6,9 +6,8 @@
 import Main from "../main.js";
 import store from "../../state/store.js";
 import { stateChange } from "../../state/state.js";
-import LAYERS from "../../utils/dbs/LAYERS.js";
 
-const onPickerClick = async (e) => {
+const onPickerClick = async () => {
     // Get the clicked position
     const x = Main.mousePosImageX;
     const y = Main.mousePosImageY;
@@ -30,156 +29,95 @@ const onPickerClick = async (e) => {
         return;
     }
 
-    // Get current layer from optionbar
-    const currentLayer = Main.state.optionbar.layer;
-
     // Build complete tile edit options from sampled tile
     const newOptions = { ...Main.state.optionbar.tileEditOptions };
 
-    // Sample the appropriate property based on current layer
-    let sampledId = null;
+    // ALWAYS sample ALL properties regardless of current layer
+    // This allows switching layers without losing picked properties
 
-    switch (currentLayer) {
-        case LAYERS.TILES:
-            // Sample tile ID
-            if (tile.blockId !== undefined) {
-                sampledId = tile.blockId;
-                newOptions.blockId = tile.blockId;
-                newOptions.editBlockId = true;
-
-                // Sample tile paint color
-                if (tile.blockColor !== undefined) {
-                    newOptions.blockColor = tile.blockColor;
-                    newOptions.editBlockColor = true;
-                } else {
-                    newOptions.blockColor = 0;
-                    newOptions.editBlockColor = false;
-                }
-
-                // Sample slope
-                if (tile.slope !== undefined) {
-                    newOptions.slope = tile.slope;
-                    newOptions.editSlope = true;
-                } else {
-                    newOptions.slope = undefined;
-                    newOptions.editSlope = false;
-                }
-
-                // Sample block coatings
-                if (tile.invisibleBlock) {
-                    newOptions.invisibleBlock = true;
-                    newOptions.editInvisibleBlock = true;
-                } else {
-                    newOptions.invisibleBlock = false;
-                    newOptions.editInvisibleBlock = false;
-                }
-
-                if (tile.fullBrightBlock) {
-                    newOptions.fullBrightBlock = true;
-                    newOptions.editFullBrightBlock = true;
-                } else {
-                    newOptions.fullBrightBlock = false;
-                    newOptions.editFullBrightBlock = false;
-                }
-
-                // Sample actuator properties
-                if (tile.actuator) {
-                    newOptions.actuator = true;
-                    newOptions.editActuator = true;
-                } else {
-                    newOptions.actuator = false;
-                    newOptions.editActuator = false;
-                }
-
-                if (tile.actuated) {
-                    newOptions.actuated = true;
-                    newOptions.editActuated = true;
-                } else {
-                    newOptions.actuated = false;
-                    newOptions.editActuated = false;
-                }
-
-                console.log("Picked tile:", sampledId, tile);
-            } else {
-                console.log("No tile at this position");
-            }
-            break;
-
-        case LAYERS.WALLS:
-            // Sample wall ID
-            if (tile.wallId !== undefined) {
-                sampledId = tile.wallId;
-                newOptions.wallId = tile.wallId;
-                newOptions.editWallId = true;
-
-                // Sample wall paint color
-                if (tile.wallColor !== undefined) {
-                    newOptions.wallColor = tile.wallColor;
-                    newOptions.editWallColor = true;
-                } else {
-                    newOptions.wallColor = 0;
-                    newOptions.editWallColor = false;
-                }
-
-                // Sample wall coatings
-                if (tile.invisibleWall) {
-                    newOptions.invisibleWall = true;
-                    newOptions.editInvisibleWall = true;
-                } else {
-                    newOptions.invisibleWall = false;
-                    newOptions.editInvisibleWall = false;
-                }
-
-                if (tile.fullBrightWall) {
-                    newOptions.fullBrightWall = true;
-                    newOptions.editFullBrightWall = true;
-                } else {
-                    newOptions.fullBrightWall = false;
-                    newOptions.editFullBrightWall = false;
-                }
-
-                console.log("Picked wall:", sampledId, tile);
-            } else {
-                console.log("No wall at this position");
-            }
-            break;
-
-        case LAYERS.LIQUIDS:
-            sampledId = tile.liquidType;
-            if (sampledId !== undefined && tile.liquidAmount > 0) {
-                console.log("Picked liquid:", sampledId);
-            } else {
-                console.log("No liquid at this position");
-            }
-            break;
-
-        case LAYERS["Painted Tiles"]:
-            sampledId = tile.blockColor;
-            if (sampledId !== undefined) {
-                newOptions.blockColor = tile.blockColor;
-                newOptions.editBlockColor = true;
-                newOptions.editBlockId = false;  // Only paint, not tile ID
-                console.log("Picked tile paint:", sampledId);
-            } else {
-                console.log("No tile paint at this position");
-            }
-            break;
-
-        case LAYERS["Painted Walls"]:
-            sampledId = tile.wallColor;
-            if (sampledId !== undefined) {
-                newOptions.wallColor = tile.wallColor;
-                newOptions.editWallColor = true;
-                newOptions.editWallId = false;  // Only paint, not wall ID
-                console.log("Picked wall paint:", sampledId);
-            } else {
-                console.log("No wall paint at this position");
-            }
-            break;
-
-        default:
-            console.warn("Picker not supported for layer:", currentLayer);
+    // Always sample ALL block/tile properties
+    if (tile.blockId !== undefined) {
+        newOptions.blockId = tile.blockId;
+        newOptions.editBlockId = tile.blockId > 0;
     }
+
+    // Sample tile paint color
+    // Only enable paint flag if paint is actually set (not 0 or undefined or 31)
+    if (tile.blockColor !== undefined && tile.blockColor !== 0 && tile.blockColor !== 31) {
+        newOptions.blockColor = tile.blockColor;
+        newOptions.editBlockColor = true;
+    } else {
+        newOptions.blockColor = tile.blockColor || 0;
+        newOptions.editBlockColor = false;
+    }
+
+    // Sample slope
+    // Only enable slope flag if slope is not "full" (undefined or 0 means full/no slope)
+    if (tile.slope !== undefined && tile.slope !== 0) {
+        newOptions.slope = tile.slope;
+        newOptions.editSlope = true;
+    } else {
+        newOptions.slope = tile.slope;
+        newOptions.editSlope = false;
+    }
+
+    // Sample block coatings
+    // Only enable coating flags if coating is actually set
+    newOptions.invisibleBlock = tile.invisibleBlock === true;
+    newOptions.editInvisibleBlock = tile.invisibleBlock === true;
+
+    newOptions.fullBrightBlock = tile.fullBrightBlock === true;
+    newOptions.editFullBrightBlock = tile.fullBrightBlock === true;
+
+    // Sample actuator properties
+    // Only enable actuator flags if actuator is actually set
+    newOptions.actuator = tile.actuator === true;
+    newOptions.editActuator = tile.actuator === true;
+
+    newOptions.actuated = tile.actuated === true;
+    newOptions.editActuated = tile.actuated === true;
+
+    // Always sample ALL wall properties
+    if (tile.wallId !== undefined) {
+        newOptions.wallId = tile.wallId;
+        newOptions.editWallId = tile.wallId > 0;
+    }
+
+    // Sample wall paint color
+    // Only enable paint flag if paint is actually set (not 0 or undefined or 31)
+    if (tile.wallColor !== undefined && tile.wallColor !== 0 && tile.wallColor !== 31) {
+        newOptions.wallColor = tile.wallColor;
+        newOptions.editWallColor = true;
+    } else {
+        newOptions.wallColor = tile.wallColor || 0;
+        newOptions.editWallColor = false;
+    }
+
+    // Sample wall coatings
+    // Only enable coating flags if coating is actually set
+    newOptions.invisibleWall = tile.invisibleWall === true;
+    newOptions.editInvisibleWall = tile.invisibleWall === true;
+
+    newOptions.fullBrightWall = tile.fullBrightWall === true;
+    newOptions.editFullBrightWall = tile.fullBrightWall === true;
+
+    // Determine sampledId for backward compatibility with optionbar.id
+    // Priority: blockId > wallId > liquidType
+    let sampledId = null;
+    if (tile.blockId !== undefined && tile.blockId > 0) {
+        sampledId = tile.blockId;
+    } else if (tile.wallId !== undefined && tile.wallId > 0) {
+        sampledId = tile.wallId;
+    } else if (tile.liquidType !== undefined && tile.liquidAmount > 0) {
+        sampledId = tile.liquidType;
+    }
+
+    console.log("Picked comprehensive tile data:", {
+        blockId: tile.blockId,
+        wallId: tile.wallId,
+        sampledId,
+        tile
+    });
 
     // Update both the ID (for backward compatibility) and tileEditOptions
     if (sampledId !== null && sampledId !== undefined) {

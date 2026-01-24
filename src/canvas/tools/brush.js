@@ -1,4 +1,5 @@
 import Main from "../main.js";
+import LAYERS from "../../utils/dbs/LAYERS.js";
 
 import store from "../../state/store.js";
 import { stateChange } from "../../state/state.js";
@@ -55,9 +56,30 @@ const onBrushClick = async (e) => {
         isInSelection(x, y, Main.state.selection)
     );
 
-    applyColorToTiles(tilesArray, layer, Main.state.optionbar.id, maxTilesX, maxTilesY);
+    applyColorToTiles(
+        tilesArray,
+        layer,
+        Main.state.optionbar.id,
+        maxTilesX,
+        maxTilesY,
+        Main.state.optionbar.tileEditOptions
+    );
 
     Main.updateLayers(layer);
+
+    // Update paint layer if normal paint is active
+    if (Main.state.optionbar.tileEditOptions) {
+        const opts = Main.state.optionbar.tileEditOptions;
+        const isTiles = layer === LAYERS.TILES;
+        const isWalls = layer === LAYERS.WALLS;
+        const paintId = isTiles ? opts.blockColor : isWalls ? opts.wallColor : null;
+        const paintEnabled = isTiles ? opts.editBlockColor : isWalls ? opts.editWallColor : false;
+
+        if (paintEnabled && paintId && paintId !== 0 && paintId !== 31 && paintId !== 29 && paintId !== 30) {
+            const paintLayer = isTiles ? LAYERS.TILEPAINT : LAYERS.WALLPAINT;
+            Main.updateLayers(paintLayer);
+        }
+    }
 
     await Main.workerInterfaces.editTiles(
         layer,
@@ -103,9 +125,30 @@ const onBrushDrag = async (e) => {
         isInSelection(x, y, Main.state.selection)
     );
 
-    applyColorToTiles(tilesArray, layer, Main.state.optionbar.id, maxTilesX, maxTilesY);
+    applyColorToTiles(
+        tilesArray,
+        layer,
+        Main.state.optionbar.id,
+        maxTilesX,
+        maxTilesY,
+        Main.state.optionbar.tileEditOptions
+    );
 
     Main.updateLayers(layer);
+
+    // Update paint layer if normal paint is active
+    if (Main.state.optionbar.tileEditOptions) {
+        const opts = Main.state.optionbar.tileEditOptions;
+        const isTiles = layer === LAYERS.TILES;
+        const isWalls = layer === LAYERS.WALLS;
+        const paintId = isTiles ? opts.blockColor : isWalls ? opts.wallColor : null;
+        const paintEnabled = isTiles ? opts.editBlockColor : isWalls ? opts.editWallColor : false;
+
+        if (paintEnabled && paintId && paintId !== 0 && paintId !== 31 && paintId !== 29 && paintId !== 30) {
+            const paintLayer = isTiles ? LAYERS.TILEPAINT : LAYERS.WALLPAINT;
+            Main.updateLayers(paintLayer);
+        }
+    }
 
     await Main.workerInterfaces.editTiles(
         layer,

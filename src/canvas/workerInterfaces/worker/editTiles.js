@@ -167,11 +167,11 @@ function changeTile(LAYER, x, y, newId) {
                 delete Worker.worldObject.tiles[x][y].liquidAmount;
                 break;
 
-            case LAYERS["Painted Tiles"]:
+            case LAYERS.TILEPAINT:
                 delete Worker.worldObject.tiles[x][y].blockColor;
                 break;
 
-            case LAYERS["Painted Walls"]:
+            case LAYERS.WALLPAINT:
                 delete Worker.worldObject.tiles[x][y].wallColor;
                 break;
         }
@@ -199,11 +199,11 @@ function changeTile(LAYER, x, y, newId) {
                 Worker.worldObject.tiles[x][y].liquidAmount = 255;
                 break;
 
-            case LAYERS["Painted Tiles"]:
+            case LAYERS.TILEPAINT:
                 Worker.worldObject.tiles[x][y].blockColor = newId;
                 break;
 
-            case LAYERS["Painted Walls"]:
+            case LAYERS.WALLPAINT:
                 Worker.worldObject.tiles[x][y].wallColor = newId;
                 break;
         }

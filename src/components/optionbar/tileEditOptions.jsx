@@ -65,8 +65,8 @@ function OptionbarOptionTileEditOptions({ state, setState, tool }) {
 
     const isTileLayer = currentLayer === LAYERS.TILES;
     const isWallLayer = currentLayer === LAYERS.WALLS;
-    const isPaintedTilesLayer = currentLayer === LAYERS["Painted Tiles"];
-    const isPaintedWallsLayer = currentLayer === LAYERS["Painted Walls"];
+    const isPaintedTilesLayer = currentLayer === LAYERS.TILEPAINT;
+    const isPaintedWallsLayer = currentLayer === LAYERS.WALLPAINT;
 
     // Don't show panel for layers that don't support property editing
     if (!isTileLayer && !isWallLayer && !isPaintedTilesLayer && !isPaintedWallsLayer) {
@@ -189,11 +189,19 @@ function OptionbarOptionTileEditOptions({ state, setState, tool }) {
                     <div className="tile-edit-card">
                         <div className="tile-edit-card-header">Tile</div>
                         <div className="tile-edit-card-body">
-                            <InputSelect
-                                options={state.ordered ? tilesOrdered : tiles}
-                                value={state.id + ""}
-                                onChange={(value) => setState({ ...state, id: parseInt(value) })}
-                            />
+                            <div className="tile-edit-inline-row">
+                                <InputCheckbox
+                                    label="Modify"
+                                    value={options.editBlockId}
+                                    onChange={(checked) => updateOption('editBlockId', checked)}
+                                />
+                                <InputSelect
+                                    options={state.ordered ? tilesOrdered : tiles}
+                                    value={state.id + ""}
+                                    onChange={(value) => setState({ ...state, id: parseInt(value) })}
+                                    disabled={!options.editBlockId}
+                                />
+                            </div>
                             <div className="tile-edit-inline-row">
                                 <span className="input-label" style={{ fontSize: '0.75rem', marginRight: '0.3rem' }}>Order by</span>
                                 <InputCheckbox
@@ -229,6 +237,7 @@ function OptionbarOptionTileEditOptions({ state, setState, tool }) {
                                     options={PAINT_OPTIONS}
                                     value={options.blockColor}
                                     onChange={(value) => updateOption('blockColor', parseInt(value))}
+                                    disabled={!options.editBlockColor}
                                 />
                             </div>
 
@@ -242,6 +251,7 @@ function OptionbarOptionTileEditOptions({ state, setState, tool }) {
                                     options={SLOPE_OPTIONS}
                                     value={options.slope}
                                     onChange={(value) => updateOption('slope', value === 'undefined' ? undefined : value)}
+                                    disabled={!options.editSlope}
                                 />
                             </div>
                         </div>
@@ -256,11 +266,19 @@ function OptionbarOptionTileEditOptions({ state, setState, tool }) {
                     <div className="tile-edit-card">
                         <div className="tile-edit-card-header">Wall</div>
                         <div className="tile-edit-card-body">
-                            <InputSelect
-                                options={state.ordered ? wallsOrdered : walls}
-                                value={state.id}
-                                onChange={(value) => setState({ ...state, id: parseInt(value) })}
-                            />
+                            <div className="tile-edit-inline-row">
+                                <InputCheckbox
+                                    label="Modify"
+                                    value={options.editWallId}
+                                    onChange={(checked) => updateOption('editWallId', checked)}
+                                />
+                                <InputSelect
+                                    options={state.ordered ? wallsOrdered : walls}
+                                    value={state.id}
+                                    onChange={(value) => setState({ ...state, id: parseInt(value) })}
+                                    disabled={!options.editWallId}
+                                />
+                            </div>
                             <div className="tile-edit-inline-row">
                                 <span className="input-label" style={{ fontSize: '0.75rem', marginRight: '0.3rem' }}>Order by</span>
                                 <InputCheckbox
@@ -296,6 +314,7 @@ function OptionbarOptionTileEditOptions({ state, setState, tool }) {
                                     options={PAINT_OPTIONS}
                                     value={options.wallColor}
                                     onChange={(value) => updateOption('wallColor', parseInt(value))}
+                                    disabled={!options.editWallColor}
                                 />
                             </div>
                         </div>

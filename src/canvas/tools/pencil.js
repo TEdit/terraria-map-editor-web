@@ -1,4 +1,5 @@
 import Main from "../main.js";
+import LAYERS from "../../utils/dbs/LAYERS.js";
 
 import { onDrawingToolClick, onDrawingToolDrag, onDrawingToolUp } from "./drawingToolsHelpers.js";
 import { applyColorToTiles } from "../../utils/colorApplication.js";
@@ -28,9 +29,30 @@ async function applyPencilOperation(tilesArray, layer) {
         const maxTilesY = Main.state.canvas.worldObject.header.maxTilesY;
 
         // Use shared color application utility
-        applyColorToTiles(tilesArray, layer, Main.state.optionbar.id, maxTilesX, maxTilesY);
+        applyColorToTiles(
+            tilesArray,
+            layer,
+            Main.state.optionbar.id,
+            maxTilesX,
+            maxTilesY,
+            Main.state.optionbar.tileEditOptions
+        );
 
         Main.updateLayers(layer);
+
+        // Update paint layer if normal paint is active
+        if (Main.state.optionbar.tileEditOptions) {
+            const opts = Main.state.optionbar.tileEditOptions;
+            const isTiles = layer === LAYERS.TILES;
+            const isWalls = layer === LAYERS.WALLS;
+            const paintId = isTiles ? opts.blockColor : isWalls ? opts.wallColor : null;
+            const paintEnabled = isTiles ? opts.editBlockColor : isWalls ? opts.editWallColor : false;
+
+            if (paintEnabled && paintId && paintId !== 0 && paintId !== 31 && paintId !== 29 && paintId !== 30) {
+                const paintLayer = isTiles ? LAYERS.TILEPAINT : LAYERS.WALLPAINT;
+                Main.updateLayers(paintLayer);
+            }
+        }
 
         // Notify worker of changes
         if (tilesArray.length > 0) {

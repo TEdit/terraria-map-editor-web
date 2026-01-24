@@ -1,4 +1,5 @@
 import LAYERS from "./LAYERS.js";
+import paints from "./paints.js";
 
 let colors = {};
 
@@ -1246,7 +1247,8 @@ colors[LAYERS.WALLS] = [
 colors[LAYERS.LIQUIDS] = {
     "water": {r:9,g:61,b:191,a:255},
     "lava": {r:253,g:32,b:3,a:255},
-    "honey": {r:254,g:194,b:20,a:255}
+    "honey": {r:254,g:194,b:20,a:255},
+    "shimmer": {r:155,g:112,b:233,a:255}
 };
 
 colors[LAYERS.BACKGROUND] = {
@@ -1265,6 +1267,10 @@ colors[LAYERS.WIRES] = {
     "blue": {r:0,g:0,b:255,a:100},
     "yellow": {r:255,g:255,b:0,a:100}
 };
+
+// Set alpha to 255 for full opacity (no alpha blending - paints render as separate layers)
+colors[LAYERS.WALLPAINT] = Array.from(paints).map(paint => ({...paint.rgba, a: 255}));
+colors[LAYERS.TILEPAINT] = Array.from(paints).map(paint => ({...paint.rgba, a: 255}));
 
 function getTileVariantIndex(id, frameX, frameY, x, y) {
     let temp;

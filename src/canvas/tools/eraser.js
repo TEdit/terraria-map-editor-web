@@ -26,7 +26,14 @@ async function applyEraserOperation(tilesArray, layer) {
 
         const maxTilesX = Main.state.canvas.worldObject.header.maxTilesX;
         let offset;
-        let allLayers = [LAYERS.TILES, LAYERS.WALLS, LAYERS.WIRES, LAYERS.LIQUIDS];
+        let allLayers = [
+            LAYERS.TILES,
+            LAYERS.TILEPAINT,
+            LAYERS.WALLS,
+            LAYERS.WALLPAINT,
+            LAYERS.WIRES,
+            LAYERS.LIQUIDS
+        ];
 
         if (layer == 100) {
             // 100 = erase all layers
@@ -40,8 +47,38 @@ async function applyEraserOperation(tilesArray, layer) {
                 });
             });
             Main.updateLayers();
+        } else if (layer === LAYERS.TILES || layer === LAYERS.TILEPAINT) {
+            // Erase both tile and painted tile layers
+            tilesArray.forEach(([x, y]) => {
+                offset = (maxTilesX * y + x) * 4;
+                Main.layersImages[LAYERS.TILES].data[offset] = 0;
+                Main.layersImages[LAYERS.TILES].data[offset+1] = 0;
+                Main.layersImages[LAYERS.TILES].data[offset+2] = 0;
+                Main.layersImages[LAYERS.TILES].data[offset+3] = 0;
+                Main.layersImages[LAYERS.TILEPAINT].data[offset] = 0;
+                Main.layersImages[LAYERS.TILEPAINT].data[offset+1] = 0;
+                Main.layersImages[LAYERS.TILEPAINT].data[offset+2] = 0;
+                Main.layersImages[LAYERS.TILEPAINT].data[offset+3] = 0;
+            });
+            Main.updateLayers(LAYERS.TILES);
+            Main.updateLayers(LAYERS.TILEPAINT);
+        } else if (layer === LAYERS.WALLS || layer === LAYERS.WALLPAINT) {
+            // Erase both wall and painted wall layers
+            tilesArray.forEach(([x, y]) => {
+                offset = (maxTilesX * y + x) * 4;
+                Main.layersImages[LAYERS.WALLS].data[offset] = 0;
+                Main.layersImages[LAYERS.WALLS].data[offset+1] = 0;
+                Main.layersImages[LAYERS.WALLS].data[offset+2] = 0;
+                Main.layersImages[LAYERS.WALLS].data[offset+3] = 0;
+                Main.layersImages[LAYERS.WALLPAINT].data[offset] = 0;
+                Main.layersImages[LAYERS.WALLPAINT].data[offset+1] = 0;
+                Main.layersImages[LAYERS.WALLPAINT].data[offset+2] = 0;
+                Main.layersImages[LAYERS.WALLPAINT].data[offset+3] = 0;
+            });
+            Main.updateLayers(LAYERS.WALLS);
+            Main.updateLayers(LAYERS.WALLPAINT);
         } else {
-            // Erase specific layer
+            // Erase specific layer (wires, liquids, etc.)
             tilesArray.forEach(([x, y]) => {
                 offset = (maxTilesX * y + x) * 4;
                 Main.layersImages[layer].data[offset] = 0;

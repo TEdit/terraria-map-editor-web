@@ -62,7 +62,7 @@ let defaultState = {
             fullBrightBlock: false,
 
             // Wall properties
-            editWallId: false,
+            editWallId: true,  // Default: edit the wall ID
             editWallColor: false,
             wallColor: 0,
 

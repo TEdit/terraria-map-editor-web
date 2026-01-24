@@ -12,7 +12,7 @@ const walls = Object.entries(editableWalls).map(([id, name]) => [name, parseInt(
 const tilesOrdered = [...tiles].sort((a,b) => a[0].localeCompare(b[0]));
 const wallsOrdered = [...walls].sort((a,b) => a[0].localeCompare(b[0]));
 const wires = ["red", "green", "blue", "yellow"];
-const liquids = ["water", "lava", "honey"];
+const liquids = ["water", "lava", "honey", "shimmer"];
 
 function OptionbarOptionId({ state, setState }) {
    const onChangeId = (id) => {

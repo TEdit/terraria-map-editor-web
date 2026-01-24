@@ -3,7 +3,7 @@ import Worker from "../../worker.js";
 import "../../../utils/polyfills/polyfill-imageData.js";
 import colors, { getTileVariantIndex } from "../../../utils/dbs/colors.js";
 import LAYERS from "../../../utils/dbs/LAYERS.js";
-import paints from "../../../utils/dbs/paints.js";
+import { getCoatingBrightness, applyBrightness, applySpecialPaint } from "../../../utils/colors/paintColorBlending.js";
 
 import { map } from "../../../utils/number.js";
 
@@ -35,58 +35,6 @@ export default async function() {
         layersImages[LAYER].data[position + 3] = color.a;
     }
 
-    function paintTile(tileLAYER, tileId, paintId) {
-        const baseColor = colors[tileLAYER][tileId] ?? {r:0,g:0,b:0,a:0};
-
-        if (paintId == 30) {
-            if (tileLAYER == LAYERS.TILES) {
-                return {
-                    r: 255 - baseColor.r,
-                    g: 255 - baseColor.g,
-                    b: 255 - baseColor.b,
-                    a: baseColor.a
-                }
-            } else {
-                return {
-                    r: Math.floor((255 - baseColor.r) * 0.5),
-                    g: Math.floor((255 - baseColor.g) * 0.5),
-                    b: Math.floor((255 - baseColor.b) * 0.5),
-                    a: baseColor.a
-                }
-            }
-        }
-
-        const baseColorNormalized = {
-            r: baseColor.r / 255,
-            g: baseColor.g / 255,
-            b: baseColor.b / 255
-        }
-
-        if (baseColorNormalized.g > baseColorNormalized.r)
-            [baseColorNormalized.r, baseColorNormalized.g] = [baseColorNormalized.g, baseColorNormalized.r];
-
-        if (baseColorNormalized.b > baseColorNormalized.r)
-            [baseColorNormalized.r, baseColorNormalized.b] = [baseColorNormalized.b, baseColorNormalized.r];
-
-        if (paintId == 29) {
-            const blueModifier = baseColorNormalized.b * 0.3;
-            return {
-                r: Math.floor(paints[paintId].color.r * blueModifier),
-                g: Math.floor(paints[paintId].color.g * blueModifier),
-                b: Math.floor(paints[paintId].color.b * blueModifier),
-                a: baseColor.a
-            }
-        }
-
-        const redModifier = baseColorNormalized.r;
-        return {
-            r: Math.floor(paints[paintId].color.r * redModifier),
-            g: Math.floor(paints[paintId].color.g * redModifier),
-            b: Math.floor(paints[paintId].color.b * redModifier),
-            a: baseColor.a
-        }
-    }
-
     const snowTiles = [147, 161, 162, 163, 163, 200];
     function checkSnowGradient(colorCache) {
 
@@ -115,23 +63,60 @@ export default async function() {
             const tile = Worker.worldObject.tiles[x][y];
 
             if (tile.blockId !== undefined && colors[LAYERS.TILES][tile.blockId]) {
-                if (colors[LAYERS.TILES][tile.blockId].r !== undefined)
-                    setPointColor(LAYERS.TILES, colors[LAYERS.TILES][tile.blockId]);
-                else
-                    setPointColor(LAYERS.TILES, colors[LAYERS.TILES][tile.blockId][ getTileVariantIndex(tile.blockId, tile.frameX, tile.frameY, x, y) ]);
-            }
+                // Get base tile color (handling variant tiles)
+                const baseColor = colors[LAYERS.TILES][tile.blockId].r !== undefined
+                    ? colors[LAYERS.TILES][tile.blockId]
+                    : colors[LAYERS.TILES][tile.blockId][getTileVariantIndex(tile.blockId, tile.frameX, tile.frameY, x, y)];
 
-            if (tile.blockColor !== undefined && tile.blockColor != 31 && colors[LAYERS.TILES][tile.blockId])
-                setPointColor(LAYERS["Painted Tiles"], paintTile(LAYERS.TILES, tile.blockId, tile.blockColor));
+                // Calculate coating brightness
+                const brightness = getCoatingBrightness(tile.invisibleBlock, tile.fullBrightBlock);
+
+                // Check if special paint (Shadow=29 or Negative=30)
+                if (tile.blockColor === 29 || tile.blockColor === 30) {
+                    // Special paints modify the base color, don't use separate paint layer
+                    const specialColor = applySpecialPaint(baseColor, tile.blockColor, brightness, false);
+                    setPointColor(LAYERS.TILES, specialColor);
+                } else {
+                    // Always render base color with brightness to TILES layer
+                    setPointColor(LAYERS.TILES, applyBrightness(baseColor, brightness));
+
+                    // Render normal paint to separate TILEPAINT layer if present
+                    if (tile.blockColor !== undefined && tile.blockColor !== 0 && tile.blockColor !== 31) {
+                        const paintColor = colors[LAYERS.TILEPAINT][tile.blockColor];
+                        if (paintColor) {
+                            setPointColor(LAYERS.TILEPAINT, paintColor);
+                        }
+                    }
+                }
+            }
 
             if (tile.liquidType)
                 setPointColor(LAYERS.LIQUIDS, colors[LAYERS.LIQUIDS][tile.liquidType]);
 
-            if (tile.wallId !== undefined && colors[LAYERS.WALLS][tile.wallId])
-                setPointColor(LAYERS.WALLS, colors[LAYERS.WALLS][tile.wallId]);
+            if (tile.wallId !== undefined && colors[LAYERS.WALLS][tile.wallId]) {
+                const baseColor = colors[LAYERS.WALLS][tile.wallId];
 
-            if (tile.wallColor !== undefined && tile.wallColor != 31 && colors[LAYERS.WALLS][tile.wallId])
-                setPointColor(LAYERS["Painted Walls"], paintTile(LAYERS.WALLS, tile.wallId, tile.wallColor));
+                // Calculate coating brightness
+                const brightness = getCoatingBrightness(tile.invisibleWall, tile.fullBrightWall);
+
+                // Check if special paint (Shadow=29 or Negative=30)
+                if (tile.wallColor === 29 || tile.wallColor === 30) {
+                    // Special paints modify the base color, don't use separate paint layer
+                    const specialColor = applySpecialPaint(baseColor, tile.wallColor, brightness, true);
+                    setPointColor(LAYERS.WALLS, specialColor);
+                } else {
+                    // Always render base color with brightness to WALLS layer
+                    setPointColor(LAYERS.WALLS, applyBrightness(baseColor, brightness));
+
+                    // Render normal paint to separate WALLPAINT layer if present
+                    if (tile.wallColor !== undefined && tile.wallColor !== 0 && tile.wallColor !== 31) {
+                        const paintColor = colors[LAYERS.WALLPAINT][tile.wallColor];
+                        if (paintColor) {
+                            setPointColor(LAYERS.WALLPAINT, paintColor);
+                        }
+                    }
+                }
+            }
 
             if (tile.wireRed)
                 setPointColor(LAYERS.WIRES, colors[LAYERS.WIRES]["red"]);
