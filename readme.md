@@ -32,4 +32,30 @@ Feel free to contribute 🌳
 \#>git submodule update
 \#>npm start
 ```
+
+## Deployment
+
+### Production Environment
+- **URL:** https://www.terraria-map-editor.com
+- **Source:** `master` branch
+- **Platform:** GitHub Pages
+- **Deployment:** Automatic on push to master
+- **Workflow:** [publish-gh-pages.yaml](.github/workflows/publish-gh-pages.yaml)
+
+### Beta Environment
+- **URL:** https://beta.terraria-map-editor.com
+- **Source:** Pull request branches
+- **Platform:** Cloudflare Pages
+- **Deployment:** Automatic when PR is opened/updated
+- **Workflow:** [deploy-beta.yaml](.github/workflows/deploy-beta.yaml)
+- **Note:** Shared environment - latest PR deployment overwrites previous
+
+### Local Development
+```bash
+npm install
+npm start          # Dev server on http://localhost:3000
+npm run build      # Production build
+npm run test:e2e   # Run E2E tests
+```
+
 #### [API](https://github.com/TEdit/terraria-map-editor-web-api "terraria-map-editor-api")
