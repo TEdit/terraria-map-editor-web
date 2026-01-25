@@ -39,7 +39,7 @@ const wallsOrdered = [...walls].sort((a, b) => a[0].localeCompare(b[0]));
 function OptionbarOptionTileEditOptions({ state, setState, tool }) {
     // Default tileEditOptions if not present (backward compatibility with old saved state)
     const defaultOptions = {
-        editBlockId: true,
+        editBlockId: false,
         editBlockColor: false,
         blockColor: 0,
         editSlope: false,

@@ -312,10 +312,8 @@ export async function onDrawingToolDrag(
         if (tilesArray.length === 0) return;
 
         // OPTIMISTIC RENDERING: Render immediately for instant visual feedback
-        const renderStart = performance.now();
         const layer = Main.state.optionbar.layer;
-        const newId = Main.state.optionbar.id;
-        renderOptimistic(tilesArray, layer, newId, maxTilesX, maxTilesY, Main.state.optionbar.tileEditOptions);
+        renderOptimistic(tilesArray, layer, maxTilesX, maxTilesY, Main.state.optionbar.tileEditOptions);
 
         // Calculate dirty rectangle for this render (only copy changed pixels to canvas)
         const dirtyRect = calculateDirtyRect(tilesArray);

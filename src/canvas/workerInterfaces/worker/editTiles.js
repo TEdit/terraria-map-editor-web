@@ -16,6 +16,8 @@ function applyTileEditOptions(x, y, options) {
     const layer = options.layer;
 
     // Apply block/tile ID (only on TILES layer)
+    // DEBUG: Log the condition check
+    if (x === 0 || y === 0) console.log('[WORKER] blockId check:', layer === LAYERS.TILES, options.editBlockId, options.blockId !== undefined, 'current tile.blockId:', tile.blockId);
     if ((layer === LAYERS.TILES) && options.editBlockId && options.blockId !== undefined) {
         if (options.blockId === "delete" || options.blockId === null) {
             delete tile.blockId;
@@ -135,6 +137,9 @@ function applyTileEditOptions(x, y, options) {
 export default function(data, messageId) {
     const { editType, tileEditArgs, radius, ...options } = data;
     const layer = options.layer;
+
+    // DEBUG: Log what worker receives
+    console.log('[WORKER] editBlockId:', options.editBlockId, 'blockId:', options.blockId, 'editBlockColor:', options.editBlockColor, 'blockColor:', options.blockColor);
 
     if (editType == "rectangle") {
         const updatedTiles = [];
