@@ -241,18 +241,33 @@ export default function(data, messageId) {
             return;
         }
 
-        // Helper to compare tiles (checks ALL properties, not just ID)
-        function isTileSame(tile1, tile2, layer) {
+        // Helper to compare tiles (checks properties based on layer and edit options)
+        function isTileSame(tile1, tile2, layer, options = {}) {
             const eq = (a, b) => (a === undefined && b === undefined) || a === b;
 
             switch (layer) {
                 case LAYERS.TILES:
-                    // Match TileID and paint color, but NOT slope (fills through half-blocks/slopes)
+                    // Always match by TileID (not slope - fills through half-blocks/slopes)
+                    if (!eq(tile1.blockId, tile2.blockId)) return false;
+                    // If editing paint, also require paint color to match
+                    if (options.editBlockColor && !eq(tile1.blockColor, tile2.blockColor)) return false;
+                    return true;
+
+                case LAYERS.TILEPAINT:
+                    // Paint layer: match by blockId and paint color
                     if (!eq(tile1.blockId, tile2.blockId)) return false;
                     if (!eq(tile1.blockColor, tile2.blockColor)) return false;
                     return true;
 
                 case LAYERS.WALLS:
+                    // Always match by WallID
+                    if (!eq(tile1.wallId, tile2.wallId)) return false;
+                    // If editing paint, also require paint color to match
+                    if (options.editWallColor && !eq(tile1.wallColor, tile2.wallColor)) return false;
+                    return true;
+
+                case LAYERS.WALLPAINT:
+                    // Paint layer: match by wallId and paint color
                     if (!eq(tile1.wallId, tile2.wallId)) return false;
                     if (!eq(tile1.wallColor, tile2.wallColor)) return false;
                     return true;
@@ -285,25 +300,6 @@ export default function(data, messageId) {
         // Get origin tile (full tile object, not just ID)
         const originTile = Worker.worldObject.tiles[startX][startY];
 
-        // Check if already filled with target
-        let alreadyFilled = false;
-        switch(layer) {
-            case LAYERS.TILES:
-                alreadyFilled = originTile.blockId === options.blockId;
-                break;
-            case LAYERS.WALLS:
-                alreadyFilled = originTile.wallId === options.wallId;
-                break;
-            case LAYERS.LIQUIDS:
-                alreadyFilled = originTile.liquidType === options.liquidType && originTile.liquidAmount > 0;
-                break;
-        }
-
-        if (alreadyFilled) {
-            postMessage({ action: "RETURN_EDIT_TILES", messageId });
-            return;
-        }
-
         // Flood fill with proper tile comparison
         const visited = new Set();
         const queue = [{x: startX, y: startY}];
@@ -326,8 +322,8 @@ export default function(data, messageId) {
 
             const currentTile = Worker.worldObject.tiles[x][y];
 
-            // Use isTileSame to check ALL properties
-            if (!isTileSame(originTile, currentTile, layer)) continue;
+            // Use isTileSame to check properties (paint matching depends on edit options)
+            if (!isTileSame(originTile, currentTile, layer, options)) continue;
 
             visited.add(key);
 

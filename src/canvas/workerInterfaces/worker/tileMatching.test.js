@@ -6,29 +6,47 @@
 // Vitest provides globals automatically (describe, test, expect)
 // No imports needed!
 
-// Mock LAYERS enum
+// Mock LAYERS enum (matches LAYERS.js)
 const LAYERS = {
-    TILES: 0,
+    BACKGROUND: 0,
     WALLS: 1,
-    WIRES: 2,
-    LIQUIDS: 3
+    WALLPAINT: 2,
+    TILES: 3,
+    TILEPAINT: 4,
+    LIQUIDS: 5,
+    WIRES: 6
 };
 
 /**
  * Tile matching logic extracted from worker/editTiles.js
  * This is the core algorithm that determines which tiles to flood fill
  */
-function isTileSame(tile1, tile2, layer) {
+function isTileSame(tile1, tile2, layer, options = {}) {
     const eq = (a, b) => (a === undefined && b === undefined) || a === b;
 
     switch (layer) {
         case LAYERS.TILES:
-            // Match TileID and paint color, but NOT slope (fills through half-blocks/slopes)
+            // Always match by TileID (not slope - fills through half-blocks/slopes)
+            if (!eq(tile1.blockId, tile2.blockId)) return false;
+            // If editing paint, also require paint color to match
+            if (options.editBlockColor && !eq(tile1.blockColor, tile2.blockColor)) return false;
+            return true;
+
+        case LAYERS.TILEPAINT:
+            // Paint layer: match by blockId and paint color
             if (!eq(tile1.blockId, tile2.blockId)) return false;
             if (!eq(tile1.blockColor, tile2.blockColor)) return false;
             return true;
 
         case LAYERS.WALLS:
+            // Always match by WallID
+            if (!eq(tile1.wallId, tile2.wallId)) return false;
+            // If editing paint, also require paint color to match
+            if (options.editWallColor && !eq(tile1.wallColor, tile2.wallColor)) return false;
+            return true;
+
+        case LAYERS.WALLPAINT:
+            // Paint layer: match by wallId and paint color
             if (!eq(tile1.wallId, tile2.wallId)) return false;
             if (!eq(tile1.wallColor, tile2.wallColor)) return false;
             return true;
@@ -78,10 +96,10 @@ describe('Tile Matching Logic', () => {
             expect(isTileSame(tile1, tile2, LAYERS.TILES)).toBe(false);
         });
 
-        test('should NOT match different paint colors', () => {
+        test('should match different paint colors (default: no paint edit)', () => {
             const tile1 = { blockId: 1, blockColor: 13 };
             const tile2 = { blockId: 1, blockColor: 14 };
-            expect(isTileSame(tile1, tile2, LAYERS.TILES)).toBe(false);
+            expect(isTileSame(tile1, tile2, LAYERS.TILES)).toBe(true);
         });
 
         test('should match same tile with different slopes (USER REQUIREMENT)', () => {
@@ -96,10 +114,10 @@ describe('Tile Matching Logic', () => {
             expect(isTileSame(tile1, tile2, LAYERS.TILES)).toBe(true);
         });
 
-        test('should NOT match painted vs unpainted different color', () => {
+        test('should match painted vs unpainted (default: no paint edit)', () => {
             const tile1 = { blockId: 1, blockColor: 0 };  // No paint (0)
             const tile2 = { blockId: 1, blockColor: 13 }; // Red paint
-            expect(isTileSame(tile1, tile2, LAYERS.TILES)).toBe(false);
+            expect(isTileSame(tile1, tile2, LAYERS.TILES)).toBe(true);
         });
 
         test('should handle undefined blockId in both tiles', () => {
@@ -134,10 +152,10 @@ describe('Tile Matching Logic', () => {
             expect(isTileSame(tile1, tile2, LAYERS.WALLS)).toBe(false);
         });
 
-        test('should NOT match different wall paint colors', () => {
+        test('should match different wall paint colors (default: no paint edit)', () => {
             const tile1 = { wallId: 4, wallColor: 13 };
             const tile2 = { wallId: 4, wallColor: 14 };
-            expect(isTileSame(tile1, tile2, LAYERS.WALLS)).toBe(false);
+            expect(isTileSame(tile1, tile2, LAYERS.WALLS)).toBe(true);
         });
 
         test('should handle undefined wallId in both tiles', () => {
@@ -326,11 +344,12 @@ describe('Tile Matching Logic', () => {
             expect(isTileSame(halfBlock, slopedDirt, LAYERS.TILES)).toBe(true);
         });
 
-        test('Scenario: Fill stone with red paint vs unpainted', () => {
+        test('Scenario: Fill stone with red paint vs unpainted (no paint edit)', () => {
             const unpaintedStone = { blockId: 1, blockColor: 0 };
             const redStone = { blockId: 1, blockColor: 13 };
 
-            expect(isTileSame(unpaintedStone, redStone, LAYERS.TILES)).toBe(false);
+            // Default (no options) matches by ID only
+            expect(isTileSame(unpaintedStone, redStone, LAYERS.TILES)).toBe(true);
         });
 
         test('Scenario: Fill water through air pockets', () => {
@@ -342,11 +361,12 @@ describe('Tile Matching Logic', () => {
             expect(isTileSame(water1, air, LAYERS.LIQUIDS)).toBe(false);
         });
 
-        test('Scenario: Fill stone wall with blue paint', () => {
+        test('Scenario: Fill stone wall with blue paint (no paint edit)', () => {
             const unpaintedWall = { wallId: 1 };
             const blueWall = { wallId: 1, wallColor: 11 };
 
-            expect(isTileSame(unpaintedWall, blueWall, LAYERS.WALLS)).toBe(false);
+            // Default (no options) matches by ID only
+            expect(isTileSame(unpaintedWall, blueWall, LAYERS.WALLS)).toBe(true);
         });
 
         test('Scenario: Fill red wire network', () => {
@@ -356,6 +376,114 @@ describe('Tile Matching Logic', () => {
 
             expect(isTileSame(redWire1, redWire2, LAYERS.WIRES)).toBe(true);
             expect(isTileSame(redWire1, noWire, LAYERS.WIRES)).toBe(false);
+        });
+    });
+
+    describe('Paint operations (editBlockColor/editWallColor)', () => {
+        test('should NOT match different paint colors when editBlockColor=true (painting requires same paint)', () => {
+            const unpaintedStone = { blockId: 1 };
+            const redStone = { blockId: 1, blockColor: 13 };
+            const options = { editBlockColor: true };
+            expect(isTileSame(unpaintedStone, redStone, LAYERS.TILES, options)).toBe(false);
+        });
+
+        test('should match different paint colors when editBlockColor=false (tile-only mode ignores paint)', () => {
+            const unpaintedStone = { blockId: 1, blockColor: 0 };
+            const redStone = { blockId: 1, blockColor: 13 };
+            const options = { editBlockColor: false };
+            expect(isTileSame(unpaintedStone, redStone, LAYERS.TILES, options)).toBe(true);
+        });
+
+        test('should match same paint when editBlockColor=true', () => {
+            const redStone1 = { blockId: 1, blockColor: 13 };
+            const redStone2 = { blockId: 1, blockColor: 13 };
+            const options = { editBlockColor: true };
+            expect(isTileSame(redStone1, redStone2, LAYERS.TILES, options)).toBe(true);
+        });
+
+        test('should NOT match different blockId even when editBlockColor=true', () => {
+            const stone = { blockId: 1, blockColor: 0 };
+            const dirt = { blockId: 2, blockColor: 0 };
+            const options = { editBlockColor: true };
+            expect(isTileSame(stone, dirt, LAYERS.TILES, options)).toBe(false);
+        });
+
+        test('should NOT match different wall paint when editWallColor=true', () => {
+            const unpaintedWall = { wallId: 4 };
+            const blueWall = { wallId: 4, wallColor: 11 };
+            const options = { editWallColor: true };
+            expect(isTileSame(unpaintedWall, blueWall, LAYERS.WALLS, options)).toBe(false);
+        });
+
+        test('should match different wall paint when editWallColor=false', () => {
+            const unpaintedWall = { wallId: 4 };
+            const blueWall = { wallId: 4, wallColor: 11 };
+            const options = { editWallColor: false };
+            expect(isTileSame(unpaintedWall, blueWall, LAYERS.WALLS, options)).toBe(true);
+        });
+
+        test('should handle empty options object (matches by ID only)', () => {
+            const tile1 = { blockId: 1 };
+            const tile2 = { blockId: 1, blockColor: 5 };
+            expect(isTileSame(tile1, tile2, LAYERS.TILES, {})).toBe(true);
+        });
+
+        test('should handle missing options parameter (matches by ID only)', () => {
+            const tile1 = { blockId: 1 };
+            const tile2 = { blockId: 1, blockColor: 5 };
+            expect(isTileSame(tile1, tile2, LAYERS.TILES)).toBe(true);
+        });
+    });
+
+    describe('TILEPAINT layer matching', () => {
+        test('should match same blockId and same paint color', () => {
+            const redStone1 = { blockId: 1, blockColor: 13 };
+            const redStone2 = { blockId: 1, blockColor: 13 };
+            expect(isTileSame(redStone1, redStone2, LAYERS.TILEPAINT)).toBe(true);
+        });
+
+        test('should NOT match different paint colors', () => {
+            const stone = { blockId: 1, blockColor: 0 };
+            const redStone = { blockId: 1, blockColor: 13 };
+            expect(isTileSame(stone, redStone, LAYERS.TILEPAINT)).toBe(false);
+        });
+
+        test('should NOT match different blockId', () => {
+            const stone = { blockId: 1 };
+            const dirt = { blockId: 2 };
+            expect(isTileSame(stone, dirt, LAYERS.TILEPAINT)).toBe(false);
+        });
+
+        test('should match unpainted tiles (both undefined color)', () => {
+            const unpaintedStone1 = { blockId: 1 };
+            const unpaintedStone2 = { blockId: 1 };
+            expect(isTileSame(unpaintedStone1, unpaintedStone2, LAYERS.TILEPAINT)).toBe(true);
+        });
+    });
+
+    describe('WALLPAINT layer matching', () => {
+        test('should match same wallId and same paint color', () => {
+            const blueWall1 = { wallId: 4, wallColor: 11 };
+            const blueWall2 = { wallId: 4, wallColor: 11 };
+            expect(isTileSame(blueWall1, blueWall2, LAYERS.WALLPAINT)).toBe(true);
+        });
+
+        test('should NOT match different paint colors', () => {
+            const wall = { wallId: 4, wallColor: 0 };
+            const blueWall = { wallId: 4, wallColor: 11 };
+            expect(isTileSame(wall, blueWall, LAYERS.WALLPAINT)).toBe(false);
+        });
+
+        test('should NOT match different wallId', () => {
+            const wall1 = { wallId: 4 };
+            const wall2 = { wallId: 5 };
+            expect(isTileSame(wall1, wall2, LAYERS.WALLPAINT)).toBe(false);
+        });
+
+        test('should match unpainted walls (both undefined color)', () => {
+            const unpaintedWall1 = { wallId: 4 };
+            const unpaintedWall2 = { wallId: 4 };
+            expect(isTileSame(unpaintedWall1, unpaintedWall2, LAYERS.WALLPAINT)).toBe(true);
         });
     });
 });
