@@ -23,7 +23,6 @@ const onBucketClick = async (e) => {
 
     try {
         const layer = Main.state.optionbar.layer;
-        const id = Main.state.optionbar.id;
         const maxTilesX = Main.state.canvas.worldObject.header.maxTilesX;
         const maxTilesY = Main.state.canvas.worldObject.header.maxTilesY;
 
@@ -35,14 +34,13 @@ const onBucketClick = async (e) => {
             : Main.state.optionbar.radius;  // Use radius setting
 
         // Call worker to perform flood fill on world data
-        const response = await Main.workerInterfaces.editTiles(
-            layer,
-            "floodfill",
-            [Main.mousePosImageX, Main.mousePosImageY],
-            id,
-            radius,  // Pass radius to worker (undefined = infinite fill)
-            Main.state.optionbar.tileEditOptions  // Pass tile editing options
-        );
+        const response = await Main.workerInterfaces.editTiles({
+            ...Main.state.optionbar.tileEditOptions,
+            editType: "floodfill",
+            tileEditArgs: [Main.mousePosImageX, Main.mousePosImageY],
+            layer: layer,
+            radius: radius
+        });
 
         // If flood fill returned tiles, sync data and render
         if (response?.tilesArray && response.tilesArray.length > 0) {

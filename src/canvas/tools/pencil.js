@@ -31,14 +31,12 @@ async function applyPencilOperation(tilesArray, layer) {
 
         // PHASE 2 UNIFIED PIPELINE (Memory Efficient):
         // 1. Edit world data in worker (wait for completion)
-        const response = await Main.workerInterfaces.editTiles(
-            layer,
-            "tileslist",
-            tilesArray,
-            Main.state.optionbar.id,
-            undefined,
-            Main.state.optionbar.tileEditOptions
-        );
+        const response = await Main.workerInterfaces.editTiles({
+            ...Main.state.optionbar.tileEditOptions,
+            editType: "tileslist",
+            tileEditArgs: tilesArray,
+            layer: layer
+        });
 
         // 2. Build tiles lookup from worker response (no main thread copy)
         const tilesData = {};

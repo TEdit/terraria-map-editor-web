@@ -138,11 +138,11 @@ describe('Pencil Tool Integration Tests', () => {
 
             expect(mockMain.workerInterfaces.editTiles).toHaveBeenCalled();
             const call = mockMain.workerInterfaces.editTiles.mock.calls[0];
-            const [layer, type, tiles, id] = call;
+            const [options] = call;
 
-            expect(layer).toBe(0);
-            expect(type).toBe('rectangle');
-            expect(tiles).toHaveLength(2); // Start and end
+            expect(options.layer).toBe(0);
+            expect(options.editType).toBe('tileslist');
+            expect(options.tileEditArgs).toBeDefined();
         });
 
         test('should handle large brush (50x50)', async () => {

@@ -51,14 +51,12 @@ async function applyEraserOperation(tilesArray, layer) {
 
         // PHASE 2 UNIFIED PIPELINE:
         // 1. Edit world data FIRST (wait for completion)
-        const response = await Main.workerInterfaces.editTiles(
-            layer,
-            "tileslist",  // Use tileslist mode for line-interpolated tiles
-            tilesArray,   // Pass actual line tiles, not rectangle corners
-            "delete",
-            undefined,    // radius (not used for eraser)
-            eraserOptions
-        );
+        const response = await Main.workerInterfaces.editTiles({
+            ...eraserOptions,
+            editType: "tileslist",
+            tileEditArgs: tilesArray,
+            layer: layer
+        });
 
         // 2. Build tiles lookup from worker response (no main thread copy)
         const tilesData = {};

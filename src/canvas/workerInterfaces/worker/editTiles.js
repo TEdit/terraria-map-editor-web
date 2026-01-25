@@ -13,8 +13,10 @@ function applyTileEditOptions(x, y, options) {
     Worker.worldObject.tiles[x][y] = { ...Worker.worldObject.tiles[x][y] };
     const tile = Worker.worldObject.tiles[x][y];
 
-    // Apply block/tile ID
-    if (options.editBlockId && options.blockId !== undefined) {
+    const layer = options.layer;
+
+    // Apply block/tile ID (only on TILES layer)
+    if ((layer === LAYERS.TILES) && options.editBlockId && options.blockId !== undefined) {
         if (options.blockId === "delete" || options.blockId === null) {
             delete tile.blockId;
             delete tile.frameX;
@@ -32,8 +34,8 @@ function applyTileEditOptions(x, y, options) {
         }
     }
 
-    // Apply block paint color (only if tile exists)
-    if (options.editBlockColor && tile.blockId !== undefined) {
+    // Apply block paint color (only on TILES or TILEPAINT layer, and only if tile exists)
+    if ((layer === LAYERS.TILES || layer === LAYERS.TILEPAINT) && options.editBlockColor && tile.blockId !== undefined) {
         if (options.blockColor === null || options.blockColor === "delete") {
             delete tile.blockColor;
         } else {
@@ -41,8 +43,8 @@ function applyTileEditOptions(x, y, options) {
         }
     }
 
-    // Apply slope (only if tile exists)
-    if (options.editSlope && tile.blockId !== undefined) {
+    // Apply slope (only on TILES layer, and only if tile exists)
+    if ((layer === LAYERS.TILES) && options.editSlope && tile.blockId !== undefined) {
         if (options.slope === null || options.slope === "delete" || options.slope === undefined) {
             delete tile.slope;
         } else {
@@ -50,8 +52,8 @@ function applyTileEditOptions(x, y, options) {
         }
     }
 
-    // Apply block coatings (only if tile exists)
-    if (tile.blockId !== undefined) {
+    // Apply block coatings (only on TILES layer, and only if tile exists)
+    if ((layer === LAYERS.TILES) && tile.blockId !== undefined) {
         if (options.editInvisibleBlock) {
             if (options.invisibleBlock) {
                 tile.invisibleBlock = true;
@@ -69,8 +71,8 @@ function applyTileEditOptions(x, y, options) {
         }
     }
 
-    // Apply wall ID
-    if (options.editWallId && options.wallId !== undefined) {
+    // Apply wall ID (only on WALLS layer)
+    if ((layer === LAYERS.WALLS) && options.editWallId && options.wallId !== undefined) {
         if (options.wallId === "delete" || options.wallId === null) {
             delete tile.wallId;
             delete tile.wallColor;
@@ -81,8 +83,8 @@ function applyTileEditOptions(x, y, options) {
         }
     }
 
-    // Apply wall paint color (only if wall exists)
-    if (options.editWallColor && tile.wallId !== undefined && tile.wallId !== 0) {
+    // Apply wall paint color (only on WALLS or WALLPAINT layer, and only if wall exists)
+    if ((layer === LAYERS.WALLS || layer === LAYERS.WALLPAINT) && options.editWallColor && tile.wallId !== undefined && tile.wallId !== 0) {
         if (options.wallColor === null || options.wallColor === "delete") {
             delete tile.wallColor;
         } else {
@@ -90,8 +92,8 @@ function applyTileEditOptions(x, y, options) {
         }
     }
 
-    // Apply wall coatings (only if wall exists)
-    if (tile.wallId !== undefined) {
+    // Apply wall coatings (only on WALLS layer, and only if wall exists)
+    if ((layer === LAYERS.WALLS) && tile.wallId !== undefined) {
         if (options.editInvisibleWall) {
             if (options.invisibleWall) {
                 tile.invisibleWall = true;
@@ -109,8 +111,8 @@ function applyTileEditOptions(x, y, options) {
         }
     }
 
-    // Apply actuator properties (only if tile exists)
-    if (tile.blockId !== undefined && tile.blockId > 0) {
+    // Apply actuator properties (only on TILES or WIRES layer, and only if tile exists)
+    if ((layer === LAYERS.TILES || layer === LAYERS.WIRES) && tile.blockId !== undefined && tile.blockId > 0) {
         if (options.editActuator) {
             if (options.actuator) {
                 tile.actuator = true;
@@ -129,107 +131,17 @@ function applyTileEditOptions(x, y, options) {
     }
 }
 
-function changeTile(LAYER, x, y, newId) {
-    //original 2d tiles array is full of references because of RLE, dont wanna change them too!
-    Worker.worldObject.tiles[x][y] = { ...Worker.worldObject.tiles[x][y] };
-
-    if (newId == "delete") {
-        switch(LAYER) {
-            case 100: //all
-                Worker.worldObject.tiles[x][y] = {};
-                break;
-
-            case LAYERS.TILES:
-                delete Worker.worldObject.tiles[x][y].blockId;
-                delete Worker.worldObject.tiles[x][y].frameX;
-                delete Worker.worldObject.tiles[x][y].frameY;
-                delete Worker.worldObject.tiles[x][y].slope;
-                delete Worker.worldObject.tiles[x][y].blockColor;
-                break;
-
-            case LAYERS.WALLS:
-                delete Worker.worldObject.tiles[x][y].wallId;
-                delete Worker.worldObject.tiles[x][y].wallColor;
-                break;
-
-            case LAYERS.WIRES:
-                delete Worker.worldObject.tiles[x][y].wireRed;
-                delete Worker.worldObject.tiles[x][y].wireGreen;
-                delete Worker.worldObject.tiles[x][y].wireBlue;
-                delete Worker.worldObject.tiles[x][y].wireYellow;
-                delete Worker.worldObject.tiles[x][y].actuator;
-                delete Worker.worldObject.tiles[x][y].actuated;
-                break;
-
-            case LAYERS.LIQUIDS:
-                delete Worker.worldObject.tiles[x][y].liquidType;
-                delete Worker.worldObject.tiles[x][y].liquidAmount;
-                break;
-
-            case LAYERS.TILEPAINT:
-                delete Worker.worldObject.tiles[x][y].blockColor;
-                break;
-
-            case LAYERS.WALLPAINT:
-                delete Worker.worldObject.tiles[x][y].wallColor;
-                break;
-        }
-    } else {
-        switch(LAYER) {
-            case LAYERS.TILES:
-                Worker.worldObject.tiles[x][y].blockId = parseInt(newId);
-                delete Worker.worldObject.tiles[x][y].frameX;
-                delete Worker.worldObject.tiles[x][y].frameY;
-                delete Worker.worldObject.tiles[x][y].slope;
-                delete Worker.worldObject.tiles[x][y].blockColor;
-                break;
-
-            case LAYERS.WALLS:
-                Worker.worldObject.tiles[x][y].wallId = parseInt(newId);
-                delete Worker.worldObject.tiles[x][y].wallColor;
-                break;
-
-            case LAYERS.WIRES:
-                Worker.worldObject.tiles[x][y]["wire" + newId.charAt(0).toUpperCase() + newId.slice(1)] = true;
-                break;
-
-            case LAYERS.LIQUIDS:
-                Worker.worldObject.tiles[x][y].liquidType = newId;
-                Worker.worldObject.tiles[x][y].liquidAmount = 255;
-                break;
-
-            case LAYERS.TILEPAINT:
-                Worker.worldObject.tiles[x][y].blockColor = newId;
-                break;
-
-            case LAYERS.WALLPAINT:
-                Worker.worldObject.tiles[x][y].wallColor = newId;
-                break;
-        }
-    }
-}
 
 export default function(data, messageId) {
-    const { LAYER, editType, editArgs, newId, radius, tileEditOptions } = data;
+    const { editType, tileEditArgs, radius, ...options } = data;
+    const layer = options.layer;
 
     if (editType == "rectangle") {
         const updatedTiles = [];
 
-        for (let x = editArgs[0][0]; x <= editArgs[1][0]; x++)
-            for (let y = editArgs[0][1]; y <= editArgs[1][1]; y++) {
-                // Use new tileEditOptions if provided, otherwise fall back to legacy layer-based editing
-                if (tileEditOptions) {
-                    // Merge newId into appropriate property based on layer
-                    const optionsWithId = { ...tileEditOptions };
-                    if (LAYER === LAYERS.TILES) {
-                        optionsWithId.blockId = newId;
-                    } else if (LAYER === LAYERS.WALLS) {
-                        optionsWithId.wallId = newId;
-                    }
-                    applyTileEditOptions(x, y, optionsWithId);
-                } else {
-                    changeTile(LAYER, x, y, newId);
-                }
+        for (let x = tileEditArgs[0][0]; x <= tileEditArgs[1][0]; x++)
+            for (let y = tileEditArgs[0][1]; y <= tileEditArgs[1][1]; y++) {
+                applyTileEditOptions(x, y, options);
 
                 // Collect updated tile for main thread synchronization
                 updatedTiles.push({
@@ -247,8 +159,8 @@ export default function(data, messageId) {
     }
 
     else if (editType == "floodfill") {
-        const startX = editArgs[0];
-        const startY = editArgs[1];
+        const startX = tileEditArgs[0];
+        const startY = tileEditArgs[1];
         // radius is destructured from function parameter (undefined = infinite)
         const maxX = Worker.worldObject.header.maxTilesX;
         const maxY = Worker.worldObject.header.maxTilesY;
@@ -309,15 +221,15 @@ export default function(data, messageId) {
 
         // Check if already filled with target
         let alreadyFilled = false;
-        switch(LAYER) {
+        switch(layer) {
             case LAYERS.TILES:
-                alreadyFilled = originTile.blockId === newId;
+                alreadyFilled = originTile.blockId === options.blockId;
                 break;
             case LAYERS.WALLS:
-                alreadyFilled = originTile.wallId === newId;
+                alreadyFilled = originTile.wallId === options.wallId;
                 break;
             case LAYERS.LIQUIDS:
-                alreadyFilled = originTile.liquidType === newId && originTile.liquidAmount > 0;
+                alreadyFilled = originTile.liquidType === options.liquidType && originTile.liquidAmount > 0;
                 break;
         }
 
@@ -349,23 +261,11 @@ export default function(data, messageId) {
             const currentTile = Worker.worldObject.tiles[x][y];
 
             // Use isTileSame to check ALL properties
-            if (!isTileSame(originTile, currentTile, LAYER)) continue;
+            if (!isTileSame(originTile, currentTile, layer)) continue;
 
             visited.add(key);
 
-            // Use new tileEditOptions if provided, otherwise fall back to legacy layer-based editing
-            if (tileEditOptions) {
-                // Merge newId into appropriate property based on layer
-                const optionsWithId = { ...tileEditOptions };
-                if (LAYER === LAYERS.TILES) {
-                    optionsWithId.blockId = newId;
-                } else if (LAYER === LAYERS.WALLS) {
-                    optionsWithId.wallId = newId;
-                }
-                applyTileEditOptions(x, y, optionsWithId);
-            } else {
-                changeTile(LAYER, x, y, newId);
-            }
+            applyTileEditOptions(x, y, options);
 
             tilesArray.push([x, y]);
 
@@ -392,24 +292,12 @@ export default function(data, messageId) {
     }
 
     else if (editType == "tileslist") {
-        // editArgs is an array of [x, y] coordinates
-        const tilesArray = editArgs;
+        // tileEditArgs is an array of [x, y] coordinates
+        const tilesArray = tileEditArgs;
         const updatedTiles = [];
 
         tilesArray.forEach(([x, y]) => {
-            // Use new tileEditOptions if provided, otherwise fall back to legacy layer-based editing
-            if (tileEditOptions) {
-                // Merge newId into appropriate property based on layer
-                const optionsWithId = { ...tileEditOptions };
-                if (LAYER === LAYERS.TILES) {
-                    optionsWithId.blockId = newId;
-                } else if (LAYER === LAYERS.WALLS) {
-                    optionsWithId.wallId = newId;
-                }
-                applyTileEditOptions(x, y, optionsWithId);
-            } else {
-                changeTile(LAYER, x, y, newId);
-            }
+            applyTileEditOptions(x, y, options);
 
             // Collect updated tile for main thread synchronization
             updatedTiles.push({

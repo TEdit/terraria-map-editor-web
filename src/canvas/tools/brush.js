@@ -59,14 +59,12 @@ const onBrushClick = async (e) => {
 
     // PHASE 2 UNIFIED PIPELINE:
     // 1. Edit world data FIRST (wait for completion)
-    const response = await Main.workerInterfaces.editTiles(
-        layer,
-        "tileslist",  // Use tileslist mode for actual tiles
-        tilesArray,   // Pass actual tiles, not rectangle corners
-        Main.state.optionbar.id,
-        undefined,    // radius (not used for brush)
-        Main.state.optionbar.tileEditOptions
-    );
+    const response = await Main.workerInterfaces.editTiles({
+        ...Main.state.optionbar.tileEditOptions,
+        editType: "tileslist",
+        tileEditArgs: tilesArray,
+        layer: layer
+    });
 
     // 2. Build tiles lookup from worker response (no main thread copy)
     const tilesData = {};
@@ -134,14 +132,12 @@ const onBrushDrag = async (e) => {
 
     // PHASE 2 UNIFIED PIPELINE:
     // 1. Edit world data FIRST (wait for completion)
-    const response = await Main.workerInterfaces.editTiles(
-        layer,
-        "tileslist",  // Use tileslist mode for line-interpolated tiles
-        tilesArray,   // Pass actual line tiles, not rectangle corners
-        Main.state.optionbar.id,
-        undefined,    // radius (not used for brush)
-        Main.state.optionbar.tileEditOptions
-    );
+    const response = await Main.workerInterfaces.editTiles({
+        ...Main.state.optionbar.tileEditOptions,
+        editType: "tileslist",
+        tileEditArgs: tilesArray,
+        layer: layer
+    });
 
     // 2. Build tiles lookup from worker response (no main thread copy)
     const tilesData = {};
