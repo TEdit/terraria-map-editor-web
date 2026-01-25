@@ -91,7 +91,13 @@ let defaultState = {
             editActuator: false,
             actuator: false,
             editActuated: false,
-            actuated: false
+            actuated: false,
+
+            // Liquid properties
+            editLiquidType: false,
+            liquidType: "water",
+            editLiquidAmount: false,
+            liquidAmount: 255
         }
     }),
     selection: {

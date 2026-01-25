@@ -36,6 +36,22 @@ const walls = Object.entries(editableWalls).map(([id, name]) => [
 const tilesOrdered = [...tiles].sort((a, b) => a[0].localeCompare(b[0]));
 const wallsOrdered = [...walls].sort((a, b) => a[0].localeCompare(b[0]));
 
+// Liquid type options with colors
+const LIQUID_OPTIONS = [
+    ["Water", "water", colors[LAYERS.LIQUIDS].water],
+    ["Lava", "lava", colors[LAYERS.LIQUIDS].lava],
+    ["Honey", "honey", colors[LAYERS.LIQUIDS].honey],
+    ["Shimmer", "shimmer", colors[LAYERS.LIQUIDS].shimmer]
+];
+
+// Wire colors for visual indicators
+const WIRE_COLORS = {
+    red: colors[LAYERS.WIRES].red,
+    green: colors[LAYERS.WIRES].green,
+    blue: colors[LAYERS.WIRES].blue,
+    yellow: colors[LAYERS.WIRES].yellow
+};
+
 function OptionbarOptionTileEditOptions({ state, setState, tool }) {
     // Default tileEditOptions if not present (backward compatibility with old saved state)
     const defaultOptions = {
@@ -58,7 +74,12 @@ function OptionbarOptionTileEditOptions({ state, setState, tool }) {
         editActuator: false,
         actuator: false,
         editActuated: false,
-        actuated: false
+        actuated: false,
+        // Liquid properties
+        editLiquidType: false,
+        liquidType: "water",
+        editLiquidAmount: false,
+        liquidAmount: 255
     };
 
     const options = state.tileEditOptions || defaultOptions;
@@ -74,13 +95,26 @@ function OptionbarOptionTileEditOptions({ state, setState, tool }) {
         });
     };
 
+    // Batch update multiple tileEditOptions properties in a single state update
+    const updateOptions = (updates) => {
+        setState({
+            ...state,
+            tileEditOptions: {
+                ...options,
+                ...updates
+            }
+        });
+    };
+
     const isTileLayer = currentLayer === LAYERS.TILES;
     const isWallLayer = currentLayer === LAYERS.WALLS;
     const isPaintedTilesLayer = currentLayer === LAYERS.TILEPAINT;
     const isPaintedWallsLayer = currentLayer === LAYERS.WALLPAINT;
+    const isWireLayer = currentLayer === LAYERS.WIRES;
+    const isLiquidLayer = currentLayer === LAYERS.LIQUIDS;
 
     // Don't show panel for layers that don't support property editing
-    if (!isTileLayer && !isWallLayer && !isPaintedTilesLayer && !isPaintedWallsLayer) {
+    if (!isTileLayer && !isWallLayer && !isPaintedTilesLayer && !isPaintedWallsLayer && !isWireLayer && !isLiquidLayer) {
         return null;
     }
 
@@ -361,6 +395,7 @@ function OptionbarOptionTileEditOptions({ state, setState, tool }) {
                     Visual effects: Echo (invisible) and Illuminate (fullbright)
                     Available for both tiles and walls (v269+/1.4.4+)
                     ═══════════════════════════════════════════════════════════════ */}
+                {(isTileLayer || isWallLayer || isPaintedTilesLayer || isPaintedWallsLayer) && (
                 <div className="tile-edit-card">
                     <div className="tile-edit-card-header">Coatings</div>
                     <div className="tile-edit-card-body">
@@ -370,16 +405,20 @@ function OptionbarOptionTileEditOptions({ state, setState, tool }) {
                                     label="Echo"
                                     value={options.editInvisibleBlock}
                                     onChange={(checked) => {
-                                        updateOption('editInvisibleBlock', checked);
-                                        if (checked) updateOption('invisibleBlock', true);
+                                        updateOptions({
+                                            editInvisibleBlock: checked,
+                                            ...(checked && { invisibleBlock: true })
+                                        });
                                     }}
                                 />
                                 <InputCheckbox
                                     label="Illuminate"
                                     value={options.editFullBrightBlock}
                                     onChange={(checked) => {
-                                        updateOption('editFullBrightBlock', checked);
-                                        if (checked) updateOption('fullBrightBlock', true);
+                                        updateOptions({
+                                            editFullBrightBlock: checked,
+                                            ...(checked && { fullBrightBlock: true })
+                                        });
                                     }}
                                 />
                             </>
@@ -391,22 +430,27 @@ function OptionbarOptionTileEditOptions({ state, setState, tool }) {
                                     label="Echo"
                                     value={options.editInvisibleWall}
                                     onChange={(checked) => {
-                                        updateOption('editInvisibleWall', checked);
-                                        if (checked) updateOption('invisibleWall', true);
+                                        updateOptions({
+                                            editInvisibleWall: checked,
+                                            ...(checked && { invisibleWall: true })
+                                        });
                                     }}
                                 />
                                 <InputCheckbox
                                     label="Illuminate"
                                     value={options.editFullBrightWall}
                                     onChange={(checked) => {
-                                        updateOption('editFullBrightWall', checked);
-                                        if (checked) updateOption('fullBrightWall', true);
+                                        updateOptions({
+                                            editFullBrightWall: checked,
+                                            ...(checked && { fullBrightWall: true })
+                                        });
                                     }}
                                 />
                             </>
                         )}
                     </div>
                 </div>
+                )}
 
                 {/* ═══════════════════════════════════════════════════════════════
                     WIRING CARD
@@ -421,18 +465,171 @@ function OptionbarOptionTileEditOptions({ state, setState, tool }) {
                                 label="Actuator"
                                 value={options.editActuator}
                                 onChange={(checked) => {
-                                    updateOption('editActuator', checked);
-                                    if (checked) updateOption('actuator', true);
+                                    updateOptions({
+                                        editActuator: checked,
+                                        ...(checked && { actuator: true })
+                                    });
                                 }}
                             />
                             <InputCheckbox
                                 label="IsActive"
                                 value={options.editActuated}
                                 onChange={(checked) => {
-                                    updateOption('editActuated', checked);
-                                    if (checked) updateOption('actuated', true);
+                                    updateOptions({
+                                        editActuated: checked,
+                                        ...(checked && { actuated: true })
+                                    });
                                 }}
                             />
+                        </div>
+                    </div>
+                )}
+
+                {/* ═══════════════════════════════════════════════════════════════
+                    WIRES CARD
+                    Wire color toggles: Red, Green, Blue, Yellow (2x2 grid)
+                    Available only on WIRES layer
+                    ═══════════════════════════════════════════════════════════════ */}
+                {isWireLayer && (
+                    <div className="tile-edit-card">
+                        <div className="tile-edit-card-header">Wires</div>
+                        <div className="tile-edit-card-body">
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.25rem' }}>
+                                <div style={{ display: 'flex', alignItems: 'center' }}>
+                                    <div style={{ width: '55px' }}>
+                                        <InputCheckbox
+                                            label="Red"
+                                            value={options.editWireRed}
+                                            onChange={(checked) => {
+                                                updateOptions({
+                                                    editWireRed: checked,
+                                                    ...(checked && { wireRed: true })
+                                                });
+                                            }}
+                                        />
+                                    </div>
+                                    <div
+                                        style={{
+                                            width: '14px',
+                                            height: '14px',
+                                            backgroundColor: `rgba(${WIRE_COLORS.red.r},${WIRE_COLORS.red.g},${WIRE_COLORS.red.b},1)`,
+                                            borderRadius: '2px'
+                                        }}
+                                    />
+                                </div>
+                                <div style={{ display: 'flex', alignItems: 'center' }}>
+                                    <div style={{ width: '55px' }}>
+                                        <InputCheckbox
+                                            label="Green"
+                                            value={options.editWireGreen}
+                                            onChange={(checked) => {
+                                                updateOptions({
+                                                    editWireGreen: checked,
+                                                    ...(checked && { wireGreen: true })
+                                                });
+                                            }}
+                                        />
+                                    </div>
+                                    <div
+                                        style={{
+                                            width: '14px',
+                                            height: '14px',
+                                            backgroundColor: `rgba(${WIRE_COLORS.green.r},${WIRE_COLORS.green.g},${WIRE_COLORS.green.b},1)`,
+                                            borderRadius: '2px'
+                                        }}
+                                    />
+                                </div>
+                                <div style={{ display: 'flex', alignItems: 'center' }}>
+                                    <div style={{ width: '55px' }}>
+                                        <InputCheckbox
+                                            label="Blue"
+                                            value={options.editWireBlue}
+                                            onChange={(checked) => {
+                                                updateOptions({
+                                                    editWireBlue: checked,
+                                                    ...(checked && { wireBlue: true })
+                                                });
+                                            }}
+                                        />
+                                    </div>
+                                    <div
+                                        style={{
+                                            width: '14px',
+                                            height: '14px',
+                                            backgroundColor: `rgba(${WIRE_COLORS.blue.r},${WIRE_COLORS.blue.g},${WIRE_COLORS.blue.b},1)`,
+                                            borderRadius: '2px'
+                                        }}
+                                    />
+                                </div>
+                                <div style={{ display: 'flex', alignItems: 'center' }}>
+                                    <div style={{ width: '55px' }}>
+                                        <InputCheckbox
+                                            label="Yellow"
+                                            value={options.editWireYellow}
+                                            onChange={(checked) => {
+                                                updateOptions({
+                                                    editWireYellow: checked,
+                                                    ...(checked && { wireYellow: true })
+                                                });
+                                            }}
+                                        />
+                                    </div>
+                                    <div
+                                        style={{
+                                            width: '14px',
+                                            height: '14px',
+                                            backgroundColor: `rgba(${WIRE_COLORS.yellow.r},${WIRE_COLORS.yellow.g},${WIRE_COLORS.yellow.b},1)`,
+                                            borderRadius: '2px'
+                                        }}
+                                    />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {/* ═══════════════════════════════════════════════════════════════
+                    LIQUIDS CARD
+                    Liquid type selection and amount slider
+                    Available only on LIQUIDS layer
+                    ═══════════════════════════════════════════════════════════════ */}
+                {isLiquidLayer && (
+                    <div className="tile-edit-card">
+                        <div className="tile-edit-card-header">Liquids</div>
+                        <div className="tile-edit-card-body">
+                            <div className="tile-edit-inline-row">
+                                <InputCheckbox
+                                    label="Type"
+                                    value={options.editLiquidType}
+                                    onChange={(checked) => updateOption('editLiquidType', checked)}
+                                />
+                                <InputSelectWithColor
+                                    options={LIQUID_OPTIONS}
+                                    value={options.liquidType ?? "water"}
+                                    onChange={(value) => updateOption('liquidType', value)}
+                                    disabled={!options.editLiquidType}
+                                    width="100px"
+                                />
+                            </div>
+                            <div className="tile-edit-inline-row">
+                                <InputCheckbox
+                                    label="Amount"
+                                    value={options.editLiquidAmount}
+                                    onChange={(checked) => updateOption('editLiquidAmount', checked)}
+                                />
+                                <InputSlider
+                                    value={options.liquidAmount ?? 255}
+                                    min={0}
+                                    max={255}
+                                    onChange={(value) => updateOption('liquidAmount', parseInt(value))}
+                                    disabled={!options.editLiquidAmount}
+                                    sliderWidth="5rem"
+                                    input
+                                    inputWidth="4ch"
+                                    inputMin={0}
+                                    inputMax={255}
+                                />
+                            </div>
                         </div>
                     </div>
                 )}

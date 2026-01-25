@@ -65,13 +65,36 @@ function buildOptimisticTile(layer, tileEditOptions, originalTile = null) {
             }
             break;
         case LAYERS.LIQUIDS:
-            if (tileEditOptions?.liquidType !== undefined) {
+            if (tileEditOptions?.editLiquidType && tileEditOptions.liquidType !== undefined) {
                 tile.liquidType = tileEditOptions.liquidType;
-                tile.liquidAmount = 255;
+                if (tileEditOptions.editLiquidAmount && tileEditOptions.liquidAmount > 0) {
+                    tile.liquidAmount = tileEditOptions.liquidAmount;
+                } else {
+                    tile.liquidAmount = 255;  // Default full if type is set
+                }
+            } else if (tileEditOptions?.editLiquidAmount && tileEditOptions.liquidAmount > 0) {
+                // Amount-only edit - preserve original type or default to water
+                if (originalTile?.liquidType) {
+                    tile.liquidType = originalTile.liquidType;
+                } else {
+                    tile.liquidType = "water";
+                }
+                tile.liquidAmount = tileEditOptions.liquidAmount;
             }
             break;
         case LAYERS.WIRES:
-            // Wire editing would go here
+            if (tileEditOptions?.editWireRed && tileEditOptions.wireRed) {
+                tile.wireRed = true;
+            }
+            if (tileEditOptions?.editWireGreen && tileEditOptions.wireGreen) {
+                tile.wireGreen = true;
+            }
+            if (tileEditOptions?.editWireBlue && tileEditOptions.wireBlue) {
+                tile.wireBlue = true;
+            }
+            if (tileEditOptions?.editWireYellow && tileEditOptions.wireYellow) {
+                tile.wireYellow = true;
+            }
             break;
     }
 

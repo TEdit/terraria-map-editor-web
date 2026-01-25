@@ -131,6 +131,67 @@ function applyTileEditOptions(x, y, options) {
             }
         }
     }
+
+    // Apply wire properties (only on WIRES layer)
+    if (layer === LAYERS.WIRES) {
+        if (options.editWireRed) {
+            if (options.wireRed) {
+                tile.wireRed = true;
+            } else {
+                delete tile.wireRed;
+            }
+        }
+
+        if (options.editWireGreen) {
+            if (options.wireGreen) {
+                tile.wireGreen = true;
+            } else {
+                delete tile.wireGreen;
+            }
+        }
+
+        if (options.editWireBlue) {
+            if (options.wireBlue) {
+                tile.wireBlue = true;
+            } else {
+                delete tile.wireBlue;
+            }
+        }
+
+        if (options.editWireYellow) {
+            if (options.wireYellow) {
+                tile.wireYellow = true;
+            } else {
+                delete tile.wireYellow;
+            }
+        }
+    }
+
+    // Apply liquid properties (only on LIQUIDS layer)
+    if (layer === LAYERS.LIQUIDS) {
+        if (options.editLiquidType && options.liquidType !== undefined) {
+            tile.liquidType = options.liquidType;
+            // Default to full liquid amount if type is set but amount isn't being edited
+            if (!options.editLiquidAmount) {
+                tile.liquidAmount = 255;
+            }
+        }
+
+        if (options.editLiquidAmount) {
+            const amount = parseInt(options.liquidAmount);
+            if (amount === 0) {
+                // Remove liquid entirely
+                delete tile.liquidType;
+                delete tile.liquidAmount;
+            } else {
+                tile.liquidAmount = amount;
+                // If no liquid type set, default to water
+                if (!tile.liquidType) {
+                    tile.liquidType = options.liquidType || "water";
+                }
+            }
+        }
+    }
 }
 
 
