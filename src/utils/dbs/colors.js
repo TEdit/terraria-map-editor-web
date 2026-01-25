@@ -1,5 +1,5 @@
 import LAYERS from "./LAYERS.js";
-import paints from "./paints.js";
+import { PAINT_COLORS_BY_ID } from "./paints.js";
 
 let colors = {};
 
@@ -1268,8 +1268,8 @@ colors[LAYERS.WIRES] = {
     "yellow": {r:255,g:255,b:0,a:100}
 };
 
-// Set alpha to 255 for full opacity (no alpha blending - paints render as separate layers)
-colors[LAYERS.WALLPAINT] = Array.from(paints).map(paint => ({...paint.rgba, a: 255}));
-colors[LAYERS.TILEPAINT] = Array.from(paints).map(paint => ({...paint.rgba, a: 255}));
+// Use alpha=211 for proper paint blending (Terraria normal brightness)
+colors[LAYERS.WALLPAINT] = [...PAINT_COLORS_BY_ID];
+colors[LAYERS.TILEPAINT] = [...PAINT_COLORS_BY_ID];
 
 export default colors;

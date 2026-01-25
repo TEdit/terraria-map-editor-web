@@ -208,8 +208,18 @@ function OptionbarOptionTileEditOptions({ state, setState, tool }) {
                                 />
                                 <InputSelectWithColor
                                     options={state.ordered ? tilesOrdered : tiles}
-                                    value={state.id + ""}
-                                    onChange={(value) => setState({ ...state, id: parseInt(value) })}
+                                    value={(options.blockId ?? state.id ?? "") + ""}
+                                    onChange={(value) => {
+                                        const blockId = parseInt(value);
+                                        setState({
+                                            ...state,
+                                            id: blockId,  // Backward compatibility
+                                            tileEditOptions: {
+                                                ...options,
+                                                blockId: blockId
+                                            }
+                                        });
+                                    }}
                                     disabled={!options.editBlockId}
                                     width="150px"
                                 />
@@ -287,8 +297,18 @@ function OptionbarOptionTileEditOptions({ state, setState, tool }) {
                                 />
                                 <InputSelectWithColor
                                     options={state.ordered ? wallsOrdered : walls}
-                                    value={state.id}
-                                    onChange={(value) => setState({ ...state, id: parseInt(value) })}
+                                    value={(options.wallId ?? state.id ?? "") + ""}
+                                    onChange={(value) => {
+                                        const wallId = parseInt(value);
+                                        setState({
+                                            ...state,
+                                            id: wallId,  // Backward compatibility
+                                            tileEditOptions: {
+                                                ...options,
+                                                wallId: wallId
+                                            }
+                                        });
+                                    }}
                                     disabled={!options.editWallId}
                                     width="150px"
                                 />

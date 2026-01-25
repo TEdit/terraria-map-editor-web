@@ -40,7 +40,7 @@ const PAINTS = [
 // Pre-compute RGBA objects for performance (avoids hex parsing during rendering)
 const PAINTS_WITH_RGBA = PAINTS.map(paint => ({
     ...paint,
-    rgba: hexToRgba(paint.color, 128) // default alpha 211 for paint colors
+    rgba: hexToRgba(paint.color, 211) // default alpha 211 for paint colors
 }));
 
 // Create paint colors array indexed by paint ID

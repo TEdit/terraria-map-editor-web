@@ -48,7 +48,11 @@ let defaultState = {
 
         // Tile editing options - defines which properties to apply during tile editing
         tileEditOptions: {
+            // Layer/mode - determines which properties get applied during edits
+            layer: LAYERS.TILES,
+
             // Block/Tile properties
+            blockId: null,
             editBlockId: true,  // Default: edit the tile ID
             editBlockColor: false,
             blockColor: 0,
@@ -62,6 +66,7 @@ let defaultState = {
             fullBrightBlock: false,
 
             // Wall properties
+            wallId: null,
             editWallId: true,  // Default: edit the wall ID
             editWallColor: false,
             wallColor: 0,
@@ -71,6 +76,16 @@ let defaultState = {
             invisibleWall: false,
             editFullBrightWall: false,
             fullBrightWall: false,
+
+            // Wire properties
+            wireRed: false,
+            editWireRed: false,
+            wireGreen: false,
+            editWireGreen: false,
+            wireBlue: false,
+            editWireBlue: false,
+            wireYellow: false,
+            editWireYellow: false,
 
             // Actuator properties (only valid when blockId > 0)
             editActuator: false,

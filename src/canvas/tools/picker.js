@@ -38,7 +38,10 @@ const onPickerClick = async () => {
     // Always sample ALL block/tile properties
     if (tile.blockId !== undefined) {
         newOptions.blockId = tile.blockId;
-        newOptions.editBlockId = tile.blockId > 0;
+        newOptions.editBlockId = true;  // blockId 0 (dirt) is valid, so always enable if defined
+    } else {
+        newOptions.blockId = 0;  // Default to 0 (dirt) when no block
+        newOptions.editBlockId = false;  // No block, so uncheck "Modify"
     }
 
     // Sample tile paint color
@@ -47,7 +50,7 @@ const onPickerClick = async () => {
         newOptions.blockColor = tile.blockColor;
         newOptions.editBlockColor = true;
     } else {
-        newOptions.blockColor = tile.blockColor || 0;
+        newOptions.blockColor = 0;  // Reset to no paint
         newOptions.editBlockColor = false;
     }
 
@@ -57,7 +60,7 @@ const onPickerClick = async () => {
         newOptions.slope = tile.slope;
         newOptions.editSlope = true;
     } else {
-        newOptions.slope = tile.slope;
+        newOptions.slope = undefined;  // Reset to full block (undefined = no slope)
         newOptions.editSlope = false;
     }
 
@@ -78,9 +81,12 @@ const onPickerClick = async () => {
     newOptions.editActuated = tile.actuated === true;
 
     // Always sample ALL wall properties
-    if (tile.wallId !== undefined) {
+    if (tile.wallId !== undefined && tile.wallId > 0) {
         newOptions.wallId = tile.wallId;
-        newOptions.editWallId = tile.wallId > 0;
+        newOptions.editWallId = true;  // wallId > 0 means there's a wall
+    } else {
+        newOptions.wallId = 0;  // Default to 0 when no wall
+        newOptions.editWallId = false;  // No wall (undefined or 0), so uncheck "Modify"
     }
 
     // Sample wall paint color
@@ -89,7 +95,7 @@ const onPickerClick = async () => {
         newOptions.wallColor = tile.wallColor;
         newOptions.editWallColor = true;
     } else {
-        newOptions.wallColor = tile.wallColor || 0;
+        newOptions.wallColor = 0;  // Reset to no paint
         newOptions.editWallColor = false;
     }
 
