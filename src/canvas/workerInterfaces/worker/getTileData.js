@@ -1,4 +1,4 @@
-import Worker from "../../worker.js";
+import workerState from "../../workerState.js";
 
 export default function(data, messageId) {
     const { x, y } = data;
@@ -6,6 +6,6 @@ export default function(data, messageId) {
     postMessage({
         action: "RETURN_TILE_DATA",
         messageId,
-        tileData: Worker.worldObject.tiles[x][y]
+        tileData: workerState.worldObject.tiles[x][y]
     });
 }

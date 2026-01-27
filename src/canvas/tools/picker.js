@@ -107,10 +107,23 @@ const onPickerClick = async () => {
     newOptions.fullBrightWall = tile.fullBrightWall === true;
     newOptions.editFullBrightWall = tile.fullBrightWall === true;
 
+    // Sample liquid properties
+    if (tile.liquidType !== undefined && tile.liquidAmount > 0) {
+        newOptions.liquidType = tile.liquidType;
+        newOptions.editLiquidType = true;
+        newOptions.liquidAmount = tile.liquidAmount;
+        newOptions.editLiquidAmount = true;
+    } else {
+        newOptions.liquidType = 1;  // Default to water
+        newOptions.editLiquidType = false;
+        newOptions.liquidAmount = 255;
+        newOptions.editLiquidAmount = false;
+    }
+
     // Determine sampledId for backward compatibility with optionbar.id
     // Priority: blockId > wallId > liquidType
     let sampledId = null;
-    if (tile.blockId !== undefined && tile.blockId > 0) {
+    if (tile.blockId !== undefined && tile.blockId >= 0) {
         sampledId = tile.blockId;
     } else if (tile.wallId !== undefined && tile.wallId > 0) {
         sampledId = tile.wallId;

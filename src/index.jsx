@@ -3,19 +3,6 @@ import "normalize.css";
 import "./main.css";
 
 //polyfills
-/*
-    import "@babel/polyfill";
-
-    as of parcel < 2 version you cannot specify @babel-preset-env option useBuiltIns
-    i hardcoded useBuiltIns: "usage" instead of "entry"/false
-    in the file /node_modules/parcel-bundler/src/transforms/babel/env.js @line 56, column 26
-
-    //    useBuiltIns: "usage", //useBuiltIns ? 'entry' : false,
-
-    something something requires this core-js version, so install it separately
-
-    //    corejs: "2.5.7"
-*/
 if (!String.prototype.replaceAll) {
     String.prototype.replaceAll = function(str, newStr) {
         if (Object.prototype.toString.call(str).toLowerCase() === '[object regexp]')
@@ -42,13 +29,10 @@ root.render(
     </Provider>
 );
 
-// Register Service Worker for PWA offline support
-// Use Parcel 2 url: syntax to properly bundle the service worker as a separate file
-import swUrl from 'url:./service-worker.js';
-
-if ('serviceWorker' in navigator) {
+// Register Service Worker for PWA offline support (production only)
+if (import.meta.env.PROD && 'serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-        navigator.serviceWorker.register(swUrl)
+        navigator.serviceWorker.register('/service-worker.js')
             .then(registration => {
                 console.log('Service Worker registered successfully:', registration);
             })

@@ -258,7 +258,8 @@ export async function onDrawingToolClick(
  * Batches tile changes and renders using requestAnimationFrame
  */
 export async function onDrawingToolDrag(
-    tileOperationFn  // Function to apply pixels: (tilesArray, layer) => Promise
+    tileOperationFn,  // Function to apply pixels: (tilesArray, layer) => Promise
+    tileEditOptions = null  // Override for optimistic rendering (null = use Main.state.optionbar.tileEditOptions)
 ) {
     try {
         // Validate required state exists
@@ -313,7 +314,8 @@ export async function onDrawingToolDrag(
 
         // OPTIMISTIC RENDERING: Render immediately for instant visual feedback
         const layer = Main.state.optionbar.layer;
-        renderOptimistic(tilesArray, layer, maxTilesX, maxTilesY, Main.state.optionbar.tileEditOptions);
+        const optimisticOptions = tileEditOptions || Main.state.optionbar.tileEditOptions;
+        renderOptimistic(tilesArray, layer, maxTilesX, maxTilesY, optimisticOptions);
 
         // Calculate dirty rectangle for this render (only copy changed pixels to canvas)
         const dirtyRect = calculateDirtyRect(tilesArray);
@@ -321,8 +323,8 @@ export async function onDrawingToolDrag(
 
         // Update paint layer optimistically if needed
         let paintLayerUpdated = false;
-        if (Main.state.optionbar.tileEditOptions) {
-            const opts = Main.state.optionbar.tileEditOptions;
+        if (optimisticOptions) {
+            const opts = optimisticOptions;
             const isTiles = layer === LAYERS.TILES;
             const isWalls = layer === LAYERS.WALLS;
             const paintId = isTiles ? opts.blockColor : isWalls ? opts.wallColor : null;

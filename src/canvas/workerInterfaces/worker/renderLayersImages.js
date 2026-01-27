@@ -1,4 +1,4 @@
-import Worker from "../../worker.js";
+import workerState from "../../workerState.js";
 
 import "../../../utils/polyfills/polyfill-imageData.js";
 import colors from "../../../utils/dbs/colors.js";
@@ -8,20 +8,20 @@ import { getTileColor, getPaintColor } from "../../../utils/rendering/tileRender
 import { map } from "../../../utils/number.js";
 
 export default async function(data, messageId) {
-    if (!Worker.worldObject) {
+    if (!workerState.worldObject) {
         throw new Error("worker error: render: no world loaded");
         return;
     }
 
     let layersImages = [];
     Object.values(LAYERS).forEach(LAYER => {
-        layersImages[LAYER] = new ImageData(Worker.worldObject.header.maxTilesX, Worker.worldObject.header.maxTilesY);
+        layersImages[LAYER] = new ImageData(workerState.worldObject.header.maxTilesX, workerState.worldObject.header.maxTilesY);
     })
 
     const bgLayers = {
-        ground: Worker.worldObject.header.worldSurface,
-        cavern: Worker.worldObject.header.rockLayer,
-        underworld: Worker.worldObject.header.maxTilesY - 200
+        ground: workerState.worldObject.header.worldSurface,
+        cavern: workerState.worldObject.header.rockLayer,
+        underworld: workerState.worldObject.header.maxTilesY - 200
     };
 
     let position = 0;
@@ -45,10 +45,10 @@ export default async function(data, messageId) {
         messageId
     });
 
-    const drawOnePercent = Worker.worldObject.header.maxTilesY / 100;
+    const drawOnePercent = workerState.worldObject.header.maxTilesY / 100;
     let drawPercentNext = 0;
     let drawPercent = 0;
-    for (let y = 0; y < Worker.worldObject.header.maxTilesY; y++) {
+    for (let y = 0; y < workerState.worldObject.header.maxTilesY; y++) {
         if (y > drawPercentNext) {
             drawPercentNext += drawOnePercent;
             drawPercent++;
@@ -61,8 +61,8 @@ export default async function(data, messageId) {
 
         let backgroundColumnCache = [];
 
-        for (let x = 0; x < Worker.worldObject.header.maxTilesX; x++) {
-            const tile = Worker.worldObject.tiles[x][y];
+        for (let x = 0; x < workerState.worldObject.header.maxTilesX; x++) {
+            const tile = workerState.worldObject.tiles[x][y];
 
             if (tile.blockId !== undefined && colors[LAYERS.TILES][tile.blockId]) {
                 // Use shared renderer for tiles

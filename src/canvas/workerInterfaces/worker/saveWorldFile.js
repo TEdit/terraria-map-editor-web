@@ -1,11 +1,11 @@
-import Worker from "../../worker.js";
+import workerState from "../../workerState.js";
 
-import terrariaWorldSaver from "../../../../terraria-world-file-js/src/browser/terraria-world-saver.js";
+import { FileSaver } from "terraria-world-file";
 
 export default async function(data, messageId) {
     const { worldObject } = data;
 
-    if (!Worker.worldObject) {
+    if (!workerState.worldObject) {
         throw new Error("web-worker: save: no world loaded");
         return;
     }
@@ -15,19 +15,31 @@ export default async function(data, messageId) {
         messageId
     });
 
-    let newWorldFile = new terrariaWorldSaver();
-    newWorldFile = newWorldFile.save({
-        world: {
-            ...worldObject,
-            tiles: Worker.worldObject.tiles
-        },
-        progressCallback: (percent) => {
-            postMessage({
-                action: "RETURN_SAVING_PERCENT",
-                messageId,
-                percent
-            });
-        }
+    // Merge main-thread worldObject with worker-held tiles,
+    // and remap app naming back to TS library naming for save
+    const worldForSave = {
+        ...worldObject,
+        worldTiles: { tiles: workerState.worldObject.tiles },
+        townManager: worldObject.rooms,
+    };
+    delete worldForSave.tiles;
+    delete worldForSave.rooms;
+
+    // Remap NPCs back to TS library naming (NPCs → townNPCs)
+    if (worldForSave.NPCs) {
+        worldForSave.NPCs = {
+            townNPCs: worldForSave.NPCs.NPCs,
+            pillars: worldForSave.NPCs.pillars,
+        };
+    }
+
+    let newWorldFile = new FileSaver();
+    newWorldFile = newWorldFile.save(worldForSave, (percent) => {
+        postMessage({
+            action: "RETURN_SAVING_PERCENT",
+            messageId,
+            percent
+        });
     });
 
     postMessage({

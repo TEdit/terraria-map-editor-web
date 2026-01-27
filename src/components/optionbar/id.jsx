@@ -12,7 +12,7 @@ const walls = Object.entries(editableWalls).map(([id, name]) => [name, parseInt(
 const tilesOrdered = [...tiles].sort((a,b) => a[0].localeCompare(b[0]));
 const wallsOrdered = [...walls].sort((a,b) => a[0].localeCompare(b[0]));
 const wires = ["red", "green", "blue", "yellow"];
-const liquids = ["water", "lava", "honey", "shimmer"];
+const liquids = [["Water", 1], ["Lava", 2], ["Honey", 3], ["Shimmer", 4]];
 
 function OptionbarOptionId({ state, setState }) {
    const onChangeId = (id) => {
@@ -32,7 +32,7 @@ function OptionbarOptionId({ state, setState }) {
                setState({ ...state, id: wires[0] });
                break;
             case LAYERS.LIQUIDS:
-               setState({ ...state, id: liquids[0] });
+               setState({ ...state, id: liquids[0][1] });
                break;
 
             default:

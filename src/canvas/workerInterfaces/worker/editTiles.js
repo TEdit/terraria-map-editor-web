@@ -1,4 +1,4 @@
-import Worker from "../../worker.js";
+import workerState from "../../workerState.js";
 
 import LAYERS from "../../../utils/dbs/LAYERS.js";
 
@@ -10,14 +10,12 @@ import LAYERS from "../../../utils/dbs/LAYERS.js";
  */
 function applyTileEditOptions(x, y, options) {
     // Create a copy to avoid RLE issues
-    Worker.worldObject.tiles[x][y] = { ...Worker.worldObject.tiles[x][y] };
-    const tile = Worker.worldObject.tiles[x][y];
+    workerState.worldObject.tiles[x][y] = { ...workerState.worldObject.tiles[x][y] };
+    const tile = workerState.worldObject.tiles[x][y];
 
     const layer = options.layer;
 
     // Apply block/tile ID (only on TILES layer)
-    // DEBUG: Log the condition check
-    if (x === 0 || y === 0) console.log('[WORKER] blockId check:', layer === LAYERS.TILES, options.editBlockId, options.blockId !== undefined, 'current tile.blockId:', tile.blockId);
     if ((layer === LAYERS.TILES) && options.editBlockId && options.blockId !== undefined) {
         if (options.blockId === "delete" || options.blockId === null) {
             delete tile.blockId;
@@ -30,9 +28,19 @@ function applyTileEditOptions(x, y, options) {
             delete tile.invisibleBlock;
             delete tile.fullBrightBlock;
         } else {
-            tile.blockId = parseInt(options.blockId);
-            delete tile.frameX;  // Reset frame for new tile type
-            delete tile.frameY;
+            // If overwriteLiquids is off, skip placing block on tiles that have liquid
+            if (options.overwriteLiquids === false && tile.liquidAmount > 0) {
+                // Don't place block — preserve liquid
+            } else {
+                tile.blockId = parseInt(options.blockId);
+                delete tile.frameX;  // Reset frame for new tile type
+                delete tile.frameY;
+                // Overwrite liquids: clear liquid when placing a block
+                if (options.overwriteLiquids !== false) {
+                    delete tile.liquidType;
+                    delete tile.liquidAmount;
+                }
+            }
         }
     }
 
@@ -168,7 +176,8 @@ function applyTileEditOptions(x, y, options) {
     }
 
     // Apply liquid properties (only on LIQUIDS layer)
-    if (layer === LAYERS.LIQUIDS) {
+    // Liquid and block cannot co-exist: skip if tile has a block
+    if (layer === LAYERS.LIQUIDS && tile.blockId === undefined) {
         if (options.editLiquidType && options.liquidType !== undefined) {
             tile.liquidType = options.liquidType;
             // Default to full liquid amount if type is set but amount isn't being edited
@@ -187,7 +196,7 @@ function applyTileEditOptions(x, y, options) {
                 tile.liquidAmount = amount;
                 // If no liquid type set, default to water
                 if (!tile.liquidType) {
-                    tile.liquidType = options.liquidType || "water";
+                    tile.liquidType = options.liquidType || 1;
                 }
             }
         }
@@ -198,9 +207,6 @@ function applyTileEditOptions(x, y, options) {
 export default function(data, messageId) {
     const { editType, tileEditArgs, radius, ...options } = data;
     const layer = options.layer;
-
-    // DEBUG: Log what worker receives
-    console.log('[WORKER] editBlockId:', options.editBlockId, 'blockId:', options.blockId, 'editBlockColor:', options.editBlockColor, 'blockColor:', options.blockColor);
 
     if (editType == "rectangle") {
         const updatedTiles = [];
@@ -213,7 +219,7 @@ export default function(data, messageId) {
                 updatedTiles.push({
                     x,
                     y,
-                    tile: Worker.worldObject.tiles[x][y]
+                    tile: workerState.worldObject.tiles[x][y]
                 });
             }
 
@@ -228,8 +234,8 @@ export default function(data, messageId) {
         const startX = tileEditArgs[0];
         const startY = tileEditArgs[1];
         // radius is destructured from function parameter (undefined = infinite)
-        const maxX = Worker.worldObject.header.maxTilesX;
-        const maxY = Worker.worldObject.header.maxTilesY;
+        const maxX = workerState.worldObject.header.maxTilesX;
+        const maxY = workerState.worldObject.header.maxTilesY;
 
         // Validate starting coordinates
         if (startX < 0 || startY < 0 || startX >= maxX || startY >= maxY) {
@@ -298,7 +304,7 @@ export default function(data, messageId) {
         }
 
         // Get origin tile (full tile object, not just ID)
-        const originTile = Worker.worldObject.tiles[startX][startY];
+        const originTile = workerState.worldObject.tiles[startX][startY];
 
         // Flood fill with proper tile comparison
         const visited = new Set();
@@ -320,7 +326,7 @@ export default function(data, messageId) {
                 if (deltaX * deltaX + deltaY * deltaY > radius * radius) continue;
             }
 
-            const currentTile = Worker.worldObject.tiles[x][y];
+            const currentTile = workerState.worldObject.tiles[x][y];
 
             // Use isTileSame to check properties (paint matching depends on edit options)
             if (!isTileSame(originTile, currentTile, layer, options)) continue;
@@ -335,7 +341,7 @@ export default function(data, messageId) {
             updatedTiles.push({
                 x,
                 y,
-                tile: Worker.worldObject.tiles[x][y]
+                tile: workerState.worldObject.tiles[x][y]
             });
 
             // 4-way neighbors
@@ -365,7 +371,7 @@ export default function(data, messageId) {
             updatedTiles.push({
                 x,
                 y,
-                tile: Worker.worldObject.tiles[x][y]
+                tile: workerState.worldObject.tiles[x][y]
             });
         });
 

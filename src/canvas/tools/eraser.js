@@ -102,7 +102,15 @@ const onEraserClick = async (_e) => {
 }
 
 const onEraserDrag = async (_e) => {
-    await onDrawingToolDrag(applyEraserOperation);
+    const layer = Main.state.optionbar.layer;
+    // Pass eraser-specific options for optimistic rendering (blockId/wallId: "delete")
+    const eraserOptimisticOptions = {
+        editBlockId: layer === LAYERS.TILES || layer === 100,
+        blockId: "delete",
+        editWallId: layer === LAYERS.WALLS || layer === 100,
+        wallId: "delete",
+    };
+    await onDrawingToolDrag(applyEraserOperation, eraserOptimisticOptions);
 }
 
 const onEraserUp = (_e) => {

@@ -1,4 +1,4 @@
-import Worker from "../../worker.js";
+import workerState from "../../workerState.js";
 
 import LAYERS from "../../../utils/dbs/LAYERS.js";
 
@@ -25,10 +25,10 @@ export default async function(data, messageId) {
     }
 
     let tile;
-    const swapOnePercent = Worker.worldObject.header.maxTilesY / 100;
+    const swapOnePercent = workerState.worldObject.header.maxTilesY / 100;
     let swapPercentNext = 0;
     let swapPercent = 0;
-    for (let y = 0; y < Worker.worldObject.header.maxTilesY; y++) {
+    for (let y = 0; y < workerState.worldObject.header.maxTilesY; y++) {
         if (y > swapPercentNext) {
             swapPercentNext += swapOnePercent;
             swapPercent++;
@@ -39,43 +39,43 @@ export default async function(data, messageId) {
             });
         }
 
-        for (let x = 0; x < Worker.worldObject.header.maxTilesX; x++) {
+        for (let x = 0; x < workerState.worldObject.header.maxTilesX; x++) {
             switch (from.layer) {
                 case LAYERS.TILES:
-                    if (Worker.worldObject.tiles[x][y].blockId !== undefined && Worker.worldObject.tiles[x][y].blockId == from.id){
-                        Worker.worldObject.tiles[x][y] = { ...Worker.worldObject.tiles[x][y], blockId: undefined };
-                        Worker.worldObject.tiles[x][y] = { ...Worker.worldObject.tiles[x][y], ...newProperties };
+                    if (workerState.worldObject.tiles[x][y].blockId !== undefined && workerState.worldObject.tiles[x][y].blockId == from.id){
+                        workerState.worldObject.tiles[x][y] = { ...workerState.worldObject.tiles[x][y], blockId: undefined };
+                        workerState.worldObject.tiles[x][y] = { ...workerState.worldObject.tiles[x][y], ...newProperties };
                         if (to.layer != LAYERS.TILES) {
-                            delete Worker.worldObject.tiles[x][y].frameX;
-                            delete Worker.worldObject.tiles[x][y].frameY;
-                            delete Worker.worldObject.tiles[x][y].slope;
-                            delete Worker.worldObject.tiles[x][y].blockColor;
+                            delete workerState.worldObject.tiles[x][y].frameX;
+                            delete workerState.worldObject.tiles[x][y].frameY;
+                            delete workerState.worldObject.tiles[x][y].slope;
+                            delete workerState.worldObject.tiles[x][y].blockColor;
                         }
                         replacedBlocks.push([x,y]);
                     }
                     break;
                 case LAYERS.WALLS:
-                    if (Worker.worldObject.tiles[x][y].wallId !== undefined && Worker.worldObject.tiles[x][y].wallId == from.id) {
-                        Worker.worldObject.tiles[x][y] = { ...Worker.worldObject.tiles[x][y], wallId: undefined };
-                        Worker.worldObject.tiles[x][y] = { ...Worker.worldObject.tiles[x][y], ...newProperties };
+                    if (workerState.worldObject.tiles[x][y].wallId !== undefined && workerState.worldObject.tiles[x][y].wallId == from.id) {
+                        workerState.worldObject.tiles[x][y] = { ...workerState.worldObject.tiles[x][y], wallId: undefined };
+                        workerState.worldObject.tiles[x][y] = { ...workerState.worldObject.tiles[x][y], ...newProperties };
                         if (to.layer != LAYERS.WALLS)
-                            delete Worker.worldObject.tiles[x][y].wallColor;
+                            delete workerState.worldObject.tiles[x][y].wallColor;
                         replacedBlocks.push([x,y]);
                     }
                     break;
                 case LAYERS.WIRES:
-                    if (Worker.worldObject.tiles[x][y][fromWire]) {
-                        delete Worker.worldObject.tiles[x][y][fromWire];
-                        Worker.worldObject.tiles[x][y] = { ...Worker.worldObject.tiles[x][y], ...newProperties };
+                    if (workerState.worldObject.tiles[x][y][fromWire]) {
+                        delete workerState.worldObject.tiles[x][y][fromWire];
+                        workerState.worldObject.tiles[x][y] = { ...workerState.worldObject.tiles[x][y], ...newProperties };
                         replacedBlocks.push([x,y]);
                     }
                     break;
                 case LAYERS.LIQUIDS:
-                    if (Worker.worldObject.tiles[x][y].liquidType !== undefined && Worker.worldObject.tiles[x][y].liquidType == from.id) {
+                    if (workerState.worldObject.tiles[x][y].liquidType !== undefined && workerState.worldObject.tiles[x][y].liquidType == from.id) {
                         if (to.layer != LAYERS.LIQUIDS)
-                            Worker.worldObject.tiles[x][y] = { ...Worker.worldObject.tiles[x][y], liquidType: undefined, liquidAmount: undefined, ...newProperties };
+                            workerState.worldObject.tiles[x][y] = { ...workerState.worldObject.tiles[x][y], liquidType: undefined, liquidAmount: undefined, ...newProperties };
                         else
-                            Worker.worldObject.tiles[x][y] = { ...Worker.worldObject.tiles[x][y], liquidType: newProperties.liquidType };
+                            workerState.worldObject.tiles[x][y] = { ...workerState.worldObject.tiles[x][y], liquidType: newProperties.liquidType };
                         replacedBlocks.push([x,y]);
                     }
                     break;

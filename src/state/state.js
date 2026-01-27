@@ -95,9 +95,12 @@ let defaultState = {
 
             // Liquid properties
             editLiquidType: false,
-            liquidType: "water",
+            liquidType: 1,
             editLiquidAmount: false,
-            liquidAmount: 255
+            liquidAmount: 255,
+
+            // Block/liquid interaction
+            overwriteLiquids: true
         }
     }),
     selection: {

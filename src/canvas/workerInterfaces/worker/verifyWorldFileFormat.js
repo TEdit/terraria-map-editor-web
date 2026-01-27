@@ -1,12 +1,13 @@
-import Worker from "../../worker.js";
-
-import terrariaWorldParser from "../../../../terraria-world-file-js/src/browser/terraria-world-parser.js";
+import { FileReader } from "terraria-world-file";
+import { fileLoader } from "terraria-world-file/browser";
 
 export default async function({ worldFile }) {
     try {
-        let worldObject = await new terrariaWorldParser().loadFile(worldFile);
-        worldObject = worldObject.parse({
-            sections: ["necessary"]
+        const parser = await new FileReader().loadFile(fileLoader, worldFile);
+        // parse() internally calls parseWorldProperties() which validates
+        // the file format (magic number, file type, version, dimensions)
+        parser.parse({
+            sections: ["fileFormatHeader"]
         });
         postMessage({
             action: "RETURN_MAP_FILE_VALIDITY",

@@ -70,11 +70,18 @@ const onBucketClick = async (e) => {
             // Trigger canvas render update
             Main.updateLayers(layer, dirtyRect);
 
+            const opts = Main.state.optionbar.tileEditOptions;
+            const isTiles = layer === LAYERS.TILES;
+            const isWalls = layer === LAYERS.WALLS;
+
+            // Placing blocks clears liquid when overwriteLiquids is on — re-render LIQUIDS layer
+            if (isTiles && opts?.editBlockId && opts.blockId !== "delete" && opts.blockId !== null && opts.overwriteLiquids !== false) {
+                renderFromWorldData(response.tilesArray, LAYERS.LIQUIDS, maxTilesX, maxTilesY, tilesData);
+                Main.updateLayers(LAYERS.LIQUIDS, dirtyRect);
+            }
+
             // Update paint layer if normal paint is active
-            if (Main.state.optionbar.tileEditOptions) {
-                const opts = Main.state.optionbar.tileEditOptions;
-                const isTiles = layer === LAYERS.TILES;
-                const isWalls = layer === LAYERS.WALLS;
+            if (opts) {
                 const paintId = isTiles ? opts.blockColor : isWalls ? opts.wallColor : null;
                 const paintEnabled = isTiles ? opts.editBlockColor : isWalls ? opts.editWallColor : false;
 

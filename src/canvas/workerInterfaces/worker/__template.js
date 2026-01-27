@@ -1,4 +1,4 @@
-import Worker from "../../worker.js";
+import workerState from "../../workerState.js";
 
 export default function() {
 

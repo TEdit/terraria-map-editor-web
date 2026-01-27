@@ -77,7 +77,7 @@ function buildOptimisticTile(layer, tileEditOptions, originalTile = null) {
                 if (originalTile?.liquidType) {
                     tile.liquidType = originalTile.liquidType;
                 } else {
-                    tile.liquidType = "water";
+                    tile.liquidType = 1;
                 }
                 tile.liquidAmount = tileEditOptions.liquidAmount;
             }

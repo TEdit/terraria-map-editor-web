@@ -12,11 +12,11 @@ import InputSlider from "../inputs/input-slider.jsx";
 
 const SLOPE_OPTIONS = [
     ["None (Full)", undefined],
-    ["Half Block", "half"],
-    ["Top Right", "TR"],
-    ["Top Left", "TL"],
-    ["Bottom Right", "BR"],
-    ["Bottom Left", "BL"]
+    ["Half Block", 1],
+    ["Top Right", 2],
+    ["Top Left", 3],
+    ["Bottom Right", 4],
+    ["Bottom Left", 5]
 ];
 
 // Paints with colors
@@ -38,10 +38,10 @@ const wallsOrdered = [...walls].sort((a, b) => a[0].localeCompare(b[0]));
 
 // Liquid type options with colors
 const LIQUID_OPTIONS = [
-    ["Water", "water", colors[LAYERS.LIQUIDS].water],
-    ["Lava", "lava", colors[LAYERS.LIQUIDS].lava],
-    ["Honey", "honey", colors[LAYERS.LIQUIDS].honey],
-    ["Shimmer", "shimmer", colors[LAYERS.LIQUIDS].shimmer]
+    ["Water", 1, colors[LAYERS.LIQUIDS][1]],
+    ["Lava", 2, colors[LAYERS.LIQUIDS][2]],
+    ["Honey", 3, colors[LAYERS.LIQUIDS][3]],
+    ["Shimmer", 4, colors[LAYERS.LIQUIDS][4]]
 ];
 
 // Wire colors for visual indicators
@@ -77,9 +77,11 @@ function OptionbarOptionTileEditOptions({ state, setState, tool }) {
         actuated: false,
         // Liquid properties
         editLiquidType: false,
-        liquidType: "water",
+        liquidType: 1,
         editLiquidAmount: false,
-        liquidAmount: 255
+        liquidAmount: 255,
+        // Block/liquid interaction
+        overwriteLiquids: true
     };
 
     const options = state.tileEditOptions || defaultOptions;
@@ -271,6 +273,13 @@ function OptionbarOptionTileEditOptions({ state, setState, tool }) {
                                     onChange={() => setState({ ...state, ordered: true })}
                                 />
                             </div>
+                            {isTileLayer && (
+                                <InputCheckbox
+                                    label="Overwrite Liquids"
+                                    value={options.overwriteLiquids !== false}
+                                    onChange={(checked) => updateOption('overwriteLiquids', checked)}
+                                />
+                            )}
                         </div>
                     </div>
                 )}
@@ -307,7 +316,7 @@ function OptionbarOptionTileEditOptions({ state, setState, tool }) {
                                 <InputSelect
                                     options={SLOPE_OPTIONS}
                                     value={options.slope}
-                                    onChange={(value) => updateOption('slope', value === 'undefined' ? undefined : value)}
+                                    onChange={(value) => updateOption('slope', value === 'undefined' ? undefined : parseInt(value))}
                                     disabled={!options.editSlope}
                                 />
                             </div>
@@ -455,7 +464,7 @@ function OptionbarOptionTileEditOptions({ state, setState, tool }) {
                 {/* ═══════════════════════════════════════════════════════════════
                     WIRING CARD
                     Actuator settings: Actuator (installed) and IsActive (triggered)
-                    Only valid for tiles with blockId > 0
+                    Only valid for tiles with blockId >= 0
                     ═══════════════════════════════════════════════════════════════ */}
                 {(isTileLayer || isPaintedTilesLayer) && (
                     <div className="tile-edit-card">
@@ -605,7 +614,7 @@ function OptionbarOptionTileEditOptions({ state, setState, tool }) {
                                 />
                                 <InputSelectWithColor
                                     options={LIQUID_OPTIONS}
-                                    value={options.liquidType ?? "water"}
+                                    value={options.liquidType ?? 1}
                                     onChange={(value) => updateOption('liquidType', value)}
                                     disabled={!options.editLiquidType}
                                     width="100px"

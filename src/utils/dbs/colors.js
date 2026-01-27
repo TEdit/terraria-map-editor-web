@@ -1245,10 +1245,10 @@ colors[LAYERS.WALLS] = [
 ]
 
 colors[LAYERS.LIQUIDS] = {
-    "water": {r:9,g:61,b:191,a:255},
-    "lava": {r:253,g:32,b:3,a:255},
-    "honey": {r:254,g:194,b:20,a:255},
-    "shimmer": {r:155,g:112,b:233,a:255}
+    1: {r:9,g:61,b:191,a:255},    // Water
+    2: {r:253,g:32,b:3,a:255},    // Lava
+    3: {r:254,g:194,b:20,a:255},  // Honey
+    4: {r:155,g:112,b:233,a:255}  // Shimmer
 };
 
 colors[LAYERS.BACKGROUND] = {
