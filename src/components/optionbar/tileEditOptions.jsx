@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 
 import LAYERS from "../../utils/dbs/LAYERS.js";
 import PAINTS from "../../utils/dbs/paints.js";
@@ -114,6 +114,18 @@ function OptionbarOptionTileEditOptions({ state, setState, tool }) {
     const isPaintedWallsLayer = currentLayer === LAYERS.WALLPAINT;
     const isWireLayer = currentLayer === LAYERS.WIRES;
     const isLiquidLayer = currentLayer === LAYERS.LIQUIDS;
+
+    // Sync blockId/wallId from legacy state.id when not yet set in tileEditOptions.
+    // The id.jsx dropdown sets state.id but not tileEditOptions.blockId, causing the
+    // display (which falls back to state.id) to show a tile that isn't actually selected.
+    useEffect(() => {
+        if ((isTileLayer || isPaintedTilesLayer) && (options.blockId === null || options.blockId === undefined) && state.id !== null && state.id !== undefined) {
+            updateOption('blockId', parseInt(state.id));
+        }
+        if ((isWallLayer || isPaintedWallsLayer) && (options.wallId === null || options.wallId === undefined) && state.id !== null && state.id !== undefined) {
+            updateOption('wallId', parseInt(state.id));
+        }
+    }, [state.id, currentLayer]);
 
     // Don't show panel for layers that don't support property editing
     if (!isTileLayer && !isWallLayer && !isPaintedTilesLayer && !isPaintedWallsLayer && !isWireLayer && !isLiquidLayer) {

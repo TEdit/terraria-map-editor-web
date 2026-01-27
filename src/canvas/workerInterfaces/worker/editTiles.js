@@ -16,8 +16,9 @@ function applyTileEditOptions(x, y, options) {
     const layer = options.layer;
 
     // Apply block/tile ID (only on TILES layer)
-    if ((layer === LAYERS.TILES) && options.editBlockId && options.blockId !== undefined) {
-        if (options.blockId === "delete" || options.blockId === null) {
+    // blockId: null/undefined = no tile selected (no-op), "delete" = explicit erase
+    if ((layer === LAYERS.TILES) && options.editBlockId && options.blockId !== undefined && options.blockId !== null) {
+        if (options.blockId === "delete") {
             delete tile.blockId;
             delete tile.frameX;
             delete tile.frameY;
@@ -82,8 +83,9 @@ function applyTileEditOptions(x, y, options) {
     }
 
     // Apply wall ID (only on WALLS layer)
-    if ((layer === LAYERS.WALLS) && options.editWallId && options.wallId !== undefined) {
-        if (options.wallId === "delete" || options.wallId === null) {
+    // wallId: null/undefined = no wall selected (no-op), "delete" = explicit erase
+    if ((layer === LAYERS.WALLS) && options.editWallId && options.wallId !== undefined && options.wallId !== null) {
+        if (options.wallId === "delete") {
             delete tile.wallId;
             delete tile.wallColor;
             delete tile.invisibleWall;
@@ -122,7 +124,7 @@ function applyTileEditOptions(x, y, options) {
     }
 
     // Apply actuator properties (only on TILES or WIRES layer, and only if tile exists)
-    if ((layer === LAYERS.TILES || layer === LAYERS.WIRES) && tile.blockId !== undefined && tile.blockId > 0) {
+    if ((layer === LAYERS.TILES || layer === LAYERS.WIRES) && tile.blockId !== undefined) {
         if (options.editActuator) {
             if (options.actuator) {
                 tile.actuator = true;
