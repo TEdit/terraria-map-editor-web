@@ -8,6 +8,7 @@ import sprite, { NPCsSprites, WorldPointsSprites } from "../utils/dbs/sprites.js
 
 import extensions from "./extensions/index.js";
 import workerInterfaces from "./workerInterfaces/main/index.js";
+import WorkerMessaging from "./workerInterfaces/WorkerMessaging.js";
 
 import listenerWrapper from "./listeners/listenerWrapper.js";
 import onCanvasClick from "./listeners/click.js";
@@ -45,7 +46,15 @@ let Main = new function() {
     this.resetWorker = () => {
         if (this.worker)
             this.worker.terminate();
+
+        // Reset WorkerMessaging state (clears pending requests)
+        WorkerMessaging.reset();
+
+        // Create new worker
         this.worker = new Worker(new URL("./worker.js", import.meta.url), { type: "module" });
+
+        // Initialize WorkerMessaging with new worker (sets up message handler)
+        WorkerMessaging.init(this.worker);
     }
 
     this.init = (canvasEl) => {
@@ -69,13 +78,27 @@ let Main = new function() {
             this.canvas.addEventListener("touchend", listenerWrapper(onCanvasTouchEnd));
     }
 
-    this.updateLayers = (LAYER) => {
-        if (LAYER)
-            this.layersCtxs[LAYER].putImageData(this.layersImages[LAYER], 0, 0);
-        else
+    this.updateLayers = (LAYER, dirtyRect = null) => {
+        if (LAYER) {
+            if (dirtyRect) {
+                // OPTIMIZATION: Only copy the dirty rectangle instead of entire canvas
+                const { x, y, width, height } = dirtyRect;
+                this.layersCtxs[LAYER].putImageData(
+                    this.layersImages[LAYER],
+                    0, 0,  // Destination position (always 0,0 since we're updating the whole canvas)
+                    x, y,  // Source position (dirty region top-left)
+                    width, height  // Size of dirty region
+                );
+            } else {
+                // Full canvas update (used for initial render, full redraw, etc.)
+                this.layersCtxs[LAYER].putImageData(this.layersImages[LAYER], 0, 0);
+            }
+        } else {
+            // Update all layers (full render only, no dirty rect support)
             Object.values(LAYERS).forEach(LAYER => {
                 this.layersCtxs[LAYER].putImageData(this.layersImages[LAYER], 0, 0);
             });
+        }
     }
 
     this.loop = {};
@@ -277,6 +300,11 @@ let Main = new function() {
         this.ctx.lineTo(Main.canvas.clientWidth, Main.mousePosElementY);
         this.ctx.stroke();
     }
+}
+
+// Expose Main globally for debugging/profiling in browser console
+if (typeof window !== 'undefined') {
+    window.Main = Main;
 }
 
 export default Main;

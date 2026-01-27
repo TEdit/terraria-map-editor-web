@@ -76,7 +76,7 @@ function SidebarViewTileInfo({ tool, tileData, stateChange }) {
          <div className="sidebar-view-general-row-value">{tile.colors.wall !== undefined ? tile.colors.wall : ""}</div>
          <div className="sidebar-view-general-row-divider"><span>Liquid</span></div>
          <span>Type</span>
-         <OptionbarInputSelect value={tile.liquid.type !== undefined ? tile.liquid.type : ""} options={[["None", ""], ["Water", "water"], ["Lava", "lava"], ["Honey", "honey"]]} onChange={(value) => {setTileData(["liquid", "type"], value)}}/>
+         <OptionbarInputSelect value={tile.liquid.type !== undefined ? tile.liquid.type : ""} options={[["None", ""], ["Water", "water"], ["Lava", "lava"], ["Honey", "honey"], ["Shimmer", "shimmer"]]} onChange={(value) => {setTileData(["liquid", "type"], value)}}/>
          <span>Amount</span>
          <OptionbarInputSlider value={tile.liquid.amount !== undefined ? tile.liquid.amount : 0} onChange={(value) => {setTileData(["liquid", "amount"], value)}} min={0} max={255} input inputWidth="7ch"/>
          <div className="sidebar-view-general-row-divider"><span>Wiring</span></div>

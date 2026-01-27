@@ -1,63 +1,66 @@
-import Worker from "../../worker.js";
+import workerState from "../../workerState.js";
 
-import terrariaWorldParser from "../../../../terraria-world-file-js/src/browser/terraria-world-parser.js";
+import { FileReader } from "terraria-world-file";
+import { fileLoader } from "terraria-world-file/browser";
 
-export default async function({ worldFile, unsafe, unsafeOnlyTiles, ignoreBounds }) {
+export default async function(data, messageId) {
+    const { worldFile, unsafe, unsafeOnlyTiles, ignoreBounds } = data;
+
     postMessage({
         action: "RETURN_PARSING_PERCENT_INCOMING",
+        messageId
     });
 
-    Worker.worldObject = await new terrariaWorldParser().loadFile(worldFile);
+    const parser = await new FileReader().loadFile(fileLoader, worldFile);
+
+    const progressCallback = (percent) => {
+        postMessage({
+            action: "RETURN_PARSING_PERCENT",
+            messageId,
+            percent: percent
+        });
+    };
+
+    let worldObject;
 
     if (unsafeOnlyTiles) {
-        Worker.worldObject = Worker.worldObject.parse({
-            sections: ["tiles", "necessary"],
+        worldObject = parser.parse({
+            sections: ["fileFormatHeader", "header", "worldTiles"],
             ignorePointers: unsafe,
             ignoreBounds,
-            progressCallback: (percent) => {
-                postMessage({
-                    action: "RETURN_PARSING_PERCENT",
-                    percent: percent
-                });
-            }
+            progressCallback
         });
-        Worker.worldObject.fileFormatHeader = {
-            version: Worker.worldObject.necessary.version,
-            pointers: Worker.worldObject.necessary.pointers,
-            importants: Worker.worldObject.necessary.importants
-        };
-        Worker.worldObject.header = {
-            maxTilesX: Worker.worldObject.necessary.width,
-            maxTilesY: Worker.worldObject.necessary.height,
-        };
 
-        if (Worker.worldObject.necessary.width == 4200) {
-            Worker.worldObject.header.worldSurface = 332;
-            Worker.worldObject.header.rockLayer = 460;
-        } else if (Worker.worldObject.necessary.width == 6400) {
-            Worker.worldObject.header.worldSurface = 486;
-            Worker.worldObject.header.rockLayer = 690;
-        } else if (Worker.worldObject.necessary.width == 8400) {
-            Worker.worldObject.header.worldSurface = 620;
-            Worker.worldObject.header.rockLayer = 911;
-        }
+        // Unwrap WorldTilesData.tiles and remap for app compatibility
+        worldObject.tiles = worldObject.worldTiles.tiles;
+        delete worldObject.worldTiles;
     } else {
-        Worker.worldObject = Worker.worldObject.parse({
+        worldObject = parser.parse({
             ignorePointers: unsafe,
             ignoreBounds,
-            progressCallback: (percent) => {
-                postMessage({
-                    action: "RETURN_PARSING_PERCENT",
-                    percent: percent
-                });
-            }
+            progressCallback
         });
+
+        // Unwrap WorldTilesData.tiles and remap section names for app compatibility
+        worldObject.tiles = worldObject.worldTiles.tiles;
+        delete worldObject.worldTiles;
+        worldObject.rooms = worldObject.townManager;
+        delete worldObject.townManager;
+
+        // Remap NPCsData.townNPCs → NPCs for app compatibility
+        if (worldObject.NPCs) {
+            worldObject.NPCs.NPCs = worldObject.NPCs.townNPCs;
+            delete worldObject.NPCs.townNPCs;
+        }
     }
+
+    workerState.worldObject = worldObject;
 
     postMessage({
         action: "RETURN_WORLD_OBJECT",
+        messageId,
         worldObject: {
-            ...Worker.worldObject,
+            ...workerState.worldObject,
             tiles: undefined
         }
     });

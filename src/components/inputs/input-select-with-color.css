@@ -1,0 +1,135 @@
+/* Input Select With Color Component Styles */
+
+.input-select-with-color-container {
+    position: relative;
+    display: inline-block;
+    min-width: fit-content;
+}
+
+.input-select-with-color-container:focus {
+    outline: none;
+}
+
+/* Header (closed state) */
+.select-header {
+    display: inline-flex;
+    align-items: center;
+    height: 1.5rem;
+    padding: 0 1.1rem 0 0.25rem;
+    box-sizing: border-box;
+    background-color: #454545;
+    border: 1px solid #666666;
+    border-radius: 0.2rem;
+    color: #f0f0f0;
+    font-size: 0.84rem;
+    cursor: pointer;
+    position: relative;
+    user-select: none;
+    -moz-user-select: none;
+    white-space: nowrap;
+}
+
+.select-header.--disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.input-select-with-color-container:focus .select-header {
+    border: 1px solid #0078d7;
+}
+
+.select-label {
+    white-space: nowrap;
+}
+
+.select-color-box {
+    width: 15px;
+    height: 15px;
+    margin-left: 0.3rem;
+    border: 1px solid #666666;
+    flex-shrink: 0;
+    box-sizing: border-box;
+}
+
+.select-arrow {
+    position: absolute;
+    pointer-events: none;
+    top: calc(100% / 2 - 1.05rem / 2);
+    right: 0.15rem;
+    height: 1.05rem;
+    width: 1.05rem;
+    fill: #c1c1c1;
+}
+
+/* Dropdown (open state) */
+.select-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    min-width: 100%;
+    max-height: 300px;
+    overflow-y: auto;
+    background-color: #454545;
+    border: 1px solid #666666;
+    border-radius: 0.2rem;
+    z-index: 1000;
+    margin-top: 2px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+/* Custom scrollbar for dropdown */
+.select-dropdown::-webkit-scrollbar {
+    width: 8px;
+}
+
+.select-dropdown::-webkit-scrollbar-track {
+    background: #3a3a3a;
+}
+
+.select-dropdown::-webkit-scrollbar-thumb {
+    background: #666666;
+    border-radius: 4px;
+}
+
+.select-dropdown::-webkit-scrollbar-thumb:hover {
+    background: #777777;
+}
+
+/* Option items */
+.select-option {
+    display: flex;
+    align-items: center;
+    padding: 0.3rem 0.4rem;
+    color: #f0f0f0;
+    cursor: pointer;
+    font-size: 0.84rem;
+    user-select: none;
+    -moz-user-select: none;
+}
+
+.select-option:hover,
+.select-option.--focused {
+    background-color: #555555;
+}
+
+.select-option.--missing {
+    font-style: italic;
+    opacity: 0.7;
+}
+
+.option-label {
+    flex: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-width: 0;
+}
+
+.option-color-box {
+    width: 15px;
+    height: 15px;
+    margin-left: 0.3rem;
+    border: 1px solid #666666;
+    flex-shrink: 0;
+    box-sizing: border-box;
+}

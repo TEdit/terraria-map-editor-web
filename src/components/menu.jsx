@@ -313,6 +313,43 @@ function Dropdown({ show, items, offset, onClose, onBlur, nested, mobile }) {
    return null;
 }
 
+function DropdownMenuType({ label, options, onClose, onBlur, mobile }) {
+   const [open, setOpen] = useState(false);
+
+   const handleSubmenuToggle = (e) => {
+      if (options.enabled !== false) {
+         if (mobile) {
+            e.stopPropagation();
+         }
+         setOpen(!open);
+      }
+   };
+
+   return (
+      <>
+         <div
+            className={`menu-dropdown-item --menu ${open ? "--active" : ""} ${options.enabled === false ? "--disabled" : ""}`}
+            onMouseOver={() => options.enabled !== false && !mobile && setOpen(true)}
+            onMouseDown={handleSubmenuToggle}
+            onMouseLeave={() => !mobile && setOpen(false)}
+            tabIndex="0"
+            onKeyPress={e => (e.key == "Enter" || e.key == " ") && handleSubmenuToggle(e)}
+            onBlur={onBlur}
+         >
+            {label}
+            {
+               open && !mobile &&
+               <Dropdown items={options.items} onClose={onClose} nested show={open}/>
+            }
+         </div>
+         {
+            mobile &&
+            <Dropdown items={options.items} onClose={onClose} nested mobile={mobile} show={open}/>
+         }
+      </>
+   );
+}
+
 function DropdownItem({ label, options, onClose, onBlur, mobile }) {
    if (typeof options == "function")
       options = { type: "button", onClick: options};
@@ -358,40 +395,13 @@ function DropdownItem({ label, options, onClose, onBlur, mobile }) {
       );
 
    if (options.type == "menu") {
-      const [open, setOpen] = useState(false);
-
-      const handleSubmenuToggle = (e) => {
-         if (options.enabled !== false) {
-            if (mobile) {
-               e.stopPropagation();
-            }
-            setOpen(!open);
-         }
-      };
-
-      return (
-         <>
-            <div
-               className={`menu-dropdown-item --menu ${open ? "--active" : ""} ${options.enabled === false ? "--disabled" : ""}`}
-               onMouseOver={() => options.enabled !== false && !mobile && setOpen(true)}
-               onMouseDown={handleSubmenuToggle}
-               onMouseLeave={() => !mobile && setOpen(false)}
-               tabIndex="0"
-               onKeyPress={e => (e.key == "Enter" || e.key == " ") && handleSubmenuToggle(e)}
-               onBlur={onBlur}
-            >
-               {label}
-               {
-                  open && !mobile &&
-                  <Dropdown items={options.items} onClose={onClose} nested show={open}/>
-               }
-            </div>
-            {
-               mobile &&
-               <Dropdown items={options.items} onClose={onClose} nested mobile={mobile} show={open}/>
-            }
-         </>
-      )
+      return <DropdownMenuType
+         label={label}
+         options={options}
+         onClose={onClose}
+         onBlur={onBlur}
+         mobile={mobile}
+      />;
    }
 
    return null;

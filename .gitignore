@@ -10,3 +10,9 @@ cdn/
 .parcel-cache/*
 .claude/
 nul
+
+# Playwright
+test-results/
+playwright-report/
+blob-report/
+playwright/.cache/

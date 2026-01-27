@@ -1,4 +1,4 @@
-import Worker from "../../worker.js";
+import workerState from "../../workerState.js";
 
 import editableTiles from "../../../utils/dbs/editable-tiles.js";
 import editableWalls from "../../../utils/dbs/editable-walls.js";
@@ -13,7 +13,7 @@ const arrayShuffle = (array) => {
     return array;
 }
 
-export default async function() {
+export default async function(data, messageId) {
     let swappedTileIds = {},
         swappedWallIds = {};
 
@@ -25,38 +25,40 @@ export default async function() {
     for (const id in editableWalls)
         swappedWallIds[id] = shuffledWallIdsArray.shift();
 
-    const swapOnePercent = Worker.worldObject.header.maxTilesY / 100;
+    const swapOnePercent = workerState.worldObject.header.maxTilesY / 100;
     let swapPercentNext = 0;
     let swapPercent = 0;
-    for (let y = 0; y < Worker.worldObject.header.maxTilesY; y++) {
+    for (let y = 0; y < workerState.worldObject.header.maxTilesY; y++) {
         if (y > swapPercentNext) {
             swapPercentNext += swapOnePercent;
             swapPercent++;
             postMessage({
                 action: "RETURN_PROGRESS",
+                messageId,
                 percent: swapPercent
             });
         }
 
-        for (let x = 0; x < Worker.worldObject.header.maxTilesX; x++) {
-            if (Worker.worldObject.tiles[x][y].blockId !== undefined && editableTiles[Worker.worldObject.tiles[x][y].blockId]) {
-                Worker.worldObject.tiles[x][y] = {...Worker.worldObject.tiles[x][y]};
-                Worker.worldObject.tiles[x][y].blockId = parseInt(swappedTileIds[Worker.worldObject.tiles[x][y].blockId]);
+        for (let x = 0; x < workerState.worldObject.header.maxTilesX; x++) {
+            if (workerState.worldObject.tiles[x][y].blockId !== undefined && editableTiles[workerState.worldObject.tiles[x][y].blockId]) {
+                workerState.worldObject.tiles[x][y] = {...workerState.worldObject.tiles[x][y]};
+                workerState.worldObject.tiles[x][y].blockId = parseInt(swappedTileIds[workerState.worldObject.tiles[x][y].blockId]);
 
-                if (Worker.worldObject.tiles[x][y].wallId !== undefined && editableWalls[Worker.worldObject.tiles[x][y].wallId]) {
-                    Worker.worldObject.tiles[x][y].wallId = parseInt(swappedWallIds[Worker.worldObject.tiles[x][y].wallId]);
+                if (workerState.worldObject.tiles[x][y].wallId !== undefined && editableWalls[workerState.worldObject.tiles[x][y].wallId]) {
+                    workerState.worldObject.tiles[x][y].wallId = parseInt(swappedWallIds[workerState.worldObject.tiles[x][y].wallId]);
                     continue;
                 }
             }
 
-            if (Worker.worldObject.tiles[x][y].wallId !== undefined && editableWalls[Worker.worldObject.tiles[x][y].wallId]) {
-                Worker.worldObject.tiles[x][y] = {...Worker.worldObject.tiles[x][y]};
-                Worker.worldObject.tiles[x][y].wallId = parseInt(swappedWallIds[Worker.worldObject.tiles[x][y].wallId]);
+            if (workerState.worldObject.tiles[x][y].wallId !== undefined && editableWalls[workerState.worldObject.tiles[x][y].wallId]) {
+                workerState.worldObject.tiles[x][y] = {...workerState.worldObject.tiles[x][y]};
+                workerState.worldObject.tiles[x][y].wallId = parseInt(swappedWallIds[workerState.worldObject.tiles[x][y].wallId]);
             }
         }
     }
 
     postMessage({
         action: "RETURN_DONE",
+        messageId
     });
 }

@@ -19,7 +19,7 @@ export default async function() {
         },
     });
 
-    const layersImages = await Main.workerInterfaces.renderLayersImages({
+    const { layersImages } = await Main.workerInterfaces.renderLayersImages({
         onRenderingStart: () => {
             store.dispatch(stateChange(["status", "description"], "Rendering"));
         },

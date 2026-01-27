@@ -1,143 +1,97 @@
 import Main from "../main.js";
+import LAYERS from "../../utils/dbs/LAYERS.js";
 
-import store from "../../state/store.js";
-import { stateChange } from "../../state/state.js";
+import { onDrawingToolClick, onDrawingToolDrag, onDrawingToolUp, calculateDirtyRect } from "./drawingToolsHelpers.js";
+import { renderFromWorldData } from "../../utils/colorApplication.js";
 
-import colors from "../../utils/dbs/colors.js";
+/**
+ * Unified pipeline: Edit world data first, then render from updated data
+ * Uses the actual line-interpolated tiles array (not rectangle corners)
+ * Tiles stay in worker to save memory - we render from worker response
+ */
+async function applyPencilOperation(tilesArray, layer) {
+    try {
+        // Validate inputs
+        if (!tilesArray || !Array.isArray(tilesArray) || tilesArray.length === 0) {
+            return;
+        }
 
-const onPencilClick = async (e) => {
-    if (Main.listeners.dragging) {
-        Main.listeners.dragging = false;
-        return;
-    }
+        if (!Main.state?.canvas?.worldObject?.header) {
+            console.warn("Canvas data missing");
+            return;
+        }
 
-    store.dispatch(stateChange(["status", "loading"], true));
+        if (!Main.layersImages?.[layer]?.data) {
+            console.warn("Layer image data missing");
+            return;
+        }
 
-    let tilesArray = [];
+        const maxTilesX = Main.state.canvas.worldObject.header.maxTilesX;
+        const maxTilesY = Main.state.canvas.worldObject.header.maxTilesY;
 
-    let sizeHalfX = Main.state.optionbar.size[0] / 2,
-        sizeHalfY = Main.state.optionbar.size[1] / 2;
-
-    for (let x = Main.mousePosImageX - Math.floor(sizeHalfX); x < Main.mousePosImageX + Math.ceil(sizeHalfX); x++)
-        for (let y = Main.mousePosImageY - Math.floor(sizeHalfY); y < Main.mousePosImageY + Math.ceil(sizeHalfY); y++)
-            if (x >= 0 && y >= 0 && x < Main.state.canvas.worldObject.header.maxTilesX && y < Main.state.canvas.worldObject.header.maxTilesY)
-                tilesArray.push([x,y]);
-
-    let offset, selectedColor = colors[Main.state.optionbar.layer][Main.state.optionbar.id] ?? {r:0,g:0,b:0,a:0};
-
-    if (Main.state.optionbar.id == 160) {
-        let temp;
-        tilesArray.forEach(([x, y]) => {
-            temp = y % 3;
-            offset = (Main.state.canvas.worldObject.header.maxTilesX * y + x) * 4;
-            Main.layersImages[Main.state.optionbar.layer].data[offset] = selectedColor[temp].r;
-            Main.layersImages[Main.state.optionbar.layer].data[offset+1] = selectedColor[temp].g;
-            Main.layersImages[Main.state.optionbar.layer].data[offset+2] = selectedColor[temp].b;
-            Main.layersImages[Main.state.optionbar.layer].data[offset+3] = selectedColor[temp].a;
+        // PHASE 2 UNIFIED PIPELINE (Memory Efficient):
+        // 1. Edit world data in worker (wait for completion)
+        const response = await Main.workerInterfaces.editTiles({
+            ...Main.state.optionbar.tileEditOptions,
+            editType: "tileslist",
+            tileEditArgs: tilesArray,
+            layer: layer
         });
-    }
-    else if (Main.state.optionbar.id == 51) {
-        let temp;
-        tilesArray.forEach(([x, y]) => {
-            temp = (x + y) % 2;
-            offset = (Main.state.canvas.worldObject.header.maxTilesX * y + x) * 4;
-            Main.layersImages[Main.state.optionbar.layer].data[offset] = selectedColor[temp].r;
-            Main.layersImages[Main.state.optionbar.layer].data[offset+1] = selectedColor[temp].g;
-            Main.layersImages[Main.state.optionbar.layer].data[offset+2] = selectedColor[temp].b;
-            Main.layersImages[Main.state.optionbar.layer].data[offset+3] = selectedColor[temp].a;
-        });
-    }
-    else {
-        tilesArray.forEach(([x, y]) => {
-            offset = (Main.state.canvas.worldObject.header.maxTilesX * y + x) * 4;
-            Main.layersImages[Main.state.optionbar.layer].data[offset] = selectedColor.r;
-            Main.layersImages[Main.state.optionbar.layer].data[offset+1] = selectedColor.g;
-            Main.layersImages[Main.state.optionbar.layer].data[offset+2] = selectedColor.b;
-            Main.layersImages[Main.state.optionbar.layer].data[offset+3] = selectedColor.a;
-        });
-    }
 
-    Main.updateLayers(Main.state.optionbar.layer);
+        // 2. Build tiles lookup from worker response (no main thread copy)
+        const tilesData = {};
+        if (response.updatedTiles) {
+            response.updatedTiles.forEach(({ x, y, tile }) => {
+                tilesData[`${x},${y}`] = tile;
+            });
+        }
 
-    await Main.workerInterfaces.editTiles(
-        Main.state.optionbar.layer,
-        "rectangle",
-        [tilesArray[0], tilesArray[tilesArray.length - 1]],
-        Main.state.optionbar.id
-    );
+        // 3. Render from worker data
+        renderFromWorldData(tilesArray, layer, maxTilesX, maxTilesY, tilesData);
 
-    store.dispatch(stateChange(["status", "loading"], false));
+        // Calculate dirty rectangle (only copy changed region to canvas)
+        const dirtyRect = calculateDirtyRect(tilesArray);
+        Main.updateLayers(layer, dirtyRect);
+
+        const opts = Main.state.optionbar.tileEditOptions;
+        const isTiles = layer === LAYERS.TILES;
+        const isWalls = layer === LAYERS.WALLS;
+
+        // Placing a block clears liquid when overwriteLiquids is on — re-render LIQUIDS layer
+        if (isTiles && opts?.editBlockId && opts.blockId !== "delete" && opts.blockId !== null && opts.overwriteLiquids !== false) {
+            renderFromWorldData(tilesArray, LAYERS.LIQUIDS, maxTilesX, maxTilesY, tilesData);
+            Main.updateLayers(LAYERS.LIQUIDS, dirtyRect);
+        }
+
+        // Update paint layer if normal paint is active
+        if (opts) {
+            const paintId = isTiles ? opts.blockColor : isWalls ? opts.wallColor : null;
+            const paintEnabled = isTiles ? opts.editBlockColor : isWalls ? opts.editWallColor : false;
+
+            if (paintEnabled && paintId && paintId !== 0 && paintId !== 31 && paintId !== 29 && paintId !== 30) {
+                const paintLayer = isTiles ? LAYERS.TILEPAINT : LAYERS.WALLPAINT;
+                Main.updateLayers(paintLayer, dirtyRect);
+            }
+        }
+    } catch (error) {
+        console.error("Error in pencil operation:", error);
+    }
 }
 
-const onPencilDrag = async (e) => {
-    if (!Main.listeners.dragging)
-        Main.listeners.dragging = true;
-
-    if (Main.mousePosImageX == Main.listeners.prevMousePosImageX && Main.mousePosImageY == Main.listeners.prevMousePosImageY)
-        return;
-
-    store.dispatch(stateChange(["status", "loading"], true));
-
-    Main.listeners.prevMousePosImageX = Main.mousePosImageX;
-    Main.listeners.prevMousePosImageY = Main.mousePosImageY;
-
-    let tilesArray = [];
-
-    let sizeHalfX = Main.state.optionbar.size[0] / 2,
-        sizeHalfY = Main.state.optionbar.size[1] / 2;
-
-    for (let x = Main.mousePosImageX - Math.floor(sizeHalfX); x < Main.mousePosImageX + Math.ceil(sizeHalfX); x++)
-        for (let y = Main.mousePosImageY - Math.floor(sizeHalfY); y < Main.mousePosImageY + Math.ceil(sizeHalfY); y++)
-            if (x >= 0 && y >= 0 && x < Main.state.canvas.worldObject.header.maxTilesX && y < Main.state.canvas.worldObject.header.maxTilesY)
-                tilesArray.push([x,y]);
-
-    let offset, selectedColor = colors[Main.state.optionbar.layer][Main.state.optionbar.id] ?? {r:0,g:0,b:0,a:0};
-
-    if (Main.state.optionbar.id == 160) {
-        let temp;
-        tilesArray.forEach(([x, y]) => {
-            temp = y % 3;
-            offset = (Main.state.canvas.worldObject.header.maxTilesX * y + x) * 4;
-            Main.layersImages[Main.state.optionbar.layer].data[offset] = selectedColor[temp].r;
-            Main.layersImages[Main.state.optionbar.layer].data[offset+1] = selectedColor[temp].g;
-            Main.layersImages[Main.state.optionbar.layer].data[offset+2] = selectedColor[temp].b;
-            Main.layersImages[Main.state.optionbar.layer].data[offset+3] = selectedColor[temp].a;
-        });
-    }
-    else if (Main.state.optionbar.id == 51) {
-        let temp;
-        tilesArray.forEach(([x, y]) => {
-            temp = (x + y) % 2;
-            offset = (Main.state.canvas.worldObject.header.maxTilesX * y + x) * 4;
-            Main.layersImages[Main.state.optionbar.layer].data[offset] = selectedColor[temp].r;
-            Main.layersImages[Main.state.optionbar.layer].data[offset+1] = selectedColor[temp].g;
-            Main.layersImages[Main.state.optionbar.layer].data[offset+2] = selectedColor[temp].b;
-            Main.layersImages[Main.state.optionbar.layer].data[offset+3] = selectedColor[temp].a;
-        });
-    }
-    else {
-        tilesArray.forEach(([x, y]) => {
-            offset = (Main.state.canvas.worldObject.header.maxTilesX * y + x) * 4;
-            Main.layersImages[Main.state.optionbar.layer].data[offset] = selectedColor.r;
-            Main.layersImages[Main.state.optionbar.layer].data[offset+1] = selectedColor.g;
-            Main.layersImages[Main.state.optionbar.layer].data[offset+2] = selectedColor.b;
-            Main.layersImages[Main.state.optionbar.layer].data[offset+3] = selectedColor.a;
-        });
-    }
-
-    Main.updateLayers(Main.state.optionbar.layer);
-
-    await Main.workerInterfaces.editTiles(
-        Main.state.optionbar.layer,
-        "rectangle",
-        [tilesArray[0], tilesArray[tilesArray.length - 1]],
-        Main.state.optionbar.id
-    );
-
-    store.dispatch(stateChange(["status", "loading"], false));
+const onPencilClick = async (_e) => {
+    await onDrawingToolClick(applyPencilOperation);
 }
+
+const onPencilDrag = async (_e) => {
+    await onDrawingToolDrag(applyPencilOperation);
+}
+
+const onPencilUp = (_e) => {
+    onDrawingToolUp(_e, applyPencilOperation, Main.state.optionbar.layer);
+};
 
 export {
     onPencilClick,
-    onPencilDrag
+    onPencilDrag,
+    onPencilUp
 }

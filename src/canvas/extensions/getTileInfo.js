@@ -6,7 +6,8 @@ async function getTileData(x, y) {
     if (y === undefined)
         y = Main.mousePosImageY;
 
-    return await Main.workerInterfaces.getTileData(x, y);
+    const { tileData } = await Main.workerInterfaces.getTileData(x, y);
+    return tileData;
 }
 
 function getTileColor(LAYER, x, y) {

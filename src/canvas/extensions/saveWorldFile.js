@@ -7,7 +7,7 @@ export default async function() {
     if (!Main.state.canvas.running)
         return null;
 
-    const newWorldFile = await Main.workerInterfaces.saveWorldFile({
+    const { newWorldFile } = await Main.workerInterfaces.saveWorldFile({
         worldObject: Main.state.canvas.worldObject,
 
         onSaveStart: () => {

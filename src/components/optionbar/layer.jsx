@@ -11,8 +11,8 @@ const options = [
 ];
 
 const optionsEraser = [
-   ["Tiles paint", LAYERS["Painted Tiles"]],
-   ["Walls paint", LAYERS["Painted Walls"]],
+   ["Tiles paint", LAYERS.TILEPAINT],
+   ["Walls paint", LAYERS.WALLPAINT],
    ["All", 100]
 ];
 

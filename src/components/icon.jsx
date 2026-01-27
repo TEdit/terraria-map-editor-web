@@ -49,6 +49,12 @@ const ToolBucketIcon = ({ size=24 }) => (
    </svg>
 );
 
+const ToolPickerIcon = ({ size=24 }) => (
+   <svg version="1.2" baseProfile="tiny" xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 16 16">
+      <path d="M15 1c-1.8-1.8-3.7-0.7-4.6 0.1-0.4 0.4-0.7 0.9-0.7 1.5v0c0 1.1-1.1 1.8-2.1 1.5l-0.1-0.1-0.7 0.8 0.7 0.7-6 6-0.8 2.3-0.7 0.7 1.5 1.5 0.8-0.8 2.3-0.8 6-6 0.7 0.7 0.7-0.6-0.1-0.2c-0.3-1 0.4-2.1 1.5-2.1v0c0.6 0 1.1-0.2 1.4-0.6 0.9-0.9 2-2.8 0.2-4.6zM3.9 13.6l-2 0.7-0.2 0.1 0.1-0.2 0.7-2 5.8-5.8 1.5 1.5-5.9 5.7z"/>
+   </svg>
+);
+
 const FolderIcon = ({ size=24 }) => (
    <svg version="1.2" baseProfile="tiny" xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24">
       <path d="M20 6h-8l-2-2H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm0 12H4V8h16v10z"/>
@@ -64,6 +70,12 @@ const GithubIcon = ({ size=24 }) => (
 const EyeIcon = ({ size=24 }) => (
    <svg version="1.2" baseProfile="tiny" xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24">
       <path d="M12,4.9c-4.6,0-8.7,2.5-11.8,6.6c-0.3,0.3-0.3,0.8,0,1.1c3.1,4.1,7.2,6.6,11.8,6.6c4.6,0,8.7-2.5,11.8-6.6c0.3-0.3,0.3-0.8,0-1.1C20.7,7.4,16.6,4.9,12,4.9z M12.3,17c-3.3,0.2-5.9-2.7-5.3-6C7.4,9,9,7.4,11,7.1c3.3-0.7,6.3,2,6.1,5.3C16.9,14.8,14.8,16.9,12.3,17z M14.1,11.2c-0.8,0.1-1.5-0.7-1.2-1.6c0.1-0.4,0.4-0.7,0.8-0.8c0.8-0.2,1.6,0.4,1.6,1.2C15.2,10.6,14.7,11.1,14.1,11.2z"/>
+   </svg>
+);
+
+const ToolBrushIcon = ({ size=24 }) => (
+   <svg version="1.2" baseProfile="tiny" xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24">
+      <path d="M20.7,2.3l1,1c0.2,0.2,0.2,0.5,0,0.7l-8.5,8.5c-0.2,0.2-0.5,0.2-0.7,0l-1-1c-0.2-0.2-0.2-0.5,0-0.7l8.5-8.5C20.2,2.1,20.5,2.1,20.7,2.3z M5,14c-0.6,0-1,0.4-1,1v6c0,0.6,0.4,1,1,1h14c0.6,0,1-0.4,1-1v-6c0-0.6-0.4-1-1-1h-8.5c-0.2,0-0.4,0.1-0.5,0.3l-4.2,4.2c-0.1,0.1-0.3,0.2-0.5,0.2H5z M6,16h4l3.5-3.5H6V16z"/>
    </svg>
 );
 
@@ -131,6 +143,7 @@ export {
    ToolSelectIcon,
    ToolPencilIcon,
    ToolBucketIcon,
+   ToolPickerIcon,
    FolderIcon,
    GithubIcon,
    EyeIcon,

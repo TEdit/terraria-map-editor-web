@@ -5,9 +5,11 @@
 }
 
 .optionbar {
-    height: 2.3rem;
+    min-height: 2.3rem;
     display: inline-flex;
     align-items: center;
+    flex-wrap: wrap;
+    padding: 0.3rem 0;
 }
 
 .optionbar > * {
@@ -34,4 +36,79 @@
     width: 1px;
     height: 1.6rem;
     background-color: #3e3e3e;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   TILE EDIT OPTIONS - CARD LAYOUT
+   Two-row layout with property cards for organized grouping
+   ═══════════════════════════════════════════════════════════════ */
+
+.tile-edit-options {
+    display: flex;
+    align-items: flex-start;
+}
+
+.tile-edit-cards {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.tile-edit-card {
+    background-color: #4a4a4a;
+    border: 1px solid #606060;
+    border-radius: 4px;
+    padding: 0.4rem;
+    min-width: 120px;
+}
+
+.tile-edit-card-header {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #ffffff;
+    margin-bottom: 0.3rem;
+    padding-bottom: 0.2rem;
+    border-bottom: 1px solid #606060;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    text-align: left;
+}
+
+.tile-edit-card-body {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    align-items: flex-start;
+}
+
+.tile-edit-inline-row {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    width: 100%;
+}
+
+.tile-edit-inline-row .input-container {
+    margin: 0;
+    flex-shrink: 0;
+}
+
+.tile-edit-inline-row .input-select-container,
+.tile-edit-inline-row .input-select {
+    flex: 1;
+    min-width: 120px;
+}
+
+.tile-edit-card-body .input-container {
+    margin: 0;
+}
+
+.tile-edit-card-body .input-select {
+    font-size: 0.85rem;
+}
+
+.optionbar-label {
+    font-size: 0.85rem;
+    color: #dddddd;
+    font-weight: 500;
 }

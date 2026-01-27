@@ -42,8 +42,74 @@ let defaultState = {
         id: null,
         ordered: false,
         locked: true,
-        worldPoint: "Spawn point"
+        worldPoint: "Spawn point",
+        brushShape: "square",
+        radius: 500,  // Default radius for bucket fill (500 tiles)
+
+        // Tile editing options - defines which properties to apply during tile editing
+        tileEditOptions: {
+            // Layer/mode - determines which properties get applied during edits
+            layer: LAYERS.TILES,
+
+            // Block/Tile properties
+            blockId: null,
+            editBlockId: true,  // Default: edit the tile ID
+            editBlockColor: false,
+            blockColor: 0,
+            editSlope: false,
+            slope: undefined,
+
+            // Block coatings (v269+ / 1.4.4+)
+            editInvisibleBlock: false,
+            invisibleBlock: false,
+            editFullBrightBlock: false,
+            fullBrightBlock: false,
+
+            // Wall properties
+            wallId: null,
+            editWallId: true,  // Default: edit the wall ID
+            editWallColor: false,
+            wallColor: 0,
+
+            // Wall coatings (v269+ / 1.4.4+)
+            editInvisibleWall: false,
+            invisibleWall: false,
+            editFullBrightWall: false,
+            fullBrightWall: false,
+
+            // Wire properties
+            wireRed: false,
+            editWireRed: false,
+            wireGreen: false,
+            editWireGreen: false,
+            wireBlue: false,
+            editWireBlue: false,
+            wireYellow: false,
+            editWireYellow: false,
+
+            // Actuator properties (only valid when blockId > 0)
+            editActuator: false,
+            actuator: false,
+            editActuated: false,
+            actuated: false,
+
+            // Liquid properties
+            editLiquidType: false,
+            liquidType: 1,
+            editLiquidAmount: false,
+            liquidAmount: 255,
+
+            // Block/liquid interaction
+            overwriteLiquids: true
+        }
     }),
+    selection: {
+        active: false,
+        x1: 0,
+        y1: 0,
+        x2: 0,
+        y2: 0
+    },
     layersVisibility: {
         NPCs: true,
         WorldPoints: true

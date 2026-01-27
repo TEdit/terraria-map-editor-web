@@ -1,126 +1,51 @@
-export default {
-    1: {
-        type: "Red",
-        color: {r:255,g:0,b:0,a:255}
-    },
-    2: {
-        type: "Orange",
-        color: {r:255,g:127,b:0,a:255}
-    },
-    3: {
-        type: "Yellow",
-        color: {r:255,g:255,b:0,a:255}
-    },
-    4: {
-        type: "Lime",
-        color: {r:127,g:255,b:0,a:255}
-    },
-    5: {
-        type: "Green",
-        color: {r:0,g:255,b:0,a:255}
-    },
-    6: {
-        type: "Teal",
-        color: {r:0,g:255,b:127,a:255}
-    },
-    7: {
-        type: "Cyan",
-        color: {r:0,g:255,b:255,a:255}
-    },
-    8: {
-        type: "Sky blue",
-        color: {r:0,g:127,b:255,a:255}
-    },
-    9: {
-        type: "Blue",
-        color: {r:0,g:0,b:255,a:255}
-    },
-    10: {
-        type: "Purple",
-        color: {r:127,g:0,b:255,a:255}
-    },
-    11: {
-        type: "Violet",
-        color: {r:255,g:0,b:255,a:255}
-    },
-    12: {
-        type: "Pink",
-        color: {r:255,g:0,b:127,a:255}
-    },
-    13: {
-        type: "Deep red",
-        color: {r:255,g:0,b:0,a:255}
-    },
-    14: {
-        type: "Deep orange",
-        color: {r:255,g:127,b:0,a:255}
-    },
-    15: {
-        type: "Deep yellow",
-        color: {r:255,g:255,b:0,a:255}
-    },
-    16: {
-        type: "Deep lime",
-        color: {r:127,g:255,b:0,a:255}
-    },
-    17: {
-        type: "Deep green",
-        color: {r:0,g:255,b:0,a:255}
-    },
-    18: {
-        type: "Deep teal",
-        color: {r:0,g:255,b:127,a:255}
-    },
-    19: {
-        type: "Deep cyan",
-        color: {r:0,g:255,b:255,a:255}
-    },
-    20: {
-        type: "Deep sky blue",
-        color: {r:0,g:127,b:255,a:255}
-    },
-    21: {
-        type: "Deep blue",
-        color: {r:0,g:0,b:255,a:255}
-    },
-    22: {
-        type: "Deep purple",
-        color: {r:127,g:0,b:255,a:255}
-    },
-    23: {
-        type: "Deep violet",
-        color: {r:255,g:0,b:255,a:255}
-    },
-    24: {
-        type: "Deep pink",
-        color: {r:255,g:0,b:127,a:255}
-    },
-    25: {
-        type: "Black",
-        color: {r:75,g:75,b:75,a:255}
-    },
-    26: {
-        type: "White",
-        color: {r:255,g:255,b:255,a:255}
-    },
-    27: {
-        type: "Gray",
-        color: {r:175,g:175,b:175,a:255}
-    },
-    28: {
-        type: "Brown",
-        color: {r:255,g:178,b:125,a:255}
-    },
-    29: {
-        type: "Shadow",
-        color: {r:25,g:25,b:25,a:255}
-    },
-    30: {
-        type: "Negative",
-        color: {r:200,g:200,b:200,a:150}
-    },
-    31: {
-        type: "Illuminant",
-        color: {r:255,g:255,b:255,a:255}
-    }
-}
+import { hexToRgba } from "../colors/paintColorBlending.js";
+
+const PAINTS = [
+    { id: 0, name: "None", color: "#000000" },
+    // Non-deep paints, lightened ~25% toward white
+    { id: 1, name: "Red", color: "#FF4040" },
+    { id: 2, name: "Orange", color: "#FF9F40" },
+    { id: 3, name: "Yellow", color: "#FFFF40" },
+    { id: 4, name: "Lime", color: "#9FFF40" },
+    { id: 5, name: "Green", color: "#40FF40" },
+    { id: 6, name: "Teal", color: "#40FF9F" },
+    { id: 7, name: "Cyan", color: "#40FFFF" },
+    { id: 8, name: "Sky Blue", color: "#409FFF" },
+    { id: 9, name: "Blue", color: "#4040FF" },
+    { id: 10, name: "Purple", color: "#9F40FF" },
+    { id: 11, name: "Violet", color: "#FF40FF" },
+    { id: 12, name: "Pink", color: "#FF409F" },
+    // Deep paints
+    { id: 13, name: "Deep Red", color: "#FF0000" },
+    { id: 14, name: "Deep Orange", color: "#FF7F00" },
+    { id: 15, name: "Deep Yellow", color: "#FFFF00" },
+    { id: 16, name: "Deep Lime", color: "#7FFF00" },
+    { id: 17, name: "Deep Green", color: "#00FF00" },
+    { id: 18, name: "Deep Teal", color: "#00FF7F" },
+    { id: 19, name: "Deep Cyan", color: "#00FFFF" },
+    { id: 20, name: "Deep Sky Blue", color: "#007FFF" },
+    { id: 21, name: "Deep Blue", color: "#0000FF" },
+    { id: 22, name: "Deep Purple", color: "#7F00FF" },
+    { id: 23, name: "Deep Violet", color: "#FF00FF" },
+    { id: 24, name: "Deep Pink", color: "#FF007F" },
+    { id: 25, name: "Black", color: "#4B4B4B" },
+    { id: 26, name: "White", color: "#FFFFFF" },
+    { id: 27, name: "Gray", color: "#AFAFAF" },
+    { id: 28, name: "Brown", color: "#FFB27D" },
+    { id: 29, name: "Shadow", color: "#191919" },
+    { id: 30, name: "Negative", color: "#FFFFFF" },
+    { id: 31, name: "Illuminant Paint (legacy)", color: "#FFFFFF" }
+];
+
+// Pre-compute RGBA objects for performance (avoids hex parsing during rendering)
+const PAINTS_WITH_RGBA = PAINTS.map(paint => ({
+    ...paint,
+    rgba: hexToRgba(paint.color, 211) // default alpha 211 for paint colors
+}));
+
+// Create paint colors array indexed by paint ID
+// PAINT_COLORS_BY_ID[paintId] = {r, g, b, a}
+const PAINT_COLORS_BY_ID = PAINTS_WITH_RGBA.map(paint => paint.rgba);
+
+export default Object.freeze(PAINTS_WITH_RGBA);
+export { PAINT_COLORS_BY_ID };

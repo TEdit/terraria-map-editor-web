@@ -22,7 +22,7 @@ function InputSlider({
    let unshifted;
    if (float) {
       unshifted = {
-         value: (value == -0 || value == "-0.") ? value : Math.round(value * shift) / shift,
+         value: (Object.is(value, -0) || value === "-0.") ? value : Math.round(value * shift) / shift,
          min,
          max,
          onChange: (e) => {
