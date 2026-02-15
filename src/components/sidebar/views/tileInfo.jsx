@@ -60,7 +60,7 @@ function SidebarViewTileInfo({ tool, tileData, stateChange }) {
       <div className="sidebar-view-general">
          <div className="sidebar-view-general-row-divider"><span>Tile</span></div>
          <span>Tile ID</span>
-         <OptionbarInput value={tile.blockId !== undefined ? tile.blockId : ""} onChange={(value) => {setTileData("blockId", value)}} int canBeNull min={0} max={469} width="14ch"/>
+         <OptionbarInput value={tile.blockId !== undefined ? tile.blockId : ""} onChange={(value) => {setTileData("blockId", value)}} int canBeNull min={0} max={752} width="14ch"/>
          <span>Tile color</span>
          <div className="sidebar-view-general-row-value">{tile.colors.block !== undefined ? tile.colors.block : ""}</div>
          <span>Slope</span>
@@ -71,7 +71,7 @@ function SidebarViewTileInfo({ tool, tileData, stateChange }) {
          <OptionbarInput value={tile.frameY !== undefined ? tile.frameY : ""} onChange={(value) => {setTileData("frameY", value)}} int canBeNull min={0} width="14ch"/>
          <div className="sidebar-view-general-row-divider"><span>Wall</span></div>
          <span>Wall ID</span>
-         <OptionbarInput value={tile.wallId !== undefined ? tile.wallId : ""} onChange={(value) => {setTileData("wallId", value)}} int canBeNull min={1} max={315} width="14ch"/>
+         <OptionbarInput value={tile.wallId !== undefined ? tile.wallId : ""} onChange={(value) => {setTileData("wallId", value)}} int canBeNull min={1} max={366} width="14ch"/>
          <span>Wall color</span>
          <div className="sidebar-view-general-row-value">{tile.colors.wall !== undefined ? tile.colors.wall : ""}</div>
          <div className="sidebar-view-general-row-divider"><span>Liquid</span></div>

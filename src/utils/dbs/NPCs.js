@@ -180,6 +180,61 @@ export default {
         town: true,
         names: ["Ai","Hime","Emilia","Alice","Belle","Sophia","Hikari","Faye","Christina","Flora","Liselotte","Aria","Yuuki","Theresa","Elitia","Lucia","Ariel","Momo","Charlotte","Tiara","Rosetta"]
     },
+    670: {
+        typeName: "Nerdy Slime",
+        town: true,
+        names: []
+    },
+    678: {
+        typeName: "Cool Slime",
+        town: true,
+        names: []
+    },
+    679: {
+        typeName: "Elder Slime",
+        town: true,
+        names: []
+    },
+    680: {
+        typeName: "Clumsy Slime",
+        town: true,
+        names: []
+    },
+    681: {
+        typeName: "Diva Slime",
+        town: true,
+        names: []
+    },
+    682: {
+        typeName: "Surly Slime",
+        town: true,
+        names: []
+    },
+    683: {
+        typeName: "Mystic Slime",
+        town: true,
+        names: []
+    },
+    684: {
+        typeName: "Squire Slime",
+        town: true,
+        names: []
+    },
+    685: {
+        typeName: "Old Shaking Chest",
+        town: true,
+        names: []
+    },
+    695: {
+        typeName: "Cattiva",
+        town: true,
+        names: []
+    },
+    696: {
+        typeName: "Foxparks",
+        town: true,
+        names: []
+    },
     422: {
         typeName: "Vortex Pillar",
         pillar: true
