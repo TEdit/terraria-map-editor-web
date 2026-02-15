@@ -33,12 +33,6 @@ npm run test:e2e   # E2E tests (Playwright)
 - **Platform:** GitHub Pages
 - **Workflow:** [publish-gh-pages.yaml](.github/workflows/publish-gh-pages.yaml)
 
-### Beta
-- **URL:** https://beta.tedit.dev
-- **Branch:** Pull request branches
-- **Platform:** Cloudflare Pages
-- **Workflow:** [deploy-beta.yaml](.github/workflows/deploy-beta.yaml)
-
 ## License
 
 MIT
