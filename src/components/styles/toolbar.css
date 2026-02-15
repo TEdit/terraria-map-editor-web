@@ -1,19 +1,19 @@
 .toolbar-container {
     box-sizing: border-box;
     padding: 1px 1px 0 0;
-    background-color: #474747;
-    border: 0 solid #383838;
+    background-color: var(--color-border-default);
+    border: 0 solid var(--color-border-default);
     border-width: 0 1px 0 0;
 }
 
 .toolbar {
-    width: 2.65rem;
+    width: 36px;
     height: 100%;
     box-sizing: border-box;
-    background-color: #535353;
-    border: 0 solid #383838;
+    background-color: var(--color-bg-activitybar);
+    border: 0 solid var(--color-border-default);
     border-width: 1px 1px 0 0;
-    padding-top: 0.35rem;
+    padding-top: var(--spacing-small);
 
     display: flex;
     flex-direction: column;

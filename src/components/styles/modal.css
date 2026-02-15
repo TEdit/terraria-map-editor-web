@@ -26,9 +26,9 @@
     box-sizing: border-box;
     position: relative;
     z-index: 6000;
-    background-color: #535353;
-    padding: 30px 50px;
-    border-radius: 5px;
+    background-color: var(--color-bg-sidebar);
+    padding: var(--spacing-medium) 30px;
+    border-radius: var(--control-radius);
     overflow-y: auto;
 
     letter-spacing: 0.01rem;
@@ -52,12 +52,12 @@
 }
 
 .modal-button-close svg {
-    fill: #f0f0f0;
+    fill: var(--color-text-primary);
 }
 
 .modal-header-text {
     width: 100%;
-    color: #f0f0f0;
+    color: var(--color-text-primary);
     font-size: 1.6rem;
     font-weight: 900;
     padding-bottom: 22px;
@@ -99,6 +99,6 @@
 
 .modal-dividerLine {
     height: 1px;
-    background-color: #424242;
+    background-color: var(--color-border-default);
     margin: 1.5rem 1rem 1rem;
 }

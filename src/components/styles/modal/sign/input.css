@@ -1,9 +1,9 @@
 .modal-sign-input {
-    padding: 4px 14px;
+    padding: var(--spacing-compact) var(--spacing-medium);
     margin-bottom: 2px;
-    background-color: #474747;
-    border: 1px solid #636363;
-    border-radius: 5px;
+    background-color: var(--color-bg-input);
+    border: 1px solid var(--color-border-input);
+    border-radius: var(--control-radius);
 
     line-height: 1.8rem;
     font-family: inherit;
@@ -13,7 +13,7 @@
 
 .modal-sign-input:focus {
     outline: none;
-    border-color: #0078d7;
+    border-color: var(--color-accent);
 }
 
 .modal-sign-input--errored {

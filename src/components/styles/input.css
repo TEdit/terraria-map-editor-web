@@ -18,9 +18,9 @@
  */
 
 .input-label {
-    color: #d6d6d6;
+    color: var(--color-text-primary);
     font-size: 0.84rem;
-    margin-right: 0.4rem;
+    margin-right: var(--spacing-compact);
 
     user-select: none;
     -moz-user-select: none;
@@ -28,7 +28,7 @@
 
 .input-label.--rightside {
     margin-right: 0;
-    margin-left: 0.4rem;
+    margin-left: var(--spacing-compact);
 }
 
 .input-label.--emphasis {
@@ -43,14 +43,14 @@
  */
 
 .input {
-    height: 1.5rem;
-    padding: 0 0.2rem;
+    height: var(--control-height);
+    padding: 0 var(--spacing-compact);
     box-sizing: border-box;
-    background-color: #454545;
-    border: 1px solid #666666;
-    border-radius: 0.2rem;
+    background-color: var(--color-bg-input);
+    border: 1px solid var(--color-border-input);
+    border-radius: var(--control-radius);
 
-    color: #f0f0f0;
+    color: var(--color-text-primary);
     font-size: 0.85rem;
     text-align: center;
 }
@@ -60,18 +60,18 @@
 }
 
 .input-select {
-    height: 1.5rem;
-    padding: 0 1.1rem 0 0.25rem;
+    height: var(--control-height);
+    padding: 0 1.1rem 0 var(--spacing-compact);
     box-sizing: border-box;
-    background-color: #454545;
-    border: 1px solid #666666;
-    border-radius: 0.2rem;
+    background-color: var(--color-bg-input);
+    border: 1px solid var(--color-border-input);
+    border-radius: var(--control-radius);
 
     -webkit-appearance: none;
     -moz-appearance: none;
     appearance: none;
 
-    color: #f0f0f0;
+    color: var(--color-text-primary);
     font-size: 0.84rem;
 }
 
@@ -87,7 +87,7 @@
 
 .input-select:focus, .input:focus {
     outline: none;
-    border: 1px solid #0078d7;
+    border: 1px solid var(--color-accent);
 }
 
 .input-slider {
@@ -118,7 +118,7 @@
 
 .input-slider:focus::-moz-range-thumb {
     outline: none;
-    box-shadow: 0 0 0 2px #0078d7;
+    box-shadow: 0 0 0 2px var(--color-accent);
 }
 
 .input-slider::-webkit-slider-thumb {
@@ -135,7 +135,7 @@
 
 .input-slider:focus::-webkit-slider-thumb {
     outline: none;
-    box-shadow: 0 0 0 2px #0078d7;
+    box-shadow: 0 0 0 2px var(--color-accent);
 }
 
 .input-slider + .input {
@@ -148,16 +148,16 @@
 
 .input-checkbox {
     position: relative;
-    height: 0.8rem;
-    width: 0.8rem;
-    border-radius: 0.15rem;
+    height: 16px;
+    width: 16px;
+    border-radius: var(--control-radius);
     background-color: #d4d4d4;
     cursor: pointer;
 }
 
 .input-checkbox:focus {
     outline: none;
-    box-shadow: 0 0 0 2px #0078d7;
+    box-shadow: 0 0 0 2px var(--color-accent);
 }
 
 .input-checkbox:active {
@@ -166,13 +166,14 @@
 
 .input-checkbox.--checked:after {
     position: absolute;
-    top: 0;
-    left: 0.07rem;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
     content: "✓";
     color: #323232;
     font-weight: 800;
-    font-size: 0.8rem;
-    line-height: 0.8rem;
+    font-size: 0.75rem;
+    line-height: 1;
 }
 
 /*
@@ -186,11 +187,11 @@
 
     display: flex;
     align-items: center;
-    height: 1.5rem;
-    padding: 0 0.25rem;
+    height: var(--control-height);
+    padding: 0 var(--spacing-small);
     box-sizing: border-box;
-    border: 1px solid #666666;
-    border-radius: 0.2rem;
+    border: 1px solid var(--color-border-input);
+    border-radius: var(--control-radius);
     text-decoration: none;
 
     cursor: pointer;
@@ -205,7 +206,7 @@
 
 .input-button:active, .input-link:active {
     outline: none;
-    background-color: #454545;
+    background-color: var(--color-bg-input);
     box-shadow: none;
 }
 
@@ -214,6 +215,6 @@
  */
 
 .input-icon {
-    fill: #f1f1f1;
-    margin: 0 0.15rem;
+    fill: var(--color-text-primary);
+    margin: 0 var(--spacing-compact);
 }

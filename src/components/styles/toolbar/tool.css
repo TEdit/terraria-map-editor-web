@@ -1,11 +1,11 @@
 .toolbar-tool {
     padding: 0.2rem 0.35rem;
     box-sizing: content-box;
-    border-radius: 0.2rem;
+    border-radius: var(--control-radius);
     border: 1px solid rgba(0,0,0,0);
 
     cursor: default;
-    fill: #dddddd;
+    fill: var(--color-text-primary);
 }
 
 .toolbar-tool svg {
@@ -17,16 +17,16 @@
 }
 
 .toolbar-tool:hover {
-    background-color: #454545;
-    border-color: #666666;
+    background-color: var(--color-bg-input);
+    border-color: var(--color-border-input);
 }
 
 .toolbar-tool--selected, .toolbar-tool--selected:hover {
-    background-color: #383838;
-    border-color: #666666;
+    background-color: var(--color-bg-editor);
+    border-color: var(--color-border-input);
 }
 
 .toolbar-tool--stroke {
     fill: none;
-    stroke: #dddddd;
+    stroke: var(--color-text-primary);
 }

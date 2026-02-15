@@ -1,5 +1,5 @@
 .appbar-button svg {
-    fill: #f0f0f0;
+    fill: var(--color-text-primary);
 }
 
 .appbar-button {

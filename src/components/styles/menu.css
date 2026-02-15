@@ -78,8 +78,8 @@
 
     .menu-logo {
         width: 100%;
-        min-height: 56px;
-        border: 0 solid #383838;
+        min-height: 48px;
+        border: 0 solid var(--color-border-default);
         border-bottom-width: 1px;
         margin-bottom: 24px;
         background-image: url('../../images/favicon/apple-touch-icon.png');
@@ -290,7 +290,7 @@
 
 .menu-dropdown-item:hover, .menu-dropdown-item:focus {
     outline: none;
-    background-color: #90c8f6;
+    background-color: var(--color-accent-light);
 }
 
 .menu-dropdown-item.--divider {
@@ -347,7 +347,7 @@
     content: var(--icon-black);
     height: 100%;
     width: 1.5rem;
-    background-color: #90c8f6;
+    background-color: var(--color-accent-light);
     top: 0;
     left: 0;
 }

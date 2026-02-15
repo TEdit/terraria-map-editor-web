@@ -5,6 +5,8 @@ import localSettings from "../utils/localSettings.js";
 
 import LAYERS from "../utils/dbs/LAYERS.js";
 
+import AppbarButton from "./appbar/button.jsx";
+import { CrossIcon } from "./icon.jsx";
 import OptionbarOptionLayer from "./optionbar/layer.jsx";
 import OptionbarOptionSize from "./optionbar/size.jsx";
 import OptionbarOptionWorldPoint from "./optionbar/worldPoint.jsx";
@@ -14,7 +16,7 @@ import "./styles/optionbar.css";
 
 import toolsConfig from "../app/tools.js";
 
-function Optionbar({ stateChange, show, running, selectedTool, optionbarState }) {
+function Optionbar({ stateChange, show, running, selectedTool, optionbarState, drawer, mobile }) {
    const ToolIcon = toolsConfig[selectedTool].icon;
 
    const setState = (newState) => {
@@ -22,9 +24,20 @@ function Optionbar({ stateChange, show, running, selectedTool, optionbarState })
       localSettings.set("optionbarState", newState);
    }
 
+   const onMobileCloseClick = () => {
+      stateChange(["appbar", "drawer"], null);
+   }
+
    return (
       show &&
-      <div className="optionbar-container">
+      <div className={"optionbar-container" + (drawer == "optionbar" ? " drawer" : "")}>
+         {
+            mobile &&
+            <div className="optionbar-mobile-header">
+               <span className="optionbar-mobile-title">Tool Options</span>
+               <AppbarButton Icon={CrossIcon} onClick={onMobileCloseClick}/>
+            </div>
+         }
          <div className="optionbar">
             <div className={"optionbar-icon" + (toolsConfig[selectedTool].stroke ? " optionbar-icon--stroke" : "")}>
                <ToolIcon size="100%"/>
@@ -68,6 +81,8 @@ export default connect(
          show: state.view.toolbar,
          selectedTool: state.toolbar.tool,
          running: state.canvas.running,
+         drawer: state.appbar.drawer,
+         mobile: state.mobile,
          optionbarState: {
             layer: state.optionbar.layer,
             size: state.optionbar.size,

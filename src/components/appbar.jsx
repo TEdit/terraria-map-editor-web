@@ -4,7 +4,7 @@ import { stateChange } from "../state/state.js";
 import menu from "../app/menu.js";
 
 import AppbarButton from "./appbar/button.jsx"
-import { MenuIcon, PropertiesIcon } from "./icon.jsx";
+import { MenuIcon, PropertiesIcon, ToolOptionsIcon } from "./icon.jsx";
 import "./styles/appbar.css";
 
 function Appbar({ stateChange, running }) {
@@ -16,14 +16,24 @@ function Appbar({ stateChange, running }) {
       stateChange(["appbar", "drawer"], "sidebar");
    }
 
+   const onClickToolOptions = () => {
+      stateChange(["appbar", "drawer"], "optionbar");
+   }
+
    return (
       <div className="appbar-container">
          <div className="appbar">
             <AppbarButton Icon={MenuIcon} onClick={onClickMenu}/>
-            {
-               running &&
-               <AppbarButton Icon={PropertiesIcon} onClick={onClickProperties}/>
-            }
+            <div style={{ display: 'flex' }}>
+               {
+                  running &&
+                  <AppbarButton Icon={ToolOptionsIcon} onClick={onClickToolOptions}/>
+               }
+               {
+                  running &&
+                  <AppbarButton Icon={PropertiesIcon} onClick={onClickProperties}/>
+               }
+            </div>
          </div>
       </div>
    );

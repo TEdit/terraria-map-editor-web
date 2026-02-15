@@ -1,5 +1,5 @@
 html {
-    font-size: 87.5%;
+    font-size: 75%;
 }
 
 * {
@@ -9,15 +9,46 @@ html {
 }
 
 :root {
-    --color-1: #f0f0f0;
+    /* Text colors */
+    --color-text-primary: #CCCCCC;
+    --color-text-secondary: #9E9E9E;
+    --color-text-disabled: #6E6E6E;
+
+    /* Background colors - VS Code dark hierarchy */
+    --color-bg-editor: #1E1E1E;
+    --color-bg-sidebar: #252526;
+    --color-bg-activitybar: #333333;
+    --color-bg-titlebar: #3C3C3C;
+    --color-bg-input: #3C3C3C;
+    --color-bg-hover: #2A2D2E;
+
+    /* Border colors */
+    --color-border-default: #454545;
+    --color-border-subtle: #2B2B2B;
+    --color-border-input: #666666;
+
+    /* Accent colors (green) */
+    --color-accent: #00A000;
+    --color-accent-hover: #00C000;
+    --color-accent-light: #A0E0A0;
+
+    /* Sizing */
+    --control-height: 24px;
+    --control-radius: 3px;
+    --spacing-compact: 4px;
+    --spacing-small: 8px;
+    --spacing-medium: 12px;
+
+    /* Legacy color mapping for backwards compatibility */
+    --color-1: #CCCCCC;
     --color-2: #dddddd;
-    --color-3: #a9a9a9;
+    --color-3: #9E9E9E;
     --color-4-light: #7d7d7d;
     --color-4: #666666;
-    --color-5: #535353;
-    --color-6: #454545;
-    --color-7: #383838;
-    --color-8: #282828;
+    --color-5: #252526;
+    --color-6: #3C3C3C;
+    --color-7: #333333;
+    --color-8: #1E1E1E;
 }
 
 html, body, #app {

@@ -14,13 +14,13 @@
 .select-header {
     display: inline-flex;
     align-items: center;
-    height: 1.5rem;
-    padding: 0 1.1rem 0 0.25rem;
+    height: var(--control-height);
+    padding: 0 1.1rem 0 var(--spacing-compact);
     box-sizing: border-box;
-    background-color: #454545;
-    border: 1px solid #666666;
-    border-radius: 0.2rem;
-    color: #f0f0f0;
+    background-color: var(--color-bg-input);
+    border: 1px solid var(--color-border-input);
+    border-radius: var(--control-radius);
+    color: var(--color-text-primary);
     font-size: 0.84rem;
     cursor: pointer;
     position: relative;
@@ -35,7 +35,7 @@
 }
 
 .input-select-with-color-container:focus .select-header {
-    border: 1px solid #0078d7;
+    border: 1px solid var(--color-accent);
 }
 
 .select-label {
@@ -46,7 +46,7 @@
     width: 15px;
     height: 15px;
     margin-left: 0.3rem;
-    border: 1px solid #666666;
+    border: 1px solid var(--color-border-input);
     flex-shrink: 0;
     box-sizing: border-box;
 }
@@ -69,9 +69,9 @@
     min-width: 100%;
     max-height: 300px;
     overflow-y: auto;
-    background-color: #454545;
-    border: 1px solid #666666;
-    border-radius: 0.2rem;
+    background-color: var(--color-bg-input);
+    border: 1px solid var(--color-border-input);
+    border-radius: var(--control-radius);
     z-index: 1000;
     margin-top: 2px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
@@ -83,12 +83,12 @@
 }
 
 .select-dropdown::-webkit-scrollbar-track {
-    background: #3a3a3a;
+    background: var(--color-bg-editor);
 }
 
 .select-dropdown::-webkit-scrollbar-thumb {
-    background: #666666;
-    border-radius: 4px;
+    background: var(--color-border-input);
+    border-radius: var(--control-radius);
 }
 
 .select-dropdown::-webkit-scrollbar-thumb:hover {
@@ -100,7 +100,7 @@
     display: flex;
     align-items: center;
     padding: 0.3rem 0.4rem;
-    color: #f0f0f0;
+    color: var(--color-text-primary);
     cursor: pointer;
     font-size: 0.84rem;
     user-select: none;
@@ -109,7 +109,7 @@
 
 .select-option:hover,
 .select-option.--focused {
-    background-color: #555555;
+    background-color: var(--color-bg-hover);
 }
 
 .select-option.--missing {
@@ -129,7 +129,7 @@
     width: 15px;
     height: 15px;
     margin-left: 0.3rem;
-    border: 1px solid #666666;
+    border: 1px solid var(--color-border-input);
     flex-shrink: 0;
     box-sizing: border-box;
 }

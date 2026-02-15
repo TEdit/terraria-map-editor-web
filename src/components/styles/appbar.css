@@ -1,7 +1,7 @@
 .appbar-container {
-    height: 56px;
-    background-color: #535353;
-    border: 0 solid #383838;
+    height: 48px;
+    background-color: var(--color-bg-sidebar);
+    border: 0 solid var(--color-border-default);
     border-bottom-width: 1px;
 }
 
@@ -16,6 +16,6 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    color: #f0f0f0;
+    color: var(--color-text-primary);
     font-size: 1.3rem;
 }

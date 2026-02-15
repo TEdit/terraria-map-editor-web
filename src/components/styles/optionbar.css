@@ -1,26 +1,26 @@
 .optionbar-container {
-    background-color: #535353;
-    border: 0 solid #383838;
+    background-color: var(--color-bg-sidebar);
+    border: 0 solid var(--color-border-default);
     border-width: 1px 0;
 }
 
 .optionbar {
-    min-height: 2.3rem;
+    min-height: 2rem;
     display: inline-flex;
     align-items: center;
     flex-wrap: wrap;
-    padding: 0.3rem 0;
+    padding: var(--spacing-compact) 0;
 }
 
 .optionbar > * {
-    margin-right: 0.6rem;
+    margin-right: var(--spacing-small);
 }
 
 .optionbar-icon {
-    margin-left: 0.6rem;
+    margin-left: var(--spacing-small);
     display: flex;
     justify-content: center;
-    fill: #dddddd;
+    fill: var(--color-text-primary);
 }
 
 .optionbar-icon svg {
@@ -29,13 +29,13 @@
 
 .optionbar-icon--stroke {
     fill: none;
-    stroke: #dddddd;
+    stroke: var(--color-text-primary);
 }
 
 .optionbar-divider {
     width: 1px;
     height: 1.6rem;
-    background-color: #3e3e3e;
+    background-color: var(--color-border-default);
 }
 
 /* ═══════════════════════════════════════════════════════════════
@@ -55,20 +55,20 @@
 }
 
 .tile-edit-card {
-    background-color: #4a4a4a;
-    border: 1px solid #606060;
-    border-radius: 4px;
-    padding: 0.4rem;
+    background-color: var(--color-bg-activitybar);
+    border: 1px solid var(--color-border-input);
+    border-radius: var(--control-radius);
+    padding: var(--spacing-compact);
     min-width: 120px;
 }
 
 .tile-edit-card-header {
     font-size: 0.75rem;
     font-weight: 600;
-    color: #ffffff;
+    color: var(--color-text-primary);
     margin-bottom: 0.3rem;
     padding-bottom: 0.2rem;
-    border-bottom: 1px solid #606060;
+    border-bottom: 1px solid var(--color-border-input);
     text-transform: uppercase;
     letter-spacing: 0.5px;
     text-align: left;
@@ -109,6 +109,78 @@
 
 .optionbar-label {
     font-size: 0.85rem;
-    color: #dddddd;
+    color: var(--color-text-primary);
     font-weight: 500;
+}
+
+/* Mobile header for drawer */
+.optionbar-mobile-header {
+    display: none;
+}
+
+@media (max-width: 960px) {
+    .optionbar-container {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        z-index: 10000;
+        background-color: var(--color-bg-sidebar);
+        border: none;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+
+        transform: translateY(100%);
+        transition: transform 0.3s ease-in-out;
+    }
+
+    .optionbar-container.drawer {
+        transform: translateY(0);
+    }
+
+    .optionbar-mobile-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: var(--spacing-small) var(--spacing-medium);
+        border-bottom: 1px solid var(--color-border-default);
+        background-color: var(--color-bg-activitybar);
+    }
+
+    .optionbar-mobile-title {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: var(--color-text-primary);
+    }
+
+    .optionbar {
+        flex-wrap: wrap;
+        padding: var(--spacing-medium);
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .optionbar > * {
+        margin-right: 0;
+        margin-bottom: var(--spacing-small);
+    }
+
+    .optionbar-icon {
+        display: none;
+    }
+
+    .optionbar-divider {
+        display: none;
+    }
+
+    .tile-edit-cards {
+        flex-wrap: wrap;
+        width: 100%;
+    }
+
+    .tile-edit-card {
+        flex: 1;
+        min-width: 140px;
+    }
 }

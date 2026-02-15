@@ -5,9 +5,9 @@
 .statusbar-container {
     user-select: none;
     -moz-user-select: none;
-    background-color: #4a4a4a;
+    background-color: var(--color-bg-activitybar);
     box-sizing: border-box;
-    border: 0 solid #383838;
+    border: 0 solid var(--color-border-default);
     border-right-width: 1px;
 }
 
@@ -18,7 +18,7 @@
 .statusbar > * {
     box-sizing: border-box;
 
-    color: white;
+    color: var(--color-text-primary);
     font-size: 0.7rem;
     letter-spacing: 0.4px;
     line-height: 1.05rem;
@@ -26,15 +26,15 @@
 
 .status-zoom {
     width: 3.5rem;
-    background-color: #454545;
+    background-color: var(--color-bg-input);
 }
 
 .status-action {
-    border: 0 solid #424242;
+    border: 0 solid var(--color-border-default);
     border-width: 1px 1px 0 1px;
     position: relative;
     width: 14rem;
-    background-color: #535353;
+    background-color: var(--color-bg-sidebar);
     text-align: center;
 }
 
@@ -49,7 +49,7 @@
     left: 0;
     z-index: 900;
     height: 100%;
-    background-color: #0f64d2;
+    background-color: var(--color-accent);
 }
 
 .status-error {
@@ -63,7 +63,7 @@
 @media (max-width: 960px)
 {
     .statusbar-container {
-        border: 0 solid #383838;
+        border: 0 solid var(--color-border-default);
         border-top-width: 1px;
     }
 
