@@ -29,7 +29,7 @@ npm run test:e2e   # E2E tests (Playwright)
 
 ### Production
 - **URL:** https://www.tedit.dev
-- **Branch:** `master`
+- **Branch:** `main`
 - **Platform:** GitHub Pages
 - **Workflow:** [publish-gh-pages.yaml](.github/workflows/publish-gh-pages.yaml)
 
