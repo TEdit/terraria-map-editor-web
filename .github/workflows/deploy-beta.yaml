@@ -76,7 +76,7 @@ jobs:
           const prNumber = context.payload.pull_request.number;
           const comment =
             `🚀 **Beta Deployment Successful**\n\n` +
-            `Your changes are live at: **https://beta.terraria-map-editor.com**\n\n` +
+            `Your changes are live at: **https://beta.tedit.dev**\n\n` +
             `📝 **Note:** This is a shared beta environment. New PR deployments will overwrite this.\n\n` +
             `Commit: \`${context.payload.pull_request.head.sha.substring(0, 7)}\``;
 

@@ -54,7 +54,7 @@ jobs:
         retention-days: 7
 
     - name: Add CNAME file
-      run: echo "www.terraria-map-editor.com" > dist/CNAME
+      run: echo "www.tedit.dev" > dist/CNAME
 
     - name: Upload artifact
       uses: actions/upload-pages-artifact@v3
