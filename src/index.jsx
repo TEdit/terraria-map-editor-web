@@ -35,9 +35,33 @@ if (import.meta.env.PROD && 'serviceWorker' in navigator) {
         navigator.serviceWorker.register('/service-worker.js')
             .then(registration => {
                 console.log('Service Worker registered successfully:', registration);
+
+                // Check for updates every 5 minutes
+                setInterval(() => registration.update(), 5 * 60 * 1000);
+
+                // Notify user when a new version is ready
+                registration.addEventListener('updatefound', () => {
+                    const newWorker = registration.installing;
+                    newWorker.addEventListener('statechange', () => {
+                        if (newWorker.state === 'activated' && navigator.serviceWorker.controller) {
+                            // New SW activated while an old one was in control = update available
+                            if (confirm('A new version of TEdit is available. Reload to update?')) {
+                                window.location.reload();
+                            }
+                        }
+                    });
+                });
             })
             .catch(error => {
                 console.warn('Service Worker registration failed:', error);
             });
+    });
+
+    // If the SW takes control (via clients.claim), reload for consistency
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+        // Only auto-reload if this wasn't the first controller
+        if (navigator.serviceWorker.controller) {
+            window.location.reload();
+        }
     });
 }

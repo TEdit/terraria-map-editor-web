@@ -1,75 +1,14 @@
-const CACHE_NAME = 'terraria-map-editor-v1';
-const urlsToCache = [
-  '/',
-  '/index.html',
-  '/index.js',
-  '/main.css',
-  '/manifest.json'
-];
+// VERSION is replaced at build time by the Vite plugin.
+// Changing this value triggers the browser to install a new service worker.
+const VERSION = '__SW_VERSION__';
+const CACHE_NAME = `terraria-map-editor-${VERSION}`;
 
-// Install event - cache essential files
+// Install event - activate immediately
 self.addEventListener('install', event => {
-  event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then(cache => {
-        return cache.addAll(urlsToCache).catch(err => {
-          // Gracefully handle cache failures
-          console.warn('Cache addAll failed:', err);
-          return Promise.resolve();
-        });
-      })
-      .then(() => {
-        self.skipWaiting();
-      })
-  );
+  self.skipWaiting();
 });
 
-// Fetch event - serve from cache, fallback to network
-self.addEventListener('fetch', event => {
-  // Only cache GET requests from http/https (exclude chrome-extension, etc.)
-  if (event.request.method !== 'GET') {
-    return;
-  }
-
-  // Only handle http/https requests
-  const url = new URL(event.request.url);
-  if (!url.protocol.startsWith('http')) {
-    return;
-  }
-
-  event.respondWith(
-    caches.match(event.request)
-      .then(response => {
-        // Cache hit - return response
-        if (response) {
-          return response;
-        }
-
-        return fetch(event.request).then(response => {
-          // Don't cache non-successful responses
-          if (!response || response.status !== 200 || response.type === 'error') {
-            return response;
-          }
-
-          // Clone the response
-          const responseToCache = response.clone();
-
-          caches.open(CACHE_NAME)
-            .then(cache => {
-              cache.put(event.request, responseToCache);
-            });
-
-          return response;
-        });
-      })
-      .catch(() => {
-        // Fallback for offline - return a simple offline page if available
-        return caches.match('/index.html');
-      })
-  );
-});
-
-// Activate event - clean up old caches
+// Activate event - clean up old caches and take control
 self.addEventListener('activate', event => {
   event.waitUntil(
     caches.keys().then(cacheNames => {
@@ -83,5 +22,52 @@ self.addEventListener('activate', event => {
     }).then(() => {
       self.clients.claim();
     })
+  );
+});
+
+// Fetch event - network-first for navigations, cache-first for assets
+self.addEventListener('fetch', event => {
+  if (event.request.method !== 'GET') {
+    return;
+  }
+
+  const url = new URL(event.request.url);
+  if (!url.protocol.startsWith('http')) {
+    return;
+  }
+
+  // Navigation requests (HTML pages): always try network first
+  if (event.request.mode === 'navigate') {
+    event.respondWith(
+      fetch(event.request)
+        .then(response => {
+          const responseToCache = response.clone();
+          caches.open(CACHE_NAME).then(cache => cache.put(event.request, responseToCache));
+          return response;
+        })
+        .catch(() => caches.match(event.request) || caches.match('/index.html'))
+    );
+    return;
+  }
+
+  // Hashed assets (Vite adds content hashes): cache-first is safe
+  event.respondWith(
+    caches.match(event.request)
+      .then(response => {
+        if (response) {
+          return response;
+        }
+
+        return fetch(event.request).then(response => {
+          if (!response || response.status !== 200 || response.type === 'error') {
+            return response;
+          }
+
+          const responseToCache = response.clone();
+          caches.open(CACHE_NAME).then(cache => cache.put(event.request, responseToCache));
+          return response;
+        });
+      })
+      .catch(() => caches.match('/index.html'))
   );
 });
