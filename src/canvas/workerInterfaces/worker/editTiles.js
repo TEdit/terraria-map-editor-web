@@ -1,6 +1,7 @@
 import workerState from "../../workerState.js";
 
 import LAYERS from "../../../utils/dbs/LAYERS.js";
+import { TileFlag } from "terraria-world-file";
 
 /**
  * Apply tile edit options to a specific tile
@@ -9,75 +10,69 @@ import LAYERS from "../../../utils/dbs/LAYERS.js";
  * @param {Object} options - TileEditOptions object with property values and edit flags
  */
 function applyTileEditOptions(x, y, options) {
-    // Create a copy to avoid RLE issues
-    workerState.worldObject.tiles[x][y] = { ...workerState.worldObject.tiles[x][y] };
-    const tile = workerState.worldObject.tiles[x][y];
-
+    const tiles = workerState.worldObject.tiles;
+    const i = tiles.index(x, y);
     const layer = options.layer;
 
     // Apply block/tile ID (only on TILES layer)
     // blockId: null/undefined = no tile selected (no-op), "delete" = explicit erase
     if ((layer === LAYERS.TILES) && options.editBlockId && options.blockId !== undefined && options.blockId !== null) {
         if (options.blockId === "delete") {
-            delete tile.blockId;
-            delete tile.frameX;
-            delete tile.frameY;
-            delete tile.slope;
-            delete tile.blockColor;
-            delete tile.actuator;
-            delete tile.actuated;
-            delete tile.invisibleBlock;
-            delete tile.fullBrightBlock;
+            tiles.flags[i] &= ~(TileFlag.IS_BLOCK_ACTIVE | TileFlag.ACTUATOR | TileFlag.ACTUATED | TileFlag.INVISIBLE_BLOCK | TileFlag.FULL_BRIGHT_BLOCK | TileFlag.SLOPE_MASK);
+            tiles.frameX[i] = 0;
+            tiles.frameY[i] = 0;
+            tiles.blockColor[i] = 0;
         } else {
             // If overwriteLiquids is off, skip placing block on tiles that have liquid
-            if (options.overwriteLiquids === false && tile.liquidAmount > 0) {
+            if (options.overwriteLiquids === false && tiles.liquidAmount[i] > 0) {
                 // Don't place block — preserve liquid
             } else {
-                tile.blockId = parseInt(options.blockId);
-                delete tile.frameX;  // Reset frame for new tile type
-                delete tile.frameY;
+                tiles.blockId[i] = parseInt(options.blockId);
+                tiles.flags[i] |= TileFlag.IS_BLOCK_ACTIVE;
+                tiles.frameX[i] = 0;  // Reset frame for new tile type
+                tiles.frameY[i] = 0;
                 // Overwrite liquids: clear liquid when placing a block
                 if (options.overwriteLiquids !== false) {
-                    delete tile.liquidType;
-                    delete tile.liquidAmount;
+                    tiles.liquidType[i] = 0;
+                    tiles.liquidAmount[i] = 0;
                 }
             }
         }
     }
 
     // Apply block paint color (only on TILES or TILEPAINT layer, and only if tile exists)
-    if ((layer === LAYERS.TILES || layer === LAYERS.TILEPAINT) && options.editBlockColor && tile.blockId !== undefined) {
+    if ((layer === LAYERS.TILES || layer === LAYERS.TILEPAINT) && options.editBlockColor && tiles.hasBlock(i)) {
         if (options.blockColor === null || options.blockColor === "delete") {
-            delete tile.blockColor;
+            tiles.blockColor[i] = 0;
         } else {
-            tile.blockColor = parseInt(options.blockColor);
+            tiles.blockColor[i] = parseInt(options.blockColor);
         }
     }
 
     // Apply slope (only on TILES layer, and only if tile exists)
-    if ((layer === LAYERS.TILES) && options.editSlope && tile.blockId !== undefined) {
+    if ((layer === LAYERS.TILES) && options.editSlope && tiles.hasBlock(i)) {
         if (options.slope === null || options.slope === "delete" || options.slope === undefined) {
-            delete tile.slope;
+            tiles.setSlope(i, 0);
         } else {
-            tile.slope = options.slope;  // "half", "TR", "TL", "BR", "BL"
+            tiles.setSlope(i, options.slope);
         }
     }
 
     // Apply block coatings (only on TILES layer, and only if tile exists)
-    if ((layer === LAYERS.TILES) && tile.blockId !== undefined) {
+    if ((layer === LAYERS.TILES) && tiles.hasBlock(i)) {
         if (options.editInvisibleBlock) {
             if (options.invisibleBlock) {
-                tile.invisibleBlock = true;
+                tiles.flags[i] |= TileFlag.INVISIBLE_BLOCK;
             } else {
-                delete tile.invisibleBlock;
+                tiles.flags[i] &= ~TileFlag.INVISIBLE_BLOCK;
             }
         }
 
         if (options.editFullBrightBlock) {
             if (options.fullBrightBlock) {
-                tile.fullBrightBlock = true;
+                tiles.flags[i] |= TileFlag.FULL_BRIGHT_BLOCK;
             } else {
-                delete tile.fullBrightBlock;
+                tiles.flags[i] &= ~TileFlag.FULL_BRIGHT_BLOCK;
             }
         }
     }
@@ -86,58 +81,57 @@ function applyTileEditOptions(x, y, options) {
     // wallId: null/undefined = no wall selected (no-op), "delete" = explicit erase
     if ((layer === LAYERS.WALLS) && options.editWallId && options.wallId !== undefined && options.wallId !== null) {
         if (options.wallId === "delete") {
-            delete tile.wallId;
-            delete tile.wallColor;
-            delete tile.invisibleWall;
-            delete tile.fullBrightWall;
+            tiles.wallId[i] = 0;
+            tiles.wallColor[i] = 0;
+            tiles.flags[i] &= ~(TileFlag.INVISIBLE_WALL | TileFlag.FULL_BRIGHT_WALL);
         } else {
-            tile.wallId = parseInt(options.wallId);
+            tiles.wallId[i] = parseInt(options.wallId);
         }
     }
 
     // Apply wall paint color (only on WALLS or WALLPAINT layer, and only if wall exists)
-    if ((layer === LAYERS.WALLS || layer === LAYERS.WALLPAINT) && options.editWallColor && tile.wallId !== undefined && tile.wallId !== 0) {
+    if ((layer === LAYERS.WALLS || layer === LAYERS.WALLPAINT) && options.editWallColor && tiles.wallId[i] !== 0) {
         if (options.wallColor === null || options.wallColor === "delete") {
-            delete tile.wallColor;
+            tiles.wallColor[i] = 0;
         } else {
-            tile.wallColor = parseInt(options.wallColor);
+            tiles.wallColor[i] = parseInt(options.wallColor);
         }
     }
 
     // Apply wall coatings (only on WALLS layer, and only if wall exists)
-    if ((layer === LAYERS.WALLS) && tile.wallId !== undefined) {
+    if ((layer === LAYERS.WALLS) && tiles.wallId[i] !== 0) {
         if (options.editInvisibleWall) {
             if (options.invisibleWall) {
-                tile.invisibleWall = true;
+                tiles.flags[i] |= TileFlag.INVISIBLE_WALL;
             } else {
-                delete tile.invisibleWall;
+                tiles.flags[i] &= ~TileFlag.INVISIBLE_WALL;
             }
         }
 
         if (options.editFullBrightWall) {
             if (options.fullBrightWall) {
-                tile.fullBrightWall = true;
+                tiles.flags[i] |= TileFlag.FULL_BRIGHT_WALL;
             } else {
-                delete tile.fullBrightWall;
+                tiles.flags[i] &= ~TileFlag.FULL_BRIGHT_WALL;
             }
         }
     }
 
     // Apply actuator properties (only on TILES or WIRES layer, and only if tile exists)
-    if ((layer === LAYERS.TILES || layer === LAYERS.WIRES) && tile.blockId !== undefined) {
+    if ((layer === LAYERS.TILES || layer === LAYERS.WIRES) && tiles.hasBlock(i)) {
         if (options.editActuator) {
             if (options.actuator) {
-                tile.actuator = true;
+                tiles.flags[i] |= TileFlag.ACTUATOR;
             } else {
-                delete tile.actuator;
+                tiles.flags[i] &= ~TileFlag.ACTUATOR;
             }
         }
 
         if (options.editActuated) {
             if (options.actuated) {
-                tile.actuated = true;
+                tiles.flags[i] |= TileFlag.ACTUATED;
             } else {
-                delete tile.actuated;
+                tiles.flags[i] &= ~TileFlag.ACTUATED;
             }
         }
     }
@@ -146,45 +140,45 @@ function applyTileEditOptions(x, y, options) {
     if (layer === LAYERS.WIRES) {
         if (options.editWireRed) {
             if (options.wireRed) {
-                tile.wireRed = true;
+                tiles.flags[i] |= TileFlag.WIRE_RED;
             } else {
-                delete tile.wireRed;
+                tiles.flags[i] &= ~TileFlag.WIRE_RED;
             }
         }
 
         if (options.editWireGreen) {
             if (options.wireGreen) {
-                tile.wireGreen = true;
+                tiles.flags[i] |= TileFlag.WIRE_GREEN;
             } else {
-                delete tile.wireGreen;
+                tiles.flags[i] &= ~TileFlag.WIRE_GREEN;
             }
         }
 
         if (options.editWireBlue) {
             if (options.wireBlue) {
-                tile.wireBlue = true;
+                tiles.flags[i] |= TileFlag.WIRE_BLUE;
             } else {
-                delete tile.wireBlue;
+                tiles.flags[i] &= ~TileFlag.WIRE_BLUE;
             }
         }
 
         if (options.editWireYellow) {
             if (options.wireYellow) {
-                tile.wireYellow = true;
+                tiles.flags[i] |= TileFlag.WIRE_YELLOW;
             } else {
-                delete tile.wireYellow;
+                tiles.flags[i] &= ~TileFlag.WIRE_YELLOW;
             }
         }
     }
 
     // Apply liquid properties (only on LIQUIDS layer)
     // Liquid and block cannot co-exist: skip if tile has a block
-    if (layer === LAYERS.LIQUIDS && tile.blockId === undefined) {
+    if (layer === LAYERS.LIQUIDS && !tiles.hasBlock(i)) {
         if (options.editLiquidType && options.liquidType !== undefined) {
-            tile.liquidType = options.liquidType;
+            tiles.liquidType[i] = options.liquidType;
             // Default to full liquid amount if type is set but amount isn't being edited
             if (!options.editLiquidAmount) {
-                tile.liquidAmount = 255;
+                tiles.liquidAmount[i] = 255;
             }
         }
 
@@ -192,13 +186,13 @@ function applyTileEditOptions(x, y, options) {
             const amount = parseInt(options.liquidAmount);
             if (amount === 0) {
                 // Remove liquid entirely
-                delete tile.liquidType;
-                delete tile.liquidAmount;
+                tiles.liquidType[i] = 0;
+                tiles.liquidAmount[i] = 0;
             } else {
-                tile.liquidAmount = amount;
+                tiles.liquidAmount[i] = amount;
                 // If no liquid type set, default to water
-                if (!tile.liquidType) {
-                    tile.liquidType = options.liquidType || 1;
+                if (!tiles.liquidType[i]) {
+                    tiles.liquidType[i] = options.liquidType || 1;
                 }
             }
         }
@@ -208,6 +202,7 @@ function applyTileEditOptions(x, y, options) {
 
 export default function(data, messageId) {
     const { editType, tileEditArgs, radius, ...options } = data;
+    const tiles = workerState.worldObject.tiles;
     const layer = options.layer;
 
     if (editType == "rectangle") {
@@ -221,7 +216,7 @@ export default function(data, messageId) {
                 updatedTiles.push({
                     x,
                     y,
-                    tile: workerState.worldObject.tiles[x][y]
+                    tile: tiles.getTile(x, y)
                 });
             }
 
@@ -250,54 +245,53 @@ export default function(data, messageId) {
         }
 
         // Helper to compare tiles (checks properties based on layer and edit options)
-        function isTileSame(tile1, tile2, layer, options = {}) {
-            const eq = (a, b) => (a === undefined && b === undefined) || a === b;
-
+        function isTileSame(idx1, idx2, layer, options = {}) {
             switch (layer) {
                 case LAYERS.TILES:
-                    // Always match by TileID (not slope - fills through half-blocks/slopes)
-                    if (!eq(tile1.blockId, tile2.blockId)) return false;
+                    // Always match by active block state and blockId
+                    if (tiles.hasBlock(idx1) !== tiles.hasBlock(idx2)) return false;
+                    if (tiles.hasBlock(idx1) && tiles.blockId[idx1] !== tiles.blockId[idx2]) return false;
                     // If editing paint, also require paint color to match
-                    if (options.editBlockColor && !eq(tile1.blockColor, tile2.blockColor)) return false;
+                    if (options.editBlockColor && tiles.blockColor[idx1] !== tiles.blockColor[idx2]) return false;
                     return true;
 
                 case LAYERS.TILEPAINT:
                     // Paint layer: match by blockId and paint color
-                    if (!eq(tile1.blockId, tile2.blockId)) return false;
-                    if (!eq(tile1.blockColor, tile2.blockColor)) return false;
+                    if (tiles.hasBlock(idx1) !== tiles.hasBlock(idx2)) return false;
+                    if (tiles.hasBlock(idx1) && tiles.blockId[idx1] !== tiles.blockId[idx2]) return false;
+                    if (tiles.blockColor[idx1] !== tiles.blockColor[idx2]) return false;
                     return true;
 
                 case LAYERS.WALLS:
                     // Always match by WallID
-                    if (!eq(tile1.wallId, tile2.wallId)) return false;
+                    if (tiles.wallId[idx1] !== tiles.wallId[idx2]) return false;
                     // If editing paint, also require paint color to match
-                    if (options.editWallColor && !eq(tile1.wallColor, tile2.wallColor)) return false;
+                    if (options.editWallColor && tiles.wallColor[idx1] !== tiles.wallColor[idx2]) return false;
                     return true;
 
                 case LAYERS.WALLPAINT:
                     // Paint layer: match by wallId and paint color
-                    if (!eq(tile1.wallId, tile2.wallId)) return false;
-                    if (!eq(tile1.wallColor, tile2.wallColor)) return false;
+                    if (tiles.wallId[idx1] !== tiles.wallId[idx2]) return false;
+                    if (tiles.wallColor[idx1] !== tiles.wallColor[idx2]) return false;
                     return true;
 
-                case LAYERS.WIRES:
-                    if (!eq(tile1.wireRed, tile2.wireRed)) return false;
-                    if (!eq(tile1.wireGreen, tile2.wireGreen)) return false;
-                    if (!eq(tile1.wireBlue, tile2.wireBlue)) return false;
-                    if (!eq(tile1.wireYellow, tile2.wireYellow)) return false;
-                    if (!eq(tile1.actuator, tile2.actuator)) return false;
-                    if (!eq(tile1.actuated, tile2.actuated)) return false;
+                case LAYERS.WIRES: {
+                    const f1 = tiles.flags[idx1];
+                    const f2 = tiles.flags[idx2];
+                    const wireMask = TileFlag.WIRE_RED | TileFlag.WIRE_GREEN | TileFlag.WIRE_BLUE | TileFlag.WIRE_YELLOW | TileFlag.ACTUATOR | TileFlag.ACTUATED;
+                    if ((f1 & wireMask) !== (f2 & wireMask)) return false;
                     return true;
+                }
 
                 case LAYERS.LIQUIDS:
                     // Don't fill through solid blocks
-                    if (tile1.blockId !== undefined || tile2.blockId !== undefined) {
+                    if (tiles.hasBlock(idx1) || tiles.hasBlock(idx2)) {
                         return false;
                     }
-                    const hasLiquid1 = (tile1.liquidAmount || 0) > 0;
-                    const hasLiquid2 = (tile2.liquidAmount || 0) > 0;
+                    const hasLiquid1 = tiles.liquidAmount[idx1] > 0;
+                    const hasLiquid2 = tiles.liquidAmount[idx2] > 0;
                     if (hasLiquid1 !== hasLiquid2) return false;
-                    if (hasLiquid1 && !eq(tile1.liquidType, tile2.liquidType)) return false;
+                    if (hasLiquid1 && tiles.liquidType[idx1] !== tiles.liquidType[idx2]) return false;
                     return true;
 
                 default:
@@ -305,8 +299,8 @@ export default function(data, messageId) {
             }
         }
 
-        // Get origin tile (full tile object, not just ID)
-        const originTile = workerState.worldObject.tiles[startX][startY];
+        // Get origin tile index
+        const originIdx = tiles.index(startX, startY);
 
         // Flood fill with proper tile comparison
         const visited = new Set();
@@ -328,10 +322,10 @@ export default function(data, messageId) {
                 if (deltaX * deltaX + deltaY * deltaY > radius * radius) continue;
             }
 
-            const currentTile = workerState.worldObject.tiles[x][y];
+            const currentIdx = tiles.index(x, y);
 
             // Use isTileSame to check properties (paint matching depends on edit options)
-            if (!isTileSame(originTile, currentTile, layer, options)) continue;
+            if (!isTileSame(originIdx, currentIdx, layer, options)) continue;
 
             visited.add(key);
 
@@ -343,7 +337,7 @@ export default function(data, messageId) {
             updatedTiles.push({
                 x,
                 y,
-                tile: workerState.worldObject.tiles[x][y]
+                tile: tiles.getTile(x, y)
             });
 
             // 4-way neighbors
@@ -373,7 +367,7 @@ export default function(data, messageId) {
             updatedTiles.push({
                 x,
                 y,
-                tile: workerState.worldObject.tiles[x][y]
+                tile: tiles.getTile(x, y)
             });
         });
 

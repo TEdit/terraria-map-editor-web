@@ -6,6 +6,6 @@ export default function(data, messageId) {
     postMessage({
         action: "RETURN_TILE_DATA",
         messageId,
-        tileData: workerState.worldObject.tiles[x][y]
+        tileData: workerState.worldObject.tiles.getTile(x, y)
     });
 }

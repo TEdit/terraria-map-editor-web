@@ -5,6 +5,7 @@
   "type": "module",
   "dependencies": {
     "@reduxjs/toolkit": "^2.5.0",
+    "@rollup/rollup-linux-x64-gnu": "^4.59.0",
     "normalize.css": "^8.0.1",
     "react": "^19.2.3",
     "react-dom": "^19.2.3",

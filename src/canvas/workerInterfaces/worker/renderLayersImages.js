@@ -4,6 +4,7 @@ import "../../../utils/polyfills/polyfill-imageData.js";
 import colors from "../../../utils/dbs/colors.js";
 import LAYERS from "../../../utils/dbs/LAYERS.js";
 import { getTileColor, getPaintColor } from "../../../utils/rendering/tileRenderer.js";
+import { TileFlag } from "terraria-world-file";
 
 import { map } from "../../../utils/number.js";
 
@@ -24,6 +25,21 @@ export default async function(data, messageId) {
         underworld: workerState.worldObject.header.maxTilesY - 200
     };
 
+    const tiles = workerState.worldObject.tiles;
+    const maxTilesX = workerState.worldObject.header.maxTilesX;
+    const maxTilesY = workerState.worldObject.header.maxTilesY;
+    const height = tiles.height;
+
+    // Direct references to typed arrays for hot loop performance
+    const tBlockId = tiles.blockId;
+    const tWallId = tiles.wallId;
+    const tFlags = tiles.flags;
+    const tBlockColor = tiles.blockColor;
+    const tWallColor = tiles.wallColor;
+    const tLiquidType = tiles.liquidType;
+    const tFrameX = tiles.frameX;
+    const tFrameY = tiles.frameY;
+
     let position = 0;
     function setPointColor(LAYER, color) {
         if (!color)
@@ -35,20 +51,15 @@ export default async function(data, messageId) {
         layersImages[LAYER].data[position + 3] = color.a;
     }
 
-    const snowTiles = [147, 161, 162, 163, 163, 200];
-    function checkSnowGradient(colorCache) {
-
-    }
-
     postMessage({
         action: "RETURN_RENDERING_PERCENT_INCOMING",
         messageId
     });
 
-    const drawOnePercent = workerState.worldObject.header.maxTilesY / 100;
+    const drawOnePercent = maxTilesY / 100;
     let drawPercentNext = 0;
     let drawPercent = 0;
-    for (let y = 0; y < workerState.worldObject.header.maxTilesY; y++) {
+    for (let y = 0; y < maxTilesY; y++) {
         if (y > drawPercentNext) {
             drawPercentNext += drawOnePercent;
             drawPercent++;
@@ -61,53 +72,72 @@ export default async function(data, messageId) {
 
         let backgroundColumnCache = [];
 
-        for (let x = 0; x < workerState.worldObject.header.maxTilesX; x++) {
-            const tile = workerState.worldObject.tiles[x][y];
+        for (let x = 0; x < maxTilesX; x++) {
+            const i = x * height + y;
+            const f = tFlags[i];
+            const blockId = tBlockId[i];
+            const wallId = tWallId[i];
+            const blockColor = tBlockColor[i];
+            const wallColor = tWallColor[i];
+            const liquidType = tLiquidType[i];
 
-            if (tile.blockId !== undefined && colors[LAYERS.TILES][tile.blockId]) {
-                // Use shared renderer for tiles
+            if ((f & TileFlag.IS_BLOCK_ACTIVE) && colors[LAYERS.TILES][blockId]) {
+                // Build a minimal tile object for the renderer
+                const tile = {
+                    blockId,
+                    frameX: tFrameX[i],
+                    frameY: tFrameY[i],
+                    invisibleBlock: !!(f & TileFlag.INVISIBLE_BLOCK),
+                    fullBrightBlock: !!(f & TileFlag.FULL_BRIGHT_BLOCK),
+                };
+
                 const tileColor = getTileColor(tile, LAYERS.TILES, undefined, x, y, null);
                 if (tileColor && tileColor.a > 0) {
                     setPointColor(LAYERS.TILES, tileColor);
                 }
 
                 // Render normal paint to separate TILEPAINT layer if present
-                if (tile.blockColor !== undefined && tile.blockColor !== 0 && tile.blockColor !== 31 &&
-                    tile.blockColor !== 29 && tile.blockColor !== 30) {
-                    const paintColor = getPaintColor(tile, LAYERS.TILEPAINT, tile.blockColor, x, y, null);
+                if (blockColor !== 0 && blockColor !== 31 &&
+                    blockColor !== 29 && blockColor !== 30) {
+                    const paintColor = getPaintColor(tile, LAYERS.TILEPAINT, blockColor, x, y, null);
                     if (paintColor) {
                         setPointColor(LAYERS.TILEPAINT, paintColor);
                     }
                 }
             }
 
-            if (tile.liquidType)
-                setPointColor(LAYERS.LIQUIDS, colors[LAYERS.LIQUIDS][tile.liquidType]);
+            if (liquidType)
+                setPointColor(LAYERS.LIQUIDS, colors[LAYERS.LIQUIDS][liquidType]);
 
-            if (tile.wallId !== undefined && colors[LAYERS.WALLS][tile.wallId]) {
-                // Use shared renderer for walls
-                const wallColor = getTileColor(tile, LAYERS.WALLS, undefined, x, y, null);
-                if (wallColor && wallColor.a > 0) {
-                    setPointColor(LAYERS.WALLS, wallColor);
+            if (wallId !== 0 && colors[LAYERS.WALLS][wallId]) {
+                const tile = {
+                    wallId,
+                    invisibleWall: !!(f & TileFlag.INVISIBLE_WALL),
+                    fullBrightWall: !!(f & TileFlag.FULL_BRIGHT_WALL),
+                };
+
+                const wallColor_ = getTileColor(tile, LAYERS.WALLS, undefined, x, y, null);
+                if (wallColor_ && wallColor_.a > 0) {
+                    setPointColor(LAYERS.WALLS, wallColor_);
                 }
 
                 // Render normal paint to separate WALLPAINT layer if present
-                if (tile.wallColor !== undefined && tile.wallColor !== 0 && tile.wallColor !== 31 &&
-                    tile.wallColor !== 29 && tile.wallColor !== 30) {
-                    const paintColor = getPaintColor(tile, LAYERS.WALLPAINT, tile.wallColor, x, y, null);
+                if (wallColor !== 0 && wallColor !== 31 &&
+                    wallColor !== 29 && wallColor !== 30) {
+                    const paintColor = getPaintColor(tile, LAYERS.WALLPAINT, wallColor, x, y, null);
                     if (paintColor) {
                         setPointColor(LAYERS.WALLPAINT, paintColor);
                     }
                 }
             }
 
-            if (tile.wireRed)
+            if (f & TileFlag.WIRE_RED)
                 setPointColor(LAYERS.WIRES, colors[LAYERS.WIRES]["red"]);
-            if (tile.wireGreen)
+            if (f & TileFlag.WIRE_GREEN)
                 setPointColor(LAYERS.WIRES, colors[LAYERS.WIRES]["green"]);
-            if (tile.wireBlue)
+            if (f & TileFlag.WIRE_BLUE)
                 setPointColor(LAYERS.WIRES, colors[LAYERS.WIRES]["blue"]);
-            if (tile.wireYellow)
+            if (f & TileFlag.WIRE_YELLOW)
                 setPointColor(LAYERS.WIRES, colors[LAYERS.WIRES]["yellow"]);
 
             if (x == 0) {
@@ -129,12 +159,6 @@ export default async function(data, messageId) {
             }
 
             setPointColor(LAYERS.BACKGROUND, backgroundColumnCache[y]);
-            /*
-            if (y < bgLayers.ground || y >= bgLayers.underworld)
-
-            else
-                setPointColor(LAYERS.BACKGROUND, checkSnowGradient(backgroundColumnCache[y]));
-            */
 
             position += 4;
         }
