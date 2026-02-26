@@ -3,9 +3,16 @@
 const VERSION = '__SW_VERSION__';
 const CACHE_NAME = `terraria-map-editor-${VERSION}`;
 
-// Install event - activate immediately
+// Listen for skip-waiting message from the client
+self.addEventListener('message', event => {
+  if (event.data && event.data.type === 'SKIP_WAITING') {
+    self.skipWaiting();
+  }
+});
+
+// Install event - wait for client to signal activation
 self.addEventListener('install', event => {
-  self.skipWaiting();
+  // Don't call skipWaiting here; let the client control when to activate
 });
 
 // Activate event - clean up old caches and take control
@@ -25,7 +32,7 @@ self.addEventListener('activate', event => {
   );
 });
 
-// Fetch event - network-first for navigations, cache-first for assets
+// Fetch event - network-first for navigations, cache-first for hashed assets
 self.addEventListener('fetch', event => {
   if (event.request.method !== 'GET') {
     return;
@@ -33,6 +40,11 @@ self.addEventListener('fetch', event => {
 
   const url = new URL(event.request.url);
   if (!url.protocol.startsWith('http')) {
+    return;
+  }
+
+  // Never cache the service worker itself
+  if (url.pathname === '/service-worker.js') {
     return;
   }
 
@@ -45,7 +57,7 @@ self.addEventListener('fetch', event => {
           caches.open(CACHE_NAME).then(cache => cache.put(event.request, responseToCache));
           return response;
         })
-        .catch(() => caches.match(event.request) || caches.match('/index.html'))
+        .catch(() => caches.match(event.request).then(r => r || caches.match('/index.html')))
     );
     return;
   }
@@ -68,6 +80,5 @@ self.addEventListener('fetch', event => {
           return response;
         });
       })
-      .catch(() => caches.match('/index.html'))
   );
 });

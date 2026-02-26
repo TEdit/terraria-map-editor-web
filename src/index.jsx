@@ -31,37 +31,57 @@ root.render(
 
 // Register Service Worker for PWA offline support (production only)
 if (import.meta.env.PROD && 'serviceWorker' in navigator) {
+    let refreshing = false;
+
+    // Reload once when the new SW takes control
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+        if (!refreshing) {
+            refreshing = true;
+            window.location.reload();
+        }
+    });
+
     window.addEventListener('load', () => {
         navigator.serviceWorker.register('/service-worker.js')
             .then(registration => {
-                console.log('Service Worker registered successfully:', registration);
-
                 // Check for updates every 5 minutes
                 setInterval(() => registration.update(), 5 * 60 * 1000);
+
+                // Also check for update immediately on visibility change (tab refocus)
+                document.addEventListener('visibilitychange', () => {
+                    if (document.visibilityState === 'visible') {
+                        registration.update();
+                    }
+                });
+
+                // Handle update flow
+                function onNewWorkerReady(worker) {
+                    if (confirm('A new version of TEdit is available. Reload to update?')) {
+                        worker.postMessage({ type: 'SKIP_WAITING' });
+                        // controllerchange listener above will handle the reload
+                    }
+                }
 
                 // Notify user when a new version is ready
                 registration.addEventListener('updatefound', () => {
                     const newWorker = registration.installing;
+                    if (!newWorker) return;
+
                     newWorker.addEventListener('statechange', () => {
-                        if (newWorker.state === 'activated' && navigator.serviceWorker.controller) {
-                            // New SW activated while an old one was in control = update available
-                            if (confirm('A new version of TEdit is available. Reload to update?')) {
-                                window.location.reload();
-                            }
+                        // installed = downloaded & ready, but not yet active
+                        if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                            onNewWorkerReady(newWorker);
                         }
                     });
                 });
+
+                // Also handle case where a waiting worker already exists on page load
+                if (registration.waiting && navigator.serviceWorker.controller) {
+                    onNewWorkerReady(registration.waiting);
+                }
             })
             .catch(error => {
                 console.warn('Service Worker registration failed:', error);
             });
-    });
-
-    // If the SW takes control (via clients.claim), reload for consistency
-    navigator.serviceWorker.addEventListener('controllerchange', () => {
-        // Only auto-reload if this wasn't the first controller
-        if (navigator.serviceWorker.controller) {
-            window.location.reload();
-        }
     });
 }
