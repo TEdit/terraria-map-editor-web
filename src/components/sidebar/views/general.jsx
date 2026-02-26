@@ -12,6 +12,19 @@ import "../../styles/sidebar/views/general.css";
 import LAYERS from "../../../utils/dbs/LAYERS.js";
 import { sharedRestrainedRangeChange } from "../../../utils/number.js";
 
+// .NET DateTime.ToBinary() stores ticks (100ns since 0001-01-01) as a little-endian Int64
+// with the top 2 bits encoding DateTimeKind. Mask those off and convert to JS Date.
+function dotNetTicksToDate(bytes) {
+   const view = new DataView(bytes.buffer, bytes.byteOffset, 8);
+   const lo = view.getUint32(0, true);
+   const hi = view.getUint32(4, true) & 0x3FFFFFFF; // mask off DateTimeKind bits
+   // ticks as BigInt, then convert to ms since Unix epoch
+   const ticks = BigInt(hi) * 0x100000000n + BigInt(lo);
+   const unixMs = Number(ticks / 10000n) - 62135596800000; // .NET epoch to Unix epoch offset
+   const date = new Date(unixMs);
+   return isNaN(date.getTime()) ? "N/A" : date.toLocaleString();
+}
+
 function SidebarCategoryGeneral({ stateChange, fileFormatHeader, header, unsafeOnlyTiles, creativePowers, mobile }) {
    const version = fileFormatHeader.version;
 
@@ -80,7 +93,7 @@ function SidebarCategoryGeneral({ stateChange, fileFormatHeader, header, unsafeO
             version >= 141 &&
             <>
                <span>Creation Time</span>
-               <div className="sidebar-view-general-row-value">{header.creationTime ? new Date(header.creationTime).toLocaleString() : "N/A"}</div>
+               <div className="sidebar-view-general-row-value">{header.creationTime ? dotNetTicksToDate(header.creationTime) : "N/A"}</div>
             </>
          }
          <span>Seed</span>

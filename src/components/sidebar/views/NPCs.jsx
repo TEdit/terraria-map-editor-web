@@ -74,7 +74,7 @@ function SidebarNPCs({ stateChange, stateNPCs, headerSpawnPoint }) {
          else
             name = NPCs[selectedAddNPC].names[0][Math.floor(Math.random() * NPCs[selectedAddNPC].names.length)];
 
-      stateChange(["canvas", "worldObject", "NPCs", stateNPCs.length], {
+      stateChange(["canvas", "worldObject", "NPCs", "NPCs", stateNPCs.length], {
          id: selectedAddNPC,
          name,
          position: {
