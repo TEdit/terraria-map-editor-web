@@ -39,7 +39,8 @@ const onBucketClick = async (e) => {
             editType: "floodfill",
             tileEditArgs: [Main.mousePosImageX, Main.mousePosImageY],
             layer: layer,
-            radius: radius
+            radius: radius,
+            selection: Main.state.selection?.active ? Main.state.selection : null
         });
 
         // If flood fill returned tiles, sync data and render

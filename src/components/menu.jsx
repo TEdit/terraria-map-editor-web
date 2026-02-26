@@ -4,7 +4,7 @@ import menu from "../app/menu.js";
 import { stateChange, stateToggle } from "../state/state.js";
 
 import InputLink from "./inputs/input-link.jsx";
-import { LogoIcon, AccountBoxIcon, GithubIcon, DiscordIcon } from "./icon.jsx";
+import { LogoIcon, AccountBoxIcon, GithubIcon, DiscordIcon, PatreonIcon } from "./icon.jsx";
 import "./styles/menu.css";
 
 /*
@@ -215,8 +215,9 @@ function Menu({ stateChange, stateToggle, view, running, user, unsafe, unsafeOnl
 
             <InputLink
                className="menu-link --support"
-               label="No Ads. Please consider a coffee tip ☕"
-               href="https://www.buymeacoffee.com/binaryconstruct"
+               label="Support TEdit on Patreon"
+               Icon={<PatreonIcon size={15}/>}
+               href="https://www.patreon.com/join/BinaryConstruct"
                onClick={menu.onSupportLinkClick}
             />
             <InputLink

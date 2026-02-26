@@ -134,6 +134,12 @@ const DiscordIcon = ({ size=24 }) => (
    </svg>
 )
 
+const PatreonIcon = ({ size=24 }) => (
+   <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24">
+      <path d="M15.39,2.01C11.59,2.01,8.5,5.1,8.5,8.9c0,3.78,3.09,6.87,6.89,6.87c3.79,0,6.89-3.09,6.89-6.87C22.28,5.1,19.18,2.01,15.39,2.01z M1.72,22H5.56V2.01H1.72V22z"/>
+   </svg>
+);
+
 const ToolOptionsIcon = ({ size=24 }) => (
    <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24">
       <path d="M3 17v2h6v-2H3zM3 5v2h10V5H3zm10 16v-2h8v-2h-8v-2h-2v6h2zM7 9v2H3v2h4v2h2V9H7zm14 4v-2H11v2h10zm-6-4h2V7h4V5h-4V3h-2v6z"/>
@@ -162,5 +168,6 @@ export {
    LocateIcon,
    FindIcon,
    DiscordIcon,
+   PatreonIcon,
    ToolOptionsIcon
 };

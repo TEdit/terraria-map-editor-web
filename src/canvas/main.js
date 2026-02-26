@@ -145,6 +145,10 @@ let Main = new function() {
         this.loop.correntPositions();
         this.loop.drawLayers();
 
+        if (this.state.selection?.active) {
+            this.loop.drawSelection();
+        }
+
         switch (this.state.toolbar.tool) {
             case "pencil":
             case "eraser":
@@ -286,6 +290,29 @@ let Main = new function() {
                 temp0, temp2
             );
         }
+    }
+
+    this.loop.drawSelection = () => {
+        const sel = this.state.selection;
+        const x = (sel.x1 - this.posX) * this.tilePixelRatio;
+        const y = (sel.y1 - this.posY) * this.tilePixelRatio;
+        const w = (sel.x2 - sel.x1 + 1) * this.tilePixelRatio;
+        const h = (sel.y2 - sel.y1 + 1) * this.tilePixelRatio;
+
+        this.ctx.strokeStyle = "#00bfff";
+        this.ctx.lineWidth = 2;
+        this.ctx.setLineDash([6, 4]);
+        this.ctx.strokeRect(x, y, w, h);
+        this.ctx.setLineDash([]);
+
+        // Dim area outside selection
+        this.ctx.fillStyle = "rgba(0, 0, 0, 0.3)";
+        const cw = this.canvas.width;
+        const ch = this.canvas.height;
+        this.ctx.fillRect(0, 0, cw, y);           // top
+        this.ctx.fillRect(0, y, x, h);             // left
+        this.ctx.fillRect(x + w, y, cw - x - w, h); // right
+        this.ctx.fillRect(0, y + h, cw, ch - y - h); // bottom
     }
 
     this.loop.drawLocation = () => {

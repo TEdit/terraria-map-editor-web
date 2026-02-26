@@ -35,7 +35,8 @@ function Controller(props) {
          canvas: props.canvas,
          toolbar: props.toolbar,
          optionbar: props.optionbar,
-         layersVisibility: props.layersVisibility
+         layersVisibility: props.layersVisibility,
+         selection: props.selection
       };
    });
 
@@ -60,6 +61,7 @@ export default connect(
          toolbar: state.toolbar,
          optionbar: state.optionbar,
          layersVisibility: state.layersVisibility,
+         selection: state.selection,
          worldFile: state.canvas.worldFile,
          mobile: state.mobile,
          htmlFontSize: state.htmlFontSize

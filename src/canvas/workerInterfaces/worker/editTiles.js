@@ -201,7 +201,7 @@ function applyTileEditOptions(x, y, options) {
 
 
 export default function(data, messageId) {
-    const { editType, tileEditArgs, radius, ...options } = data;
+    const { editType, tileEditArgs, radius, selection, ...options } = data;
     const tiles = workerState.worldObject.tiles;
     const layer = options.layer;
 
@@ -244,63 +244,60 @@ export default function(data, messageId) {
             return;
         }
 
-        // Helper to compare tiles (checks properties based on layer and edit options)
-        function isTileSame(idx1, idx2, layer, options = {}) {
+        // Snapshot origin tile values before any edits modify them
+        const originIdx = tiles.index(startX, startY);
+        const originBlockId = tiles.blockId[originIdx];
+        const originBlockActive = tiles.hasBlock(originIdx);
+        const originBlockColor = tiles.blockColor[originIdx];
+        const originWallId = tiles.wallId[originIdx];
+        const originWallColor = tiles.wallColor[originIdx];
+        const originFlags = tiles.flags[originIdx];
+        const originLiquidType = tiles.liquidType[originIdx];
+        const originLiquidAmount = tiles.liquidAmount[originIdx];
+
+        // Compare against snapshotted origin values instead of live data
+        function isTileSameAsOrigin(idx, layer, options = {}) {
             switch (layer) {
                 case LAYERS.TILES:
-                    // Always match by active block state and blockId
-                    if (tiles.hasBlock(idx1) !== tiles.hasBlock(idx2)) return false;
-                    if (tiles.hasBlock(idx1) && tiles.blockId[idx1] !== tiles.blockId[idx2]) return false;
-                    // If editing paint, also require paint color to match
-                    if (options.editBlockColor && tiles.blockColor[idx1] !== tiles.blockColor[idx2]) return false;
+                    if (originBlockActive !== tiles.hasBlock(idx)) return false;
+                    if (originBlockActive && originBlockId !== tiles.blockId[idx]) return false;
+                    if (options.editBlockColor && originBlockColor !== tiles.blockColor[idx]) return false;
                     return true;
 
                 case LAYERS.TILEPAINT:
-                    // Paint layer: match by blockId and paint color
-                    if (tiles.hasBlock(idx1) !== tiles.hasBlock(idx2)) return false;
-                    if (tiles.hasBlock(idx1) && tiles.blockId[idx1] !== tiles.blockId[idx2]) return false;
-                    if (tiles.blockColor[idx1] !== tiles.blockColor[idx2]) return false;
+                    if (originBlockActive !== tiles.hasBlock(idx)) return false;
+                    if (originBlockActive && originBlockId !== tiles.blockId[idx]) return false;
+                    if (originBlockColor !== tiles.blockColor[idx]) return false;
                     return true;
 
                 case LAYERS.WALLS:
-                    // Always match by WallID
-                    if (tiles.wallId[idx1] !== tiles.wallId[idx2]) return false;
-                    // If editing paint, also require paint color to match
-                    if (options.editWallColor && tiles.wallColor[idx1] !== tiles.wallColor[idx2]) return false;
+                    if (originWallId !== tiles.wallId[idx]) return false;
+                    if (options.editWallColor && originWallColor !== tiles.wallColor[idx]) return false;
                     return true;
 
                 case LAYERS.WALLPAINT:
-                    // Paint layer: match by wallId and paint color
-                    if (tiles.wallId[idx1] !== tiles.wallId[idx2]) return false;
-                    if (tiles.wallColor[idx1] !== tiles.wallColor[idx2]) return false;
+                    if (originWallId !== tiles.wallId[idx]) return false;
+                    if (originWallColor !== tiles.wallColor[idx]) return false;
                     return true;
 
                 case LAYERS.WIRES: {
-                    const f1 = tiles.flags[idx1];
-                    const f2 = tiles.flags[idx2];
                     const wireMask = TileFlag.WIRE_RED | TileFlag.WIRE_GREEN | TileFlag.WIRE_BLUE | TileFlag.WIRE_YELLOW | TileFlag.ACTUATOR | TileFlag.ACTUATED;
-                    if ((f1 & wireMask) !== (f2 & wireMask)) return false;
+                    if ((originFlags & wireMask) !== (tiles.flags[idx] & wireMask)) return false;
                     return true;
                 }
 
                 case LAYERS.LIQUIDS:
-                    // Don't fill through solid blocks
-                    if (tiles.hasBlock(idx1) || tiles.hasBlock(idx2)) {
-                        return false;
-                    }
-                    const hasLiquid1 = tiles.liquidAmount[idx1] > 0;
-                    const hasLiquid2 = tiles.liquidAmount[idx2] > 0;
-                    if (hasLiquid1 !== hasLiquid2) return false;
-                    if (hasLiquid1 && tiles.liquidType[idx1] !== tiles.liquidType[idx2]) return false;
+                    if (originBlockActive || tiles.hasBlock(idx)) return false;
+                    const hasLiquidOrigin = originLiquidAmount > 0;
+                    const hasLiquidCurrent = tiles.liquidAmount[idx] > 0;
+                    if (hasLiquidOrigin !== hasLiquidCurrent) return false;
+                    if (hasLiquidOrigin && originLiquidType !== tiles.liquidType[idx]) return false;
                     return true;
 
                 default:
                     return false;
             }
         }
-
-        // Get origin tile index
-        const originIdx = tiles.index(startX, startY);
 
         // Flood fill with proper tile comparison
         const visited = new Set();
@@ -315,6 +312,9 @@ export default function(data, messageId) {
             if (visited.has(key)) continue;
             if (x < 0 || y < 0 || x >= maxX || y >= maxY) continue;
 
+            // Check selection bounds
+            if (selection && (x < selection.x1 || x > selection.x2 || y < selection.y1 || y > selection.y2)) continue;
+
             // Check radius constraint (Euclidean distance - circle formula)
             if (radius !== undefined && radius !== null) {
                 const deltaX = x - startX;
@@ -324,8 +324,8 @@ export default function(data, messageId) {
 
             const currentIdx = tiles.index(x, y);
 
-            // Use isTileSame to check properties (paint matching depends on edit options)
-            if (!isTileSame(originIdx, currentIdx, layer, options)) continue;
+            // Use snapshotted origin values to check properties
+            if (!isTileSameAsOrigin(currentIdx, layer, options)) continue;
 
             visited.add(key);
 

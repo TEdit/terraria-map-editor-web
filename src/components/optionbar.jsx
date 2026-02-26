@@ -11,6 +11,7 @@ import OptionbarOptionLayer from "./optionbar/layer.jsx";
 import OptionbarOptionSize from "./optionbar/size.jsx";
 import OptionbarOptionWorldPoint from "./optionbar/worldPoint.jsx";
 import OptionbarOptionTileEditOptions from "./optionbar/tileEditOptions.jsx";
+import OptionbarInputButton from "./inputs/input-button.jsx";
 
 import "./styles/optionbar.css";
 
@@ -65,6 +66,13 @@ function Optionbar({ stateChange, show, running, selectedTool, optionbarState, d
                   <div className="optionbar-divider"></div>
                   <OptionbarOptionTileEditOptions state={optionbarState} setState={setState} tool={selectedTool}/>
                </>
+            }
+            {
+               running && selectedTool == "select" &&
+               <OptionbarInputButton
+                  label="Clear Selection"
+                  onClick={() => stateChange(["selection", "active"], false)}
+               />
             }
             {
                running && selectedTool == "worldPoint" &&
