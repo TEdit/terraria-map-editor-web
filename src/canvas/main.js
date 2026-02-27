@@ -21,6 +21,7 @@ import onCanvasMouseDown from "./listeners/mousedown.js";
 import onCanvasMouseUp from "./listeners/mouseup.js";
 import onCanvasMouseOver from "./listeners/mouseover.js";
 import onCanvasMouseLeave from "./listeners/mouseleave.js";
+import onKeyDown from "./listeners/keyboard.js";
 
 let Main = new function() {
     this.state;
@@ -76,6 +77,8 @@ let Main = new function() {
             this.canvas.addEventListener("touchmove", listenerWrapper(onCanvasTouchMove));
             this.canvas.addEventListener("touchstart", listenerWrapper(onCanvasTouchStart));
             this.canvas.addEventListener("touchend", listenerWrapper(onCanvasTouchEnd));
+
+            document.addEventListener("keydown", onKeyDown);
     }
 
     this.updateLayers = (LAYER, dirtyRect = null) => {

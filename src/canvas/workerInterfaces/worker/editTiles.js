@@ -2,6 +2,7 @@ import workerState from "../../workerState.js";
 
 import LAYERS from "../../../utils/dbs/LAYERS.js";
 import { TileFlag } from "terraria-world-file";
+import { saveTileBeforeState } from "./undo.js";
 
 /**
  * Apply tile edit options to a specific tile
@@ -210,6 +211,7 @@ export default function(data, messageId) {
 
         for (let x = tileEditArgs[0][0]; x <= tileEditArgs[1][0]; x++)
             for (let y = tileEditArgs[0][1]; y <= tileEditArgs[1][1]; y++) {
+                saveTileBeforeState(x, y);
                 applyTileEditOptions(x, y, options);
 
                 // Collect updated tile for main thread synchronization
@@ -329,6 +331,7 @@ export default function(data, messageId) {
 
             visited.add(key);
 
+            saveTileBeforeState(x, y);
             applyTileEditOptions(x, y, options);
 
             tilesArray.push([x, y]);
@@ -361,6 +364,7 @@ export default function(data, messageId) {
         const updatedTiles = [];
 
         tilesArray.forEach(([x, y]) => {
+            saveTileBeforeState(x, y);
             applyTileEditOptions(x, y, options);
 
             // Collect updated tile for main thread synchronization

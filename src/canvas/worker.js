@@ -37,6 +37,26 @@ self.onmessage = async ({ data }) => {
             case "BLOCK_REPLACE":
                 await workerInterfaces.blockReplace(data, messageId);
                 return;
+
+            case "COPY_SELECTION":
+                await workerInterfaces.copySelection(data, messageId);
+                break;
+
+            case "PASTE_CLIPBOARD":
+                await workerInterfaces.pasteClipboard(data, messageId);
+                break;
+
+            case "CLEAR_SELECTION":
+                await workerInterfaces.clearSelection(data, messageId);
+                break;
+
+            case "FINALIZE_UNDO":
+                await workerInterfaces.finalizeUndo(messageId);
+                break;
+
+            case "UNDO":
+                await workerInterfaces.performUndo(data, messageId);
+                break;
         }
     } catch (e) {
         console.error("worker error: ", e);

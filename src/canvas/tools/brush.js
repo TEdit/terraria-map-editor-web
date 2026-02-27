@@ -8,6 +8,7 @@ import { drawLine, fillEllipseCentered, fillRectangleCentered, deduplicateTiles 
 import { isInSelection } from "../../utils/selection.js";
 import { renderFromWorldData } from "../../utils/colorApplication.js";
 import { calculateDirtyRect } from "./drawingToolsHelpers.js";
+import { finalizeUndo } from "../workerInterfaces/main/undo.js";
 
 /**
  * Get brush tiles based on shape and size
@@ -95,6 +96,8 @@ const onBrushClick = async (e) => {
         }
     }
 
+    finalizeUndo().catch(() => {});
+
     store.dispatch(stateChange(["status", "loading"], false));
 }
 
@@ -177,6 +180,7 @@ const onBrushDrag = async (e) => {
 
 const onBrushUp = (_e) => {
     Main.listeners.dragging = false;
+    finalizeUndo().catch(() => {});
 }
 
 export {

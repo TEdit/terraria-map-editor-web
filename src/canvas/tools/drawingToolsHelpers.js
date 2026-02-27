@@ -18,6 +18,7 @@ import { drawLine, fillEllipseCentered, fillRectangleCentered, deduplicateTiles 
 import { isInSelection } from "../../utils/selection.js";
 import { renderOptimistic } from "../../utils/colorApplication.js";
 import LAYERS from "../../utils/dbs/LAYERS.js";
+import { finalizeUndo } from "../workerInterfaces/main/undo.js";
 
 /**
  * Calculate dirty rectangle (bounding box) from tiles array
@@ -244,6 +245,7 @@ export async function onDrawingToolClick(
         // Apply the tool-specific operation immediately (no batching for click)
         if (tileOperationFn && tilesArray.length > 0) {
             await tileOperationFn(tilesArray, Main.state.optionbar.layer);
+            finalizeUndo().catch(() => {});
         }
 
         store.dispatch(stateChange(["status", "loading"], false));
@@ -391,6 +393,9 @@ export async function onDrawingToolUp(_e, tileOperationFn, layer) {
     if (tileOperationFn && layer !== undefined) {
         await flushBatch(tileOperationFn, layer);
     }
+
+    // Finalize undo group for the entire stroke
+    finalizeUndo().catch(() => {});
 
     // Clear render timer
     if (batchState.renderTimer) {

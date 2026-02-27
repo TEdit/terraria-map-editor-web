@@ -6,6 +6,7 @@ import { stateChange } from "../../state/state.js";
 
 import { renderFromWorldData } from "../../utils/colorApplication.js";
 import { calculateDirtyRect } from "./drawingToolsHelpers.js";
+import { finalizeUndo } from "../workerInterfaces/main/undo.js";
 
 const onBucketClick = async (e) => {
     // Validate canvas state exists
@@ -92,6 +93,9 @@ const onBucketClick = async (e) => {
                 }
             }
         }
+
+        // Finalize undo group for the bucket fill
+        finalizeUndo().catch(() => {});
 
     } catch (error) {
         console.error("Error in bucket fill:", error);

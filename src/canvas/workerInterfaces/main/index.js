@@ -6,6 +6,8 @@ import editTiles from "./editTiles.js";
 import getTileData from "./getTileData.js";
 import blockSwap from "./blockSwap.js";
 import blockReplace from "./blockReplace.js";
+import { copySelection, pasteClipboard, clearSelection } from "./clipboard.js";
+import { finalizeUndo, performUndo } from "./undo.js";
 
 export default {
     parseWorldFile,
@@ -15,5 +17,10 @@ export default {
     editTiles,
     getTileData,
     blockSwap,
-    blockReplace
+    blockReplace,
+    copySelection,
+    pasteClipboard,
+    clearSelection,
+    finalizeUndo,
+    performUndo
 }
