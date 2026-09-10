@@ -1053,6 +1053,7 @@ colors[LAYERS.TILES] = [
     {r:122,g:217,b:232,a:255},
     {r:186,g:168,b:84,a:255},
     {r:122,g:217,b:232,a:255},
+    {r:137,g:76,b:80,a:255},
 ]
 
 colors[LAYERS.WALLS] = [

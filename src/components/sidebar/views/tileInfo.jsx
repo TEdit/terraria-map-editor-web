@@ -60,7 +60,7 @@ function SidebarViewTileInfo({ tool, tileData, stateChange }) {
       <div className="sidebar-view-general">
          <div className="sidebar-view-general-row-divider"><span>Tile</span></div>
          <span>Tile ID</span>
-         <OptionbarInput value={tile.blockId !== undefined ? tile.blockId : ""} onChange={(value) => {setTileData("blockId", value)}} int canBeNull min={0} max={752} width="14ch"/>
+         <OptionbarInput value={tile.blockId !== undefined ? tile.blockId : ""} onChange={(value) => {setTileData("blockId", value)}} int canBeNull min={0} max={753} width="14ch"/>
          <span>Tile color</span>
          <div className="sidebar-view-general-row-value">{tile.colors.block !== undefined ? tile.colors.block : ""}</div>
          <span>Slope</span>

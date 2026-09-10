@@ -324,6 +324,15 @@ function SidebarCategoryGeneral({ stateChange, fileFormatHeader, header, unsafeO
                         <OptionbarInputCheckbox value={header.zenithWorld} onChange={(value) => {setHeaderKey("zenithWorld", value)}} />
                      </>
                   }
+                  {
+                     version >= 323 &&
+                     <>
+                        <span>More Lightning</span>
+                        <OptionbarInputCheckbox value={header.moreLightningSeed} onChange={(value) => {setHeaderKey("moreLightningSeed", value)}} />
+                        <span>No Lightning</span>
+                        <OptionbarInputCheckbox value={header.noLightningSeed} onChange={(value) => {setHeaderKey("noLightningSeed", value)}} />
+                     </>
+                  }
                </>
             :
                <>
